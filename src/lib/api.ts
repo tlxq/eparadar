@@ -136,3 +136,103 @@ export async function updateProfile(
     .eq('id', userId);
   if (error) throw error;
 }
+
+export type ConversationMember = {
+  user_id: string;
+  profiles: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
+};
+
+export type Conversation = {
+  id: string;
+  is_group: boolean;
+  name: string | null;
+  created_at: string;
+  conversation_members: ConversationMember[];
+  messages?: { body: string; created_at: string }[];
+};
+
+export type Message = {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  body: string;
+  created_at: string;
+  sender: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'> | null;
+};
+
+export function conversationTitle(conversation: Conversation, myUserId: string): string {
+  if (conversation.is_group) {
+    return conversation.name ?? 'Gruppchatt';
+  }
+  const other = conversation.conversation_members.find((member) => member.user_id !== myUserId);
+  return other?.profiles.display_name ?? 'Okänd användare';
+}
+
+export async function searchUsers(query: string, excludeUserId: string): Promise<Profile[]> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .ilike('username', `%${query}%`)
+    .neq('id', excludeUserId)
+    .limit(20);
+  if (error) throw error;
+  return (data ?? []) as Profile[];
+}
+
+export async function fetchConversations(): Promise<Conversation[]> {
+  const { data, error } = await supabase
+    .from('conversations')
+    .select(
+      '*, conversation_members(user_id, profiles(id, username, display_name, avatar_url)), messages(body, created_at)',
+    )
+    .order('created_at', { ascending: false })
+    .order('created_at', { foreignTable: 'messages', ascending: false })
+    .limit(1, { foreignTable: 'messages' });
+  if (error) throw error;
+  return (data ?? []) as unknown as Conversation[];
+}
+
+export async function fetchConversation(conversationId: string): Promise<Conversation> {
+  const { data, error } = await supabase
+    .from('conversations')
+    .select('*, conversation_members(user_id, profiles(id, username, display_name, avatar_url))')
+    .eq('id', conversationId)
+    .single();
+  if (error) throw error;
+  return data as unknown as Conversation;
+}
+
+export async function createConversation(input: {
+  otherUserIds: string[];
+  groupName?: string | null;
+}): Promise<string> {
+  const { data, error } = await supabase.rpc('create_conversation', {
+    other_user_ids: input.otherUserIds,
+    group_name: input.groupName ?? null,
+  });
+  if (error) throw error;
+  return data as string;
+}
+
+export async function fetchMessages(conversationId: string): Promise<Message[]> {
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*, sender:profiles(id, username, display_name, avatar_url)')
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as unknown as Message[];
+}
+
+export async function sendMessage(input: {
+  conversationId: string;
+  senderId: string;
+  body: string;
+}) {
+  const { error } = await supabase.from('messages').insert({
+    conversation_id: input.conversationId,
+    sender_id: input.senderId,
+    body: input.body,
+  });
+  if (error) throw error;
+}

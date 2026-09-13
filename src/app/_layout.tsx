@@ -1,4 +1,11 @@
 import { useEffect } from 'react';
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  useFonts,
+} from '@expo-google-fonts/inter';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -55,6 +62,11 @@ export default function RootLayout() {
               name="cars/new"
               options={{ presentation: 'modal', headerShown: true, title: 'Lägg till bil' }}
             />
+            <Stack.Screen
+              name="chat/new"
+              options={{ presentation: 'modal', headerShown: true, title: 'Ny chatt' }}
+            />
+            <Stack.Screen name="chat/[id]" options={{ headerShown: true }} />
           </Stack.Protected>
         </Stack>
       </ThemeProvider>
