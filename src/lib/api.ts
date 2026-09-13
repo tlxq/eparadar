@@ -40,18 +40,17 @@ export async function signUpWithProfile(input: {
   const { data, error } = await supabase.auth.signUp({
     email: input.email,
     password: input.password,
+    options: {
+      data: {
+        username: input.username,
+        display_name: input.displayName,
+      },
+    },
   });
   if (error) throw error;
-  if (!data.session || !data.user) {
+  if (!data.session) {
     throw new Error('Bekräfta din e-post och logga in för att slutföra registreringen.');
   }
-
-  const { error: profileError } = await supabase.from('profiles').insert({
-    id: data.user.id,
-    username: input.username,
-    display_name: input.displayName,
-  });
-  if (profileError) throw profileError;
 }
 
 export async function signIn(email: string, password: string) {
