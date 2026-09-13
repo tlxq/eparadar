@@ -68,7 +68,7 @@ export async function fetchPosts(): Promise<Post[]> {
   const { data, error } = await supabase
     .from('posts')
     .select(
-      '*, author:profiles(id, username, display_name, avatar_url), car:cars(id, make, model, nickname)',
+      '*, author:profiles!posts_author_id_fkey(id, username, display_name, avatar_url), car:cars(id, make, model, nickname)',
     )
     .order('created_at', { ascending: false });
   if (error) throw error;
