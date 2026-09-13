@@ -1,6 +1,9 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
+import type { ComponentProps } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 
 type ButtonProps = {
   label: string;
@@ -8,20 +11,43 @@ type ButtonProps = {
   loading?: boolean;
   disabled?: boolean;
   variant?: 'primary' | 'secondary';
+  icon?: ComponentProps<typeof Ionicons>['name'];
 };
 
-export function Button({ label, onPress, loading, disabled, variant = 'primary' }: ButtonProps) {
+export function Button({
+  label,
+  onPress,
+  loading,
+  disabled,
+  variant = 'primary',
+  icon,
+}: ButtonProps) {
+  const theme = useTheme();
   const secondary = variant === 'secondary';
+  const contentColor = secondary ? theme.brandOnSurface : theme.brandText;
+
   return (
     <Pressable
-      style={[styles.button, secondary && styles.secondary]}
+      style={[
+        styles.button,
+        secondary
+          ? {
+              backgroundColor: 'transparent',
+              borderWidth: StyleSheet.hairlineWidth,
+              borderColor: theme.brandOnSurface,
+            }
+          : { backgroundColor: theme.brand },
+      ]}
       onPress={onPress}
       disabled={disabled || loading}
     >
       {loading ? (
-        <ActivityIndicator color={secondary ? '#3c87f7' : '#fff'} />
+        <ActivityIndicator color={contentColor} />
       ) : (
-        <Text style={[styles.label, secondary && styles.secondaryLabel]}>{label}</Text>
+        <View style={styles.content}>
+          {icon ? <Ionicons name={icon} size={18} color={contentColor} /> : null}
+          <Text style={[styles.label, { color: contentColor }]}>{label}</Text>
+        </View>
       )}
     </Pressable>
   );
@@ -29,23 +55,18 @@ export function Button({ label, onPress, loading, disabled, variant = 'primary' 
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#3c87f7',
     borderRadius: Spacing.two,
     paddingVertical: Spacing.three,
     paddingHorizontal: Spacing.four,
     alignItems: 'center',
   },
-  secondary: {
-    backgroundColor: 'transparent',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#3c87f7',
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
   },
   label: {
-    color: '#fff',
-    fontWeight: '600',
+    fontFamily: Fonts.inter.semiBold,
     fontSize: 16,
-  },
-  secondaryLabel: {
-    color: '#3c87f7',
   },
 });

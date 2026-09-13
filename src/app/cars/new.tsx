@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/button';
+import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
-import { ThemedView } from '@/components/themed-view';
+import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { createCar } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
@@ -37,7 +38,7 @@ export default function NewCarScreen() {
   });
 
   return (
-    <ThemedView style={styles.container}>
+    <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <TextField placeholder="Märke" value={make} onChangeText={setMake} />
         <TextField placeholder="Modell" value={model} onChangeText={setModel} />
@@ -48,7 +49,7 @@ export default function NewCarScreen() {
           keyboardType="number-pad"
         />
         <TextField placeholder="Smeknamn" value={nickname} onChangeText={setNickname} />
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? <ThemedText type="error">{error}</ThemedText> : null}
         <Button
           label="Spara"
           onPress={() => mutation.mutate()}
@@ -56,7 +57,7 @@ export default function NewCarScreen() {
           disabled={!make.trim() || !model.trim()}
         />
       </SafeAreaView>
-    </ThemedView>
+    </ScreenBackground>
   );
 }
 
@@ -68,5 +69,4 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.three,
     gap: Spacing.three,
   },
-  error: { color: '#e5484d' },
 });

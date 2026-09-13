@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/button';
+import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { createPost, fetchMyCars, type Car } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
@@ -35,7 +35,7 @@ export default function NewPostScreen() {
   });
 
   return (
-    <ThemedView style={styles.container}>
+    <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <TextField
           placeholder="Vad har du på hjärtat?"
@@ -57,7 +57,7 @@ export default function NewPostScreen() {
             ))}
           </>
         ) : null}
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error ? <ThemedText type="error">{error}</ThemedText> : null}
         <Button
           label="Publicera"
           onPress={() => mutation.mutate()}
@@ -65,7 +65,7 @@ export default function NewPostScreen() {
           disabled={!body.trim()}
         />
       </SafeAreaView>
-    </ThemedView>
+    </ScreenBackground>
   );
 }
 
@@ -78,5 +78,4 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   textarea: { minHeight: 100, textAlignVertical: 'top' },
-  error: { color: '#e5484d' },
 });

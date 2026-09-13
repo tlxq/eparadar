@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/button';
+import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -62,7 +63,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <FlatList
           data={cars ?? []}
@@ -84,6 +85,7 @@ export default function ProfileScreen() {
                 <Button
                   label="Lägg till bil"
                   variant="secondary"
+                  icon="add-circle-outline"
                   onPress={() => router.push('/cars/new')}
                 />
               </View>
@@ -94,12 +96,17 @@ export default function ProfileScreen() {
           }
           ListFooterComponent={
             <View style={styles.footer}>
-              <Button label="Logga ut" variant="secondary" onPress={() => signOut()} />
+              <Button
+                label="Logga ut"
+                variant="secondary"
+                icon="log-out-outline"
+                onPress={() => signOut()}
+              />
             </View>
           }
         />
       </SafeAreaView>
-    </ThemedView>
+    </ScreenBackground>
   );
 }
 

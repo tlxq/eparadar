@@ -3,21 +3,29 @@ import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 
+import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
+import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { fetchPosts, type Post } from '@/lib/api';
 
 function PostCard({ post }: { post: Post }) {
+  const authorName = post.author?.display_name ?? 'Okänd användare';
   return (
     <ThemedView type="backgroundElement" style={styles.card}>
-      <ThemedText type="smallBold">{post.author?.display_name ?? 'Okänd användare'}</ThemedText>
-      {post.car ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          {post.car.nickname ?? `${post.car.make} ${post.car.model}`}
-        </ThemedText>
-      ) : null}
+      <View style={styles.cardHeader}>
+        <Avatar name={authorName} size={32} />
+        <View style={styles.cardHeaderText}>
+          <ThemedText type="smallBold">{authorName}</ThemedText>
+          {post.car ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              {post.car.nickname ?? `${post.car.make} ${post.car.model}`}
+            </ThemedText>
+          ) : null}
+        </View>
+      </View>
       <ThemedText>{post.body}</ThemedText>
     </ThemedView>
   );
@@ -30,11 +38,11 @@ export default function FeedScreen() {
   });
 
   return (
-    <ThemedView style={styles.container}>
+    <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <ThemedText type="title">Flöde</ThemedText>
-          <Button label="Ny post" onPress={() => router.push('/post/new')} />
+          <Button label="Ny post" icon="add-circle-outline" onPress={() => router.push('/post/new')} />
         </View>
         <FlatList
           data={data ?? []}
@@ -47,7 +55,7 @@ export default function FeedScreen() {
           }
         />
       </SafeAreaView>
-    </ThemedView>
+    </ScreenBackground>
   );
 }
 
@@ -61,5 +69,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
   },
   list: { gap: Spacing.two, paddingBottom: Spacing.four },
-  card: { padding: Spacing.three, borderRadius: Spacing.three, gap: Spacing.half },
+  card: { padding: Spacing.three, borderRadius: Spacing.three, gap: Spacing.two },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  cardHeaderText: { gap: Spacing.half },
 });
