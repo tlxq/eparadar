@@ -4,43 +4,52 @@ import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
+    background: '#FFFFFF',
+    gradientTop: '#F6F8FC',
     backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    backgroundSelected: '#E4E6EC',
+    border: '#7B8291',
+    text: '#10131A',
+    textSecondary: '#5B6472',
+    brand: '#2F6FED',
+    brandOnSurface: '#1B54D6',
+    brandText: '#FFFFFF',
+    accent: '#C15A1A',
+    success: '#16A34A',
+    danger: '#C22F35',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    background: '#0B0E14',
+    gradientTop: '#151B28',
+    backgroundElement: '#171B23',
+    backgroundSelected: '#232833',
+    border: '#67738A',
+    text: '#F4F6F9',
+    textSecondary: '#A2AAB8',
+    brand: '#2F6FED',
+    brandOnSurface: '#7EA6FF',
+    brandText: '#FFFFFF',
+    accent: '#FF8A3D',
+    success: '#22C55E',
+    danger: '#FF6B6B',
   },
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
-export const Fonts = Platform.select({
-  ios: {
-    sans: 'system-ui',
-    serif: 'ui-serif',
-    rounded: 'ui-rounded',
-    mono: 'ui-monospace',
+export const Fonts = {
+  inter: {
+    regular: 'Inter_400Regular',
+    medium: 'Inter_500Medium',
+    semiBold: 'Inter_600SemiBold',
+    bold: 'Inter_700Bold',
   },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
+  mono: Platform.select({
+    ios: 'Menlo',
+    web: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+    default: 'monospace',
+  }),
+} as const;
 
 export const Spacing = {
   half: 2,

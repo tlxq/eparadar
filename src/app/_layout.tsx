@@ -21,6 +21,12 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const session = useAuthStore((state) => state.session);
   const initializing = useAuthStore((state) => state.initializing);
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -36,12 +42,12 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (!initializing) {
+    if (!initializing && fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [initializing]);
+  }, [initializing, fontsLoaded]);
 
-  if (initializing) {
+  if (initializing || !fontsLoaded) {
     return null;
   }
 
