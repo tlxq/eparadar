@@ -313,6 +313,65 @@ export async function removeFriend(friendshipId: string): Promise<void> {
   if (error) throw error;
 }
 
+export type LocationRow = {
+  user_id: string;
+  lat: number;
+  lng: number;
+  sharing_enabled: boolean;
+  updated_at: string;
+};
+
+export type FriendLocation = LocationRow & {
+  profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
+};
+
+export async function fetchMyLocation(userId: string): Promise<LocationRow | null> {
+  const { data, error } = await supabase
+    .from('locations')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data as LocationRow | null;
+}
+
+export async function upsertLocation(input: {
+  userId: string;
+  lat: number;
+  lng: number;
+  sharingEnabled?: boolean;
+}): Promise<void> {
+  const payload: Record<string, unknown> = {
+    user_id: input.userId,
+    lat: input.lat,
+    lng: input.lng,
+    updated_at: new Date().toISOString(),
+  };
+  if (input.sharingEnabled !== undefined) {
+    payload.sharing_enabled = input.sharingEnabled;
+  }
+  const { error } = await supabase.from('locations').upsert(payload, { onConflict: 'user_id' });
+  if (error) throw error;
+}
+
+export async function setLocationSharing(userId: string, enabled: boolean): Promise<void> {
+  const { error } = await supabase
+    .from('locations')
+    .update({ sharing_enabled: enabled, updated_at: new Date().toISOString() })
+    .eq('user_id', userId);
+  if (error) throw error;
+}
+
+export async function fetchFriendLocations(userId: string): Promise<FriendLocation[]> {
+  const { data, error } = await supabase
+    .from('locations')
+    .select('*, profile:profiles(id, username, display_name, avatar_url)')
+    .eq('sharing_enabled', true)
+    .neq('user_id', userId);
+  if (error) throw error;
+  return (data ?? []) as unknown as FriendLocation[];
+}
+
 export async function searchUsersToAdd(query: string, userId: string): Promise<Profile[]> {
   const { data: related, error: relatedError } = await supabase
     .from('friendships')

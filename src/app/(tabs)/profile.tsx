@@ -97,6 +97,12 @@ export default function ProfileScreen() {
           ListFooterComponent={
             <View style={styles.footer}>
               <Button
+                label="Inställningar"
+                variant="secondary"
+                icon="settings-outline"
+                onPress={() => router.push('/settings')}
+              />
+              <Button
                 label="Logga ut"
                 variant="secondary"
                 icon="log-out-outline"
@@ -122,5 +128,5 @@ const styles = StyleSheet.create({
   },
   list: { gap: Spacing.two, paddingBottom: Spacing.four },
   carRow: { padding: Spacing.three, borderRadius: Spacing.three, gap: Spacing.half },
-  footer: { marginTop: Spacing.three },
+  footer: { marginTop: Spacing.three, gap: Spacing.two },
 });

@@ -11,6 +11,8 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
 
+import '@/lib/location-task';
+
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
@@ -77,6 +79,7 @@ export default function RootLayout() {
               name="friends/add"
               options={{ presentation: 'modal', headerShown: true, title: 'Lägg till vän' }}
             />
+            <Stack.Screen name="settings" options={{ headerShown: true, title: 'Inställningar' }} />
           </Stack.Protected>
         </Stack>
       </ThemeProvider>
