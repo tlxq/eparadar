@@ -73,6 +73,10 @@ export default function RootLayout() {
               options={{ presentation: 'modal', headerShown: true, title: 'Ny chatt' }}
             />
             <Stack.Screen name="chat/[id]" options={{ headerShown: true }} />
+            <Stack.Screen
+              name="friends/add"
+              options={{ presentation: 'modal', headerShown: true, title: 'Lägg till vän' }}
+            />
           </Stack.Protected>
         </Stack>
       </ThemeProvider>

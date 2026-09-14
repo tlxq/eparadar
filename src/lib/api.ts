@@ -235,3 +235,100 @@ export async function sendMessage(input: {
   });
   if (error) throw error;
 }
+
+export type FriendshipStatus = 'pending' | 'accepted';
+
+export type FriendshipRow = {
+  id: string;
+  requester_id: string;
+  addressee_id: string;
+  status: FriendshipStatus;
+  created_at: string;
+  responded_at: string | null;
+};
+
+export type Friendship = FriendshipRow & {
+  requester: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
+  addressee: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
+};
+
+export function friendProfile(friendship: Friendship, myUserId: string) {
+  return friendship.requester_id === myUserId ? friendship.addressee : friendship.requester;
+}
+
+const FRIENDSHIP_SELECT =
+  '*, requester:profiles!friendships_requester_id_fkey(id, username, display_name, avatar_url), addressee:profiles!friendships_addressee_id_fkey(id, username, display_name, avatar_url)';
+
+export async function fetchFriends(userId: string): Promise<Friendship[]> {
+  const { data, error } = await supabase
+    .from('friendships')
+    .select(FRIENDSHIP_SELECT)
+    .eq('status', 'accepted')
+    .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`)
+    .order('responded_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as Friendship[];
+}
+
+export async function fetchPendingRequests(userId: string): Promise<Friendship[]> {
+  const { data, error } = await supabase
+    .from('friendships')
+    .select(FRIENDSHIP_SELECT)
+    .eq('addressee_id', userId)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as Friendship[];
+}
+
+export async function fetchOutgoingRequests(userId: string): Promise<Friendship[]> {
+  const { data, error } = await supabase
+    .from('friendships')
+    .select(FRIENDSHIP_SELECT)
+    .eq('requester_id', userId)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as Friendship[];
+}
+
+export async function sendFriendRequest(targetUserId: string): Promise<FriendshipRow> {
+  const { data, error } = await supabase.rpc('send_friend_request', {
+    target_user_id: targetUserId,
+  });
+  if (error) throw error;
+  return data as FriendshipRow;
+}
+
+export async function respondToFriendRequest(requestId: string, accept: boolean): Promise<void> {
+  const { error } = await supabase.rpc('respond_to_friend_request', {
+    request_id: requestId,
+    accept,
+  });
+  if (error) throw error;
+}
+
+export async function removeFriend(friendshipId: string): Promise<void> {
+  const { error } = await supabase.from('friendships').delete().eq('id', friendshipId);
+  if (error) throw error;
+}
+
+export async function searchUsersToAdd(query: string, userId: string): Promise<Profile[]> {
+  const { data: related, error: relatedError } = await supabase
+    .from('friendships')
+    .select('requester_id, addressee_id')
+    .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
+  if (relatedError) throw relatedError;
+
+  const excludeIds = Array.from(
+    new Set([userId, ...(related ?? []).flatMap((r) => [r.requester_id, r.addressee_id])]),
+  );
+
+  let request = supabase.from('profiles').select('*').ilike('username', `%${query}%`).limit(20);
+  if (excludeIds.length) {
+    request = request.not('id', 'in', `(${excludeIds.join(',')})`);
+  }
+  const { data, error } = await request;
+  if (error) throw error;
+  return (data ?? []) as Profile[];
+}

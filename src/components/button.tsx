@@ -11,6 +11,7 @@ type ButtonProps = {
   loading?: boolean;
   disabled?: boolean;
   variant?: 'primary' | 'secondary';
+  tone?: 'brand' | 'success' | 'danger';
   icon?: ComponentProps<typeof Ionicons>['name'];
 };
 
@@ -20,11 +21,15 @@ export function Button({
   loading,
   disabled,
   variant = 'primary',
+  tone = 'brand',
   icon,
 }: ButtonProps) {
   const theme = useTheme();
   const secondary = variant === 'secondary';
-  const contentColor = secondary ? theme.brandOnSurface : theme.brandText;
+  const solidColor = tone === 'success' ? theme.success : tone === 'danger' ? theme.danger : theme.brand;
+  const onSurfaceColor =
+    tone === 'success' ? theme.success : tone === 'danger' ? theme.danger : theme.brandOnSurface;
+  const contentColor = secondary ? onSurfaceColor : theme.brandText;
 
   return (
     <Pressable
@@ -34,9 +39,9 @@ export function Button({
           ? {
               backgroundColor: 'transparent',
               borderWidth: StyleSheet.hairlineWidth,
-              borderColor: theme.brandOnSurface,
+              borderColor: onSurfaceColor,
             }
-          : { backgroundColor: theme.brand },
+          : { backgroundColor: solidColor },
       ]}
       onPress={onPress}
       disabled={disabled || loading}
