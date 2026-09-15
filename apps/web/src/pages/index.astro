@@ -1,8 +1,11 @@
 ---
+import { Image } from 'astro:assets';
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE } from '../config/site';
+import heroPhoto from '../assets/park-bokeh.webp';
 ---
 
 <BaseLayout
@@ -16,7 +19,17 @@ import { SITE } from '../config/site';
   }}
 >
   <div class="screen">
-    <div class="screen-bg" aria-hidden="true"></div>
+    <div class="screen-bg" aria-hidden="true">
+      <Image
+        src={heroPhoto}
+        alt=""
+        class="screen-bg-img"
+        widths={[640, 960, 1280, 1600, 1920, 2400]}
+        sizes="100vw"
+        loading="eager"
+        fetchpriority="high"
+      />
+    </div>
 
     <Header>
       <div class="domain">eparadar.se</div>
@@ -60,9 +73,15 @@ import { SITE } from '../config/site';
     position: absolute;
     inset: 0;
     z-index: 0;
-    background-image: url('/images/park-bokeh.webp');
-    background-size: cover;
-    background-position: center 60%;
+    overflow: hidden;
+  }
+  .screen-bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 60%;
     animation: kenburns 24s ease-in-out infinite alternate;
   }
   .screen-bg::after {
@@ -129,7 +148,7 @@ import { SITE } from '../config/site';
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-secondary);
-    margin: 0 0 14px;
+    margin: 0 0 10px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -150,7 +169,7 @@ import { SITE } from '../config/site';
     line-height: 1.06;
     letter-spacing: -0.005em;
     text-wrap: balance;
-    margin: 0 0 10px;
+    margin: 0 0 6px;
     max-width: 15ch;
   }
 
@@ -160,14 +179,14 @@ import { SITE } from '../config/site';
     font-weight: 700;
     color: #d7dce6;
     letter-spacing: 0.02em;
-    margin: 0 0 10px;
+    margin: 0 0 4px;
     text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
   }
 
   .meta-line {
     font-size: 0.85rem;
     color: var(--text-secondary);
-    margin: 0 0 28px;
+    margin: 0 0 22px;
   }
 
   form {

@@ -9,5 +9,5 @@ export const SITE = {
     waitlist: '/api/waitlist',
   },
   favicon: '/favicon.svg',
-  ogImage: '/og-image.png',
+  ogImage: '/og-image.jpg',
 } as const;
