@@ -1,5 +1,3 @@
-import '@/global.css';
-
 import { Platform } from 'react-native';
 
 import { Colors } from '@eparadar/theme/colors';
