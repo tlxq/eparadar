@@ -1,6 +1,7 @@
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 
+import { Colors } from '@/constants/theme';
 import { upsertLocation } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
@@ -59,7 +60,7 @@ export async function startLocationSharing(): Promise<void> {
     foregroundService: {
       notificationTitle: 'epaRadar delar din plats',
       notificationBody: 'Dina vänner kan se var du är just nu. Stäng av i Inställningar när du vill.',
-      notificationColor: '#2F6FED',
+      notificationColor: Colors.dark.brand,
     },
   });
 }
