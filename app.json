@@ -1,14 +1,15 @@
 {
   "expo": {
-    "name": "Epadunk",
-    "slug": "epadunk",
+    "name": "epaRadar",
+    "slug": "eparadar",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "epadunk",
+    "scheme": "eparadar",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.tlxq.eparadar"
     },
     "android": {
       "adaptiveIcon": {
@@ -26,7 +27,7 @@
         "android.permission.FOREGROUND_SERVICE_LOCATION",
         "android.permission.RECEIVE_BOOT_COMPLETED"
       ],
-      "package": "com.tlxq.epadunk"
+      "package": "com.tlxq.eparadar"
     },
     "web": {
       "output": "static",
@@ -45,8 +46,8 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Epadunk använder din plats för att visa var du är på kartan för dina vänner.",
-          "locationAlwaysAndWhenInUsePermission": "Epadunk visar din plats för dina vänner på kartan, även när appen är stängd, om du har aktiverat platsdelning i Inställningar.",
+          "locationWhenInUsePermission": "epaRadar använder din plats för att visa var du är på kartan för dina vänner.",
+          "locationAlwaysAndWhenInUsePermission": "epaRadar visar din plats för dina vänner på kartan, även när appen är stängd, om du har aktiverat platsdelning i Inställningar.",
           "isIosBackgroundLocationEnabled": true,
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true

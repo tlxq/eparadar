@@ -4,7 +4,7 @@ import * as TaskManager from 'expo-task-manager';
 import { upsertLocation } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
-export const LOCATION_TASK_NAME = 'epadunk-background-location';
+export const LOCATION_TASK_NAME = 'eparadar-background-location';
 
 TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
   if (error) {
@@ -33,7 +33,7 @@ export async function requestLocationPermissions(): Promise<PermissionResult> {
   if (foreground.status !== 'granted') {
     return {
       granted: false,
-      reason: 'Epadunk behöver åtkomst till din plats för att kunna visa dig på kartan.',
+      reason: 'epaRadar behöver åtkomst till din plats för att kunna visa dig på kartan.',
     };
   }
   const background = await Location.requestBackgroundPermissionsAsync();
@@ -41,7 +41,7 @@ export async function requestLocationPermissions(): Promise<PermissionResult> {
     return {
       granted: false,
       reason:
-        'Epadunk behöver bakgrundsåtkomst till din plats för att dela den med dina vänner även när appen är stängd. Öppna telefonens inställningar och välj "Tillåt alltid" för Epadunk.',
+        'epaRadar behöver bakgrundsåtkomst till din plats för att dela den med dina vänner även när appen är stängd. Öppna telefonens inställningar och välj "Tillåt alltid" för epaRadar.',
     };
   }
   return { granted: true };
@@ -57,7 +57,7 @@ export async function startLocationSharing(): Promise<void> {
     pausesUpdatesAutomatically: false,
     showsBackgroundLocationIndicator: true,
     foregroundService: {
-      notificationTitle: 'Epadunk delar din plats',
+      notificationTitle: 'epaRadar delar din plats',
       notificationBody: 'Dina vänner kan se var du är just nu. Stäng av i Inställningar när du vill.',
       notificationColor: '#2F6FED',
     },

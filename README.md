@@ -1,4 +1,4 @@
-# Epadunk
+# epaRadar
 
 A community app for EPA-car owners: register your car, post to a feed, chat, and find meetups nearby.
 
