@@ -1,0 +1,29 @@
+---
+import Logo from './Logo.astro';
+
+interface Props {
+  narrow?: boolean;
+}
+
+const { narrow = false } = Astro.props;
+---
+
+<div class="topbar" class:list={{ narrow }}>
+  <Logo />
+  <slot />
+</div>
+
+<style>
+  .topbar {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+  }
+  .topbar.narrow {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+</style>

@@ -1,0 +1,48 @@
+---
+import { SITE } from '../config/site';
+
+interface Props {
+  narrow?: boolean;
+  currentPath?: string;
+}
+
+const { narrow = false, currentPath } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer" class:list={{ narrow }}>
+  © {year} epaRadar
+  {
+    currentPath !== SITE.routes.privacy && (
+      <>
+        {' '}
+        · <a href={SITE.routes.privacy}>Integritetspolicy</a>
+      </>
+    )
+  }
+  {' '}
+  · <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>
+</footer>
+
+<style>
+  .site-footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 18px 24px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  .site-footer.narrow {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .site-footer a {
+    color: var(--text-secondary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .site-footer a:hover {
+    color: var(--text);
+  }
+</style>

@@ -1,5 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+import { Colors } from '@eparadar/theme/colors';
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -27,8 +29,8 @@ function getClientIp(req: VercelRequest): string {
 }
 
 const CONFIRMATION_HTML = `
-<div style="font-family: -apple-system, sans-serif; max-width: 480px; margin: 0 auto; color: #10131A;">
-  <p style="font-size:13px; color:#67738A; letter-spacing:0.06em; text-transform:uppercase; margin:0 0 12px;">epaRadar</p>
+<div style="font-family: -apple-system, sans-serif; max-width: 480px; margin: 0 auto; color: ${Colors.light.text};">
+  <p style="font-size:13px; color:${Colors.light.textSecondary}; letter-spacing:0.06em; text-transform:uppercase; margin:0 0 12px;">epaRadar</p>
   <h1 style="font-size:22px; margin:0 0 16px;">Du är med på listan.</h1>
   <p style="font-size:15px; line-height:1.6;">
     Vi hör av oss hit så fort epaRadar går live på iOS och Android. Inget mer än så
@@ -37,7 +39,7 @@ const CONFIRMATION_HTML = `
   <p style="font-size:15px; line-height:1.6;">
     Vill du inte längre stå med på listan? Svara på det här mejlet så tar vi bort din adress.
   </p>
-  <p style="font-size:13px; color:#67738A; margin-top:32px;">epaRadar · eparadar.se</p>
+  <p style="font-size:13px; color:${Colors.light.textSecondary}; margin-top:32px;">epaRadar · eparadar.se</p>
 </div>
 `;
 

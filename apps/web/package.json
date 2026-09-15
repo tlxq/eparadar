@@ -10,9 +10,11 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "typecheck": "astro check"
+    "typecheck": "astro check",
+    "sync-favicon": "node scripts/sync-favicon.mjs"
   },
   "dependencies": {
+    "@eparadar/theme": "*",
     "astro": "^7.3.2"
   },
   "allowScripts": {

@@ -1,0 +1,21 @@
+---
+import lockupSvg from '@eparadar/theme/assets/lockup.svg?raw';
+import { SITE } from '../config/site';
+---
+
+<a class="logo" href={SITE.routes.home} aria-label="epaRadar">
+  <Fragment set:html={lockupSvg} />
+</a>
+
+<style>
+  .logo {
+    display: flex;
+    align-items: center;
+    color: var(--brand);
+  }
+  .logo :global(svg) {
+    display: block;
+    height: 28px;
+    width: auto;
+  }
+</style>

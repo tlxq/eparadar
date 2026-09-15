@@ -1,403 +1,322 @@
 ---
-const WAITLIST_ENDPOINT = '/api/waitlist';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE } from '../config/site';
 ---
 
-<html lang="sv">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="canonical" href="https://eparadar.se" />
-    <title>epaRadar Kommer Snart</title>
-    <meta name="description" content="epaRadar - ett community för oss med EPA: se vilka som är ute live, på kartan och i chatten. Häng med i kön innan lanseringen." />
+<BaseLayout
+  title="epaRadar Kommer Snart"
+  description="epaRadar - ett community för oss med EPA: se vilka som är ute live, på kartan och i chatten. Häng med i kön innan lanseringen."
+  canonicalPath={SITE.routes.home}
+  og={{
+    title: 'epaRadar – Kommer snart',
+    description: 'Se vilka som är ute, live. Realtid, karta och chatt.',
+    imageAlt: 'epaRadar – se vilka som är ute, live på kartan',
+  }}
+>
+  <div class="screen">
+    <div class="screen-bg" aria-hidden="true"></div>
 
-    <meta property="og:title" content="epaRadar – Kommer snart" />
-    <meta property="og:description" content="Se vilka som är ute, live. Realtid, karta och chatt." />
-    <!-- TODO: /og-image.png finns inte ännu — skapa en riktig 1200x630-bild före lansering -->
-    <meta property="og:image" content="https://eparadar.se/og-image.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="epaRadar – se vilka som är ute, live på kartan" />
-    <meta property="og:url" content="https://eparadar.se" />
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="sv_SE" />
-    <meta name="twitter:card" content="summary_large_image" />
+    <Header>
+      <div class="domain">eparadar.se</div>
+    </Header>
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Archivo:wght@400;900&display=swap" />
+    <div class="content">
+      <p class="eyebrow">Kommer snart</p>
+      <h1>Kolla vilka som är ute och kör.</h1>
+      <p class="subline">Realtid. Karta. Chatt.</p>
+      <p class="meta-line">iOS och Android – vintern 2026</p>
 
-    <style>
-      :root {
-        --bg: #0b0e14;
-        --text: #f4f6f9;
-        --text-secondary: #a2aab8;
-        --accent: #ff8a3d;
-        --border: #67738a;
-        --danger: #ff6b6b;
-        --brand: #2f6fed;
-        --font-display: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      html,
-      body {
-        height: 100%;
-      }
-
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font-family: var(--font-display);
-        -webkit-font-smoothing: antialiased;
-      }
-
-      a {
-        color: inherit;
-      }
-      button:focus-visible,
-      input:focus-visible {
-        outline: 2px solid var(--accent);
-        outline-offset: 3px;
-      }
-
-      .screen {
-        position: relative;
-        min-height: 100dvh;
-        display: grid;
-        grid-template-rows: auto 1fr auto;
-        overflow: hidden;
-      }
-
-      .screen-bg {
-        position: absolute;
-        inset: 0;
-        z-index: 0;
-        background-image: url('/images/park-bokeh.webp');
-        background-size: cover;
-        background-position: center 60%;
-        animation: kenburns 24s ease-in-out infinite alternate;
-      }
-      .screen-bg::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(11, 14, 20, 0.55) 0%, rgba(11, 14, 20, 0.85) 55%, rgba(11, 14, 20, 0.92) 100%);
-      }
-      @keyframes kenburns {
-        from {
-          transform: scale(1);
-        }
-        to {
-          transform: scale(1.06);
-        }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .screen-bg {
-          animation: none;
-        }
-      }
-
-      .topbar {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 20px 24px;
-      }
-      .wordmark {
-        display: flex;
-        align-items: center;
-        color: var(--brand);
-      }
-      .wordmark svg {
-        display: block;
-        height: 28px;
-        width: auto;
-      }
-      .domain {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-      }
-
-      .content {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 24px;
-        opacity: 0;
-        transform: translateY(14px);
-        animation: rise 0.7s ease-out 0.1s forwards;
-      }
-      @keyframes rise {
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .content {
-          animation: none;
-          opacity: 1;
-          transform: none;
-        }
-      }
-
-      .eyebrow {
-        font-size: 0.8rem;
-        font-weight: 600;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--text-secondary);
-        margin: 0 0 14px;
-      }
-
-      h1 {
-        font-size: clamp(2rem, 6vw, 3.2rem);
-        font-weight: 800;
-        line-height: 1.12;
-        letter-spacing: -0.01em;
-        text-wrap: balance;
-        margin: 0 0 10px;
-        max-width: 16ch;
-      }
-
-      .subline {
-        font-size: 1.05rem;
-        font-weight: 600;
-        color: #d7dce6;
-        letter-spacing: 0.02em;
-        margin: 0 0 10px;
-        text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
-      }
-
-      .meta-line {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        margin: 0 0 28px;
-      }
-
-      form {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 14px;
-        width: 100%;
-        max-width: 380px;
-      }
-      .field-row {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        justify-content: center;
-        width: 100%;
-      }
-
-      input[type='email'] {
-        flex: 1 1 200px;
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 10px;
-        padding: 13px 16px;
-        color: var(--text);
-        font-family: var(--font-display);
-        font-size: 0.95rem;
-      }
-      input[type='email']::placeholder {
-        color: var(--text-secondary);
-      }
-
-      .btn {
-        font-size: 0.92rem;
-        font-weight: 700;
-        letter-spacing: 0.01em;
-        border-radius: 10px;
-        padding: 13px 20px;
-        border: none;
-        background: var(--accent);
-        color: #1a0f04;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: filter 0.15s ease;
-      }
-      .btn:hover {
-        filter: brightness(1.08);
-      }
-      .btn:disabled {
-        opacity: 0.7;
-        cursor: default;
-        filter: none;
-      }
-
-      .hp-field {
-        position: absolute;
-        left: -9999px;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-      }
-
-      .consent {
-        font-size: 0.78rem;
-        color: var(--text-secondary);
-        margin: 0;
-      }
-
-      .form-error {
-        display: none;
-        color: var(--danger);
-        font-size: 0.85rem;
-        margin: 0;
-      }
-      .form-error.is-visible {
-        display: block;
-      }
-
-      .form-success {
-        display: none;
-        align-items: center;
-        gap: 8px;
-        color: var(--text);
-        font-weight: 600;
-        font-size: 0.92rem;
-      }
-      .form-success.is-visible {
-        display: flex;
-      }
-
-      .foot {
-        position: relative;
-        z-index: 1;
-        text-align: center;
-        padding: 18px 24px;
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-      }
-      .foot-link {
-        color: var(--text-secondary);
-        text-decoration: underline;
-        text-underline-offset: 2px;
-      }
-      .foot-link:hover {
-        color: var(--text);
-      }
-    </style>
-  </head>
-
-  <body>
-    <div class="screen">
-      <div class="screen-bg" aria-hidden="true"></div>
-
-      <div class="topbar">
-        <div class="wordmark">
-          <svg viewBox="0 0 204 64" xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision" role="img" aria-label="epaRadar">
-            <g fill="currentColor">
-              <path d="M32 32 25.79 8.82a24 24 0 0 1 23.18 6.21Z" opacity=".2" />
-              <circle cx="32" cy="32" r="24" fill="none" stroke="currentColor" stroke-width="6.5" />
-              <path stroke="currentColor" stroke-linecap="round" stroke-width="6.5" d="m32 32 16.97-16.97" />
-              <circle cx="32" cy="32" r="8" />
-            </g>
-            <text x="82" y="30" fill="currentColor" font-family="Archivo" font-size="30" font-weight="400" textLength="116">EPA</text>
-            <text x="82" y="54.5" fill="currentColor" font-family="Archivo" font-size="30" font-weight="900">RADAR</text>
-          </svg>
+      <form id="waitlistForm">
+        <div class="field-row">
+          <input type="email" name="email" placeholder="din@epost.se" aria-label="E-postadress" required />
+          <button class="btn" type="submit">Håll mig uppdaterad</button>
         </div>
-        <div class="domain">eparadar.se</div>
-      </div>
-
-      <div class="content">
-        <p class="eyebrow">Kommer snart</p>
-        <h1>Kolla vilka som är ute och kör.</h1>
-        <p class="subline">Realtid. Karta. Chatt.</p>
-        <p class="meta-line">iOS och Android – vintern 2026</p>
-
-        <form id="waitlistForm">
-          <div class="field-row">
-            <input type="email" name="email" placeholder="din@epost.se" aria-label="E-postadress" required />
-            <button class="btn" type="submit">Håll mig uppdaterad</button>
-          </div>
-          <div class="hp-field" aria-hidden="true">
-            <label for="company">Företag</label>
-            <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
-          </div>
-          <p class="consent">Mer information kommer snart</p>
-          <p class="form-error" id="formError" role="alert"></p>
-          <p class="form-success" id="formSuccess" aria-live="polite"></p>
-        </form>
-      </div>
-
-      <p class="foot">
-        © 2026 epaRadar.se ·
-        <a class="foot-link" href="/integritetspolicy">Integritetspolicy</a> ·
-        <a class="foot-link" href="mailto:contact@eparadar.se">contact@eparadar.se</a>
-      </p>
+        <div class="hp-field" aria-hidden="true">
+          <label for="company">Företag</label>
+          <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
+        </div>
+        <p class="consent">Mer information kommer snart</p>
+        <p class="form-error" id="formError" role="alert"></p>
+        <p class="form-success" id="formSuccess" aria-live="polite"></p>
+      </form>
     </div>
 
-    <script is:inline define:vars={{ WAITLIST_ENDPOINT }}>
-      const form = document.getElementById('waitlistForm');
-      const success = document.getElementById('formSuccess');
-      const errorEl = document.getElementById('formError');
-      const submitBtn = form.querySelector('.btn');
-      const submitLabel = submitBtn.textContent;
-      let isSubmitting = false;
+    <Footer />
+  </div>
+</BaseLayout>
 
-      function showSuccess() {
-        form.querySelectorAll('.field-row').forEach((row) => {
-          row.style.display = 'none';
-        });
-        form.querySelector('.consent').style.display = 'none';
-        success.textContent = '✓ Du är med. Vi hör av oss.';
-        success.classList.add('is-visible');
-      }
+<style>
+  .screen {
+    position: relative;
+    min-height: 100dvh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
+  }
 
-      form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        if (isSubmitting) return;
+  .screen-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: url('/images/park-bokeh.webp');
+    background-size: cover;
+    background-position: center 60%;
+    animation: kenburns 24s ease-in-out infinite alternate;
+  }
+  .screen-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(11, 14, 20, 0.5) 0%, rgba(11, 14, 20, 0.82) 50%, rgba(11, 14, 20, 0.95) 100%);
+  }
+  @keyframes kenburns {
+    from {
+      transform: scale(1);
+    }
+    to {
+      transform: scale(1.06);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .screen-bg {
+      animation: none;
+    }
+  }
 
-        const honeypot = document.getElementById('company').value;
-        if (honeypot) return;
+  .domain {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
 
-        const email = form.querySelector('input[name="email"]').value;
+  button:focus-visible,
+  input:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 3px;
+  }
 
-        isSubmitting = true;
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Skickar...';
-        errorEl.classList.remove('is-visible');
-        errorEl.textContent = '';
+  .content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    opacity: 0;
+    transform: translateY(14px);
+    animation: rise 0.7s ease-out 0.1s forwards;
+  }
+  @keyframes rise {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .content {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
 
-        fetch(WAITLIST_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
-          signal: AbortSignal.timeout(10000),
-        })
-          .then(async (response) => {
-            if (!response.ok) {
-              const body = await response.json().catch(() => null);
-              throw new Error(body?.error || 'Request failed');
-            }
-            showSuccess();
-          })
-          .catch((err) => {
-            if (err && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
-              errorEl.textContent = 'Det tog för lång tid att skicka. Kontrollera din uppkoppling och försök igen.';
-            } else if (err instanceof Error && err.message && err.message !== 'Request failed') {
-              errorEl.textContent = err.message;
-            } else {
-              errorEl.textContent = 'Något gick fel. Försök igen om en liten stund.';
-            }
-            errorEl.classList.add('is-visible');
-            submitBtn.disabled = false;
-            submitBtn.textContent = submitLabel;
-            isSubmitting = false;
-          });
+  .eyebrow {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--brand);
+    box-shadow: 0 0 6px var(--brand);
+  }
+
+  h1 {
+    font-family: 'Archivo', var(--font-display);
+    font-weight: 900;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    line-height: 1.06;
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+    margin: 0 0 10px;
+    max-width: 15ch;
+  }
+
+  .subline {
+    font-family: 'Archivo', var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #d7dce6;
+    letter-spacing: 0.02em;
+    margin: 0 0 10px;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
+  }
+
+  .meta-line {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0 0 28px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    max-width: 380px;
+  }
+  .field-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+
+  input[type='email'] {
+    flex: 1 1 200px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    padding: 13px 16px;
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+  }
+  input[type='email']::placeholder {
+    color: var(--text-secondary);
+  }
+
+  .btn {
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    border-radius: 10px;
+    padding: 13px 20px;
+    border: none;
+    background: var(--brand);
+    color: var(--brand-text);
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 6px 20px -4px rgba(47, 111, 237, 0.55);
+    transition: filter 0.15s ease;
+  }
+  .btn:hover {
+    filter: brightness(1.08);
+  }
+  .btn:disabled {
+    opacity: 0.7;
+    cursor: default;
+    filter: none;
+  }
+
+  .hp-field {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .consent {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .form-error {
+    display: none;
+    color: var(--danger);
+    font-size: 0.85rem;
+    margin: 0;
+  }
+  .form-error.is-visible {
+    display: block;
+  }
+
+  .form-success {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+  .form-success.is-visible {
+    display: flex;
+  }
+</style>
+
+<script is:inline define:vars={{ WAITLIST_ENDPOINT: SITE.api.waitlist }}>
+  const form = document.getElementById('waitlistForm');
+  const success = document.getElementById('formSuccess');
+  const errorEl = document.getElementById('formError');
+  const submitBtn = form.querySelector('.btn');
+  const submitLabel = submitBtn.textContent;
+  let isSubmitting = false;
+
+  function showSuccess() {
+    form.querySelectorAll('.field-row').forEach((row) => {
+      row.style.display = 'none';
+    });
+    form.querySelector('.consent').style.display = 'none';
+    success.textContent = '✓ Du är med. Vi hör av oss.';
+    success.classList.add('is-visible');
+  }
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    const honeypot = document.getElementById('company').value;
+    if (honeypot) return;
+
+    const email = form.querySelector('input[name="email"]').value;
+
+    isSubmitting = true;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Skickar...';
+    errorEl.classList.remove('is-visible');
+    errorEl.textContent = '';
+
+    fetch(WAITLIST_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+      signal: AbortSignal.timeout(10000),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const body = await response.json().catch(() => null);
+          throw new Error(body?.error || 'Request failed');
+        }
+        showSuccess();
+      })
+      .catch((err) => {
+        if (err && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
+          errorEl.textContent = 'Det tog för lång tid att skicka. Kontrollera din uppkoppling och försök igen.';
+        } else if (err instanceof Error && err.message && err.message !== 'Request failed') {
+          errorEl.textContent = err.message;
+        } else {
+          errorEl.textContent = 'Något gick fel. Försök igen om en liten stund.';
+        }
+        errorEl.classList.add('is-visible');
+        submitBtn.disabled = false;
+        submitBtn.textContent = submitLabel;
+        isSubmitting = false;
       });
-    </script>
-  </body>
-</html>
+  });
+</script>

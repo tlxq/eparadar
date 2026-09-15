@@ -1,243 +1,170 @@
 ---
-const CONTACT_EMAIL = 'contact@eparadar.se';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE } from '../config/site';
+
 const LAST_UPDATED = '15 september 2026';
 ---
 
-<html lang="sv">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="canonical" href="https://eparadar.se/integritetspolicy" />
-    <title>Integritetspolicy — epaRadar</title>
-    <meta name="description" content="Hur epaRadar hanterar din e-postadress när du anmäler dig till väntelistan." />
-    <meta name="robots" content="noindex" />
+<BaseLayout
+  title="Integritetspolicy — epaRadar"
+  description="Hur epaRadar hanterar din e-postadress när du anmäler dig till väntelistan."
+  canonicalPath={SITE.routes.privacy}
+  robotsNoindex
+>
+  <Header narrow>
+    <a class="back-link" href={SITE.routes.home}>← Tillbaka</a>
+  </Header>
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
+  <main>
+    <h1>Integritetspolicy</h1>
+    <p class="updated">Senast uppdaterad: {LAST_UPDATED}</p>
 
-    <style>
-      :root {
-        --bg: #0b0e14;
-        --surface: #171b23;
-        --text: #f4f6f9;
-        --text-secondary: #a2aab8;
-        --accent: #ff8a3d;
-        --border: #67738a;
-        --font-display: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-      }
+    <p>
+      Den här sidan gäller väntelistan på eparadar.se, där du kan lämna din e-postadress för
+      att bli meddelad när appen epaRadar lanseras. Den beskriver vilka uppgifter vi samlar in,
+      varför, och vilka rättigheter du har.
+    </p>
 
-      * {
-        box-sizing: border-box;
-      }
+    <h2>Vem är ansvarig för dina uppgifter</h2>
+    <p>
+      epaRadar är ett skolprojekt (examensarbete) som ännu inte drivs som ett registrerat
+      bolag. Personuppgiftsansvarig är den som utvecklar epaRadar. Du når oss på
+      <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>.
+    </p>
 
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font-family: var(--font-display);
-        -webkit-font-smoothing: antialiased;
-      }
+    <h2>Vilka uppgifter vi samlar in</h2>
+    <p>Bara det du själv skriver in i formuläret: din e-postadress.</p>
+    <p>
+      Vi ber inte om namn, telefonnummer, adress eller andra uppgifter för att gå med i
+      väntelistan.
+    </p>
 
-      a {
-        color: var(--accent);
-      }
+    <h2>Varför vi samlar in den</h2>
+    <p>Enda syftet är att kunna skicka ett meddelande till dig när appen lanseras.</p>
 
-      .topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 20px 24px;
-        max-width: 720px;
-        margin: 0 auto;
-      }
-      .wordmark {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 700;
-        font-size: 1rem;
-        text-decoration: none;
-        color: var(--text);
-      }
-      .wordmark b {
-        color: var(--accent);
-        font-weight: 800;
-      }
-      .logo-dot {
-        width: 14px;
-        height: 14px;
-        border-radius: 999px;
-        border: 2px solid var(--accent);
-        position: relative;
-        flex: none;
-      }
-      .logo-dot::after {
-        content: '';
-        position: absolute;
-        inset: 3px;
-        border-radius: 999px;
-        background: var(--accent);
-      }
-      .back-link {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        text-decoration: none;
-      }
-      .back-link:hover {
-        color: var(--text);
-      }
+    <h2>Rättslig grund</h2>
+    <p>
+      Ditt samtycke — du lämnar din e-postadress frivilligt genom att skicka in formuläret.
+      Du kan när som helst dra tillbaka samtycket genom att be oss radera din adress.
+    </p>
 
-      main {
-        max-width: 720px;
-        margin: 0 auto;
-        padding: 16px 24px 64px;
-        line-height: 1.65;
-      }
+    <h2>Hur länge vi sparar uppgifterna</h2>
+    <p>
+      Till dess att appen har lanserats och du fått ditt meddelande, eller tills du ber oss ta
+      bort din e-postadress tidigare — det som sker först.
+    </p>
 
-      h1 {
-        font-size: clamp(1.8rem, 4vw, 2.4rem);
-        font-weight: 800;
-        letter-spacing: -0.01em;
-        margin: 8px 0 4px;
-      }
+    <h2>Vem som har tillgång</h2>
+    <p>
+      Ingen utom oss och de leverantörer som hanterar tekniken bakom väntelistan å våra
+      vägnar (Supabase och Resend, se nedan). Vi säljer inte, hyr inte ut och delar inte din
+      e-postadress med någon i marknadsförings- eller analyssyfte.
+    </p>
 
-      .updated {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        margin: 0 0 32px;
-      }
+    <h2>Var uppgifterna lagras</h2>
+    <p>
+      E-postadresserna lagras hos vår databasleverantör Supabase, i deras EU-region
+      (eu-west-1, Irland).
+    </p>
 
-      h2 {
-        font-size: 1.15rem;
-        font-weight: 700;
-        margin: 36px 0 10px;
-      }
+    <h2>Tredjepartstjänster på den här sidan</h2>
+    <p>
+      Sidans typsnitt (Inter) laddas från Google Fonts. När sidan laddas skickas din
+      IP-adress till Google för att kunna leverera typsnittet.
+    </p>
+    <p>
+      När du skickar in formuläret skickas din e-postadress till Resend, som är
+      e-postleverantören vi använder för att skicka bekräftelsemejlet från
+      contact@eparadar.se. Resend behandlar adressen som vårt personuppgiftsbiträde, enligt
+      deras egen integritetspolicy, för att kunna leverera mejlet.
+    </p>
+    <p>Sidan använder inga cookies och ingen analys- eller spårningsteknik.</p>
 
-      p,
-      li {
-        color: #d7dce6;
-        font-size: 0.98rem;
-      }
+    <h2>Dina rättigheter</h2>
+    <ul>
+      <li>Få veta om vi har din e-postadress registrerad, och i så fall vilken.</li>
+      <li>Få felaktiga uppgifter rättade.</li>
+      <li>Be oss radera din e-postadress helt.</li>
+      <li>Dra tillbaka ditt samtycke när som helst.</li>
+      <li>
+        Klaga hos Integritetsskyddsmyndigheten (IMY) om du tycker att vi hanterar dina
+        uppgifter fel.
+      </li>
+    </ul>
+    <p>
+      För att utöva någon av dina rättigheter, maila <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>.
+    </p>
 
-      ul {
-        margin: 0;
-        padding-left: 1.2em;
-      }
-      li {
-        margin: 6px 0;
-      }
+    <h2>Minderåriga</h2>
+    <p>
+      epaRadar riktar sig till EPA-traktorålder, ungefär 15–18 år. Den här väntelistan samlar
+      inte in mer än en e-postadress, oavsett ålder. Själva appen har egna, striktare regler
+      för känsligare funktioner som platsdelning — det beskrivs när appen lanseras, inte här.
+    </p>
 
-      footer {
-        max-width: 720px;
-        margin: 0 auto;
-        padding: 18px 24px;
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-        border-top: 1px solid color-mix(in srgb, var(--border) 22%, transparent);
-      }
-    </style>
-  </head>
+    <h2>Ändringar i den här policyn</h2>
+    <p>
+      Om vi ändrar hur vi hanterar väntelistan uppdaterar vi datumet högst upp på den här
+      sidan.
+    </p>
+  </main>
 
-  <body>
-    <div class="topbar">
-      <a class="wordmark" href="/"><span class="logo-dot" aria-hidden="true"></span>epa<b>Radar</b></a>
-      <a class="back-link" href="/">← Tillbaka</a>
-    </div>
+  <Footer narrow currentPath={SITE.routes.privacy} />
+</BaseLayout>
 
-    <main>
-      <h1>Integritetspolicy</h1>
-      <p class="updated">Senast uppdaterad: {LAST_UPDATED}</p>
+<style>
+  .back-link {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+  }
+  .back-link:hover {
+    color: var(--text);
+  }
 
-      <p>
-        Den här sidan gäller väntelistan på eparadar.se, där du kan lämna din e-postadress för
-        att bli meddelad när appen epaRadar lanseras. Den beskriver vilka uppgifter vi samlar in,
-        varför, och vilka rättigheter du har.
-      </p>
+  main a {
+    color: var(--brand);
+  }
 
-      <h2>Vem är ansvarig för dina uppgifter</h2>
-      <p>
-        epaRadar är ett skolprojekt (examensarbete) som ännu inte drivs som ett registrerat
-        bolag. Personuppgiftsansvarig är den som utvecklar epaRadar. Du når oss på
-        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
-      </p>
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px 24px 64px;
+    line-height: 1.65;
+  }
 
-      <h2>Vilka uppgifter vi samlar in</h2>
-      <p>Bara det du själv skriver in i formuläret: din e-postadress.</p>
-      <p>
-        Vi ber inte om namn, telefonnummer, adress eller andra uppgifter för att gå med i
-        väntelistan.
-      </p>
+  h1 {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 8px 0 4px;
+  }
 
-      <h2>Varför vi samlar in den</h2>
-      <p>Enda syftet är att kunna skicka ett meddelande till dig när appen lanseras.</p>
+  .updated {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0 0 32px;
+  }
 
-      <h2>Rättslig grund</h2>
-      <p>
-        Ditt samtycke — du lämnar din e-postadress frivilligt genom att skicka in formuläret.
-        Du kan när som helst dra tillbaka samtycket genom att be oss radera din adress.
-      </p>
+  h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 36px 0 10px;
+  }
 
-      <h2>Hur länge vi sparar uppgifterna</h2>
-      <p>
-        Till dess att appen har lanserats och du fått ditt meddelande, eller tills du ber oss ta
-        bort din e-postadress tidigare — det som sker först.
-      </p>
+  p,
+  li {
+    color: #d7dce6;
+    font-size: 0.98rem;
+  }
 
-      <h2>Vem som har tillgång</h2>
-      <p>
-        Ingen utom oss och de leverantörer som hanterar tekniken bakom väntelistan å våra
-        vägnar (Supabase och Resend, se nedan). Vi säljer inte, hyr inte ut och delar inte din
-        e-postadress med någon i marknadsförings- eller analyssyfte.
-      </p>
-
-      <h2>Var uppgifterna lagras</h2>
-      <p>
-        E-postadresserna lagras hos vår databasleverantör Supabase, i deras EU-region
-        (eu-west-1, Irland).
-      </p>
-
-      <h2>Tredjepartstjänster på den här sidan</h2>
-      <p>
-        Sidans typsnitt (Inter) laddas från Google Fonts. När sidan laddas skickas din
-        IP-adress till Google för att kunna leverera typsnittet.
-      </p>
-      <p>
-        När du skickar in formuläret skickas din e-postadress till Resend, som är
-        e-postleverantören vi använder för att skicka bekräftelsemejlet från
-        contact@eparadar.se. Resend behandlar adressen som vårt personuppgiftsbiträde, enligt
-        deras egen integritetspolicy, för att kunna leverera mejlet.
-      </p>
-      <p>Sidan använder inga cookies och ingen analys- eller spårningsteknik.</p>
-
-      <h2>Dina rättigheter</h2>
-      <ul>
-        <li>Få veta om vi har din e-postadress registrerad, och i så fall vilken.</li>
-        <li>Få felaktiga uppgifter rättade.</li>
-        <li>Be oss radera din e-postadress helt.</li>
-        <li>Dra tillbaka ditt samtycke när som helst.</li>
-        <li>
-          Klaga hos Integritetsskyddsmyndigheten (IMY) om du tycker att vi hanterar dina
-          uppgifter fel.
-        </li>
-      </ul>
-      <p>
-        För att utöva någon av dina rättigheter, maila <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
-      </p>
-
-      <h2>Minderåriga</h2>
-      <p>
-        epaRadar riktar sig till EPA-traktorålder, ungefär 15–18 år. Den här väntelistan samlar
-        inte in mer än en e-postadress, oavsett ålder. Själva appen har egna, striktare regler
-        för känsligare funktioner som platsdelning — det beskrivs när appen lanseras, inte här.
-      </p>
-
-      <h2>Ändringar i den här policyn</h2>
-      <p>
-        Om vi ändrar hur vi hanterar väntelistan uppdaterar vi datumet högst upp på den här
-        sidan.
-      </p>
-    </main>
-
-    <footer>© 2026 epaRadar · eparadar.se</footer>
-  </body>
-</html>
+  ul {
+    margin: 0;
+    padding-left: 1.2em;
+  }
+  li {
+    margin: 6px 0;
+  }
+</style>
