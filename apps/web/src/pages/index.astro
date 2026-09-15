@@ -1,6 +1,5 @@
 ---
-// Fyll i den riktiga endpointen här (Supabase-funktion/API-route för väntelistan) innan lansering.
-const WAITLIST_ENDPOINT = 'https://REPLACE_WITH_REAL_ENDPOINT.example.com/api/waitlist';
+const WAITLIST_ENDPOINT = '/api/waitlist';
 ---
 
 <html lang="sv">
@@ -9,10 +8,10 @@ const WAITLIST_ENDPOINT = 'https://REPLACE_WITH_REAL_ENDPOINT.example.com/api/wa
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="canonical" href="https://eparadar.se" />
     <title>epaRadar Kommer Snart</title>
-    <meta name="description" content="epaRadar samlar EPA-gänget: se vilka som är ute live, på kartan och i chatten. Häng med i kön innan lanseringen." />
+    <meta name="description" content="epaRadar - ett community för oss med EPA: se vilka som är ute live, på kartan och i chatten. Häng med i kön innan lanseringen." />
 
     <meta property="og:title" content="epaRadar – Kommer snart" />
-    <meta property="og:description" content="Se vilka som är ute, live. Realtid, karta och chatt för EPA-gänget." />
+    <meta property="og:description" content="Se vilka som är ute, live. Realtid, karta och chatt." />
     <!-- TODO: /og-image.png finns inte ännu — skapa en riktig 1200x630-bild före lansering -->
     <meta property="og:image" content="https://eparadar.se/og-image.png" />
     <meta property="og:image:width" content="1200" />
@@ -318,9 +317,9 @@ const WAITLIST_ENDPOINT = 'https://REPLACE_WITH_REAL_ENDPOINT.example.com/api/wa
 
       <div class="content">
         <p class="eyebrow">Kommer snart</p>
-        <h1>Kolla vilka som är ute.</h1>
+        <h1>Kolla vilka som är ute och kör.</h1>
         <p class="subline">Realtid. Karta. Chatt.</p>
-        <p class="meta-line">iOS och Android – våren 2026</p>
+        <p class="meta-line">iOS och Android – vintern 2026</p>
 
         <form id="waitlistForm">
           <div class="field-row">
@@ -331,14 +330,14 @@ const WAITLIST_ENDPOINT = 'https://REPLACE_WITH_REAL_ENDPOINT.example.com/api/wa
             <label for="company">Företag</label>
             <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
           </div>
-          <p class="consent">Ingen spam. Vi hör av oss när appen lanseras.</p>
+          <p class="consent">Mer information kommer snart</p>
           <p class="form-error" id="formError" role="alert"></p>
           <p class="form-success" id="formSuccess" aria-live="polite"></p>
         </form>
       </div>
 
       <p class="foot">
-        © 2026 epaRadar · eparadar.se ·
+        © 2026 epaRadar.se ·
         <a class="foot-link" href="/integritetspolicy">Integritetspolicy</a> ·
         <a class="foot-link" href="mailto:contact@eparadar.se">contact@eparadar.se</a>
       </p>

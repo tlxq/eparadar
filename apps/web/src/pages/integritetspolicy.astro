@@ -127,16 +127,6 @@ const LAST_UPDATED = '15 september 2026';
         margin: 6px 0;
       }
 
-      .note {
-        margin-top: 48px;
-        padding: 16px 18px;
-        background: var(--surface);
-        border: 1px dashed color-mix(in srgb, var(--border) 45%, transparent);
-        border-radius: 12px;
-        font-size: 0.88rem;
-        color: var(--text-secondary);
-      }
-
       footer {
         max-width: 720px;
         margin: 0 auto;
@@ -195,22 +185,29 @@ const LAST_UPDATED = '15 september 2026';
 
       <h2>Vem som har tillgång</h2>
       <p>
-        Ingen utom oss. Vi säljer inte, hyr inte ut och delar inte din e-postadress med tredje
-        part i marknadsförings- eller analyssyfte.
+        Ingen utom oss och de leverantörer som hanterar tekniken bakom väntelistan å våra
+        vägnar (Supabase och Resend, se nedan). Vi säljer inte, hyr inte ut och delar inte din
+        e-postadress med någon i marknadsförings- eller analyssyfte.
       </p>
 
       <h2>Var uppgifterna lagras</h2>
       <p>
-        E-postadresserna lagras i vår databasleverantör Supabase.
+        E-postadresserna lagras hos vår databasleverantör Supabase, i deras EU-region
+        (eu-west-1, Irland).
       </p>
 
       <h2>Tredjepartstjänster på den här sidan</h2>
       <p>
         Sidans typsnitt (Inter) laddas från Google Fonts. När sidan laddas skickas din
-        IP-adress till Google för att kunna leverera typsnittet — det är den enda
-        tredjepartstjänst som används här. Sidan använder inga cookies och ingen
-        analys- eller spårningsteknik.
+        IP-adress till Google för att kunna leverera typsnittet.
       </p>
+      <p>
+        När du skickar in formuläret skickas din e-postadress till Resend, som är
+        e-postleverantören vi använder för att skicka bekräftelsemejlet från
+        contact@eparadar.se. Resend behandlar adressen som vårt personuppgiftsbiträde, enligt
+        deras egen integritetspolicy, för att kunna leverera mejlet.
+      </p>
+      <p>Sidan använder inga cookies och ingen analys- eller spårningsteknik.</p>
 
       <h2>Dina rättigheter</h2>
       <ul>
@@ -239,13 +236,6 @@ const LAST_UPDATED = '15 september 2026';
         Om vi ändrar hur vi hanterar väntelistan uppdaterar vi datumet högst upp på den här
         sidan.
       </p>
-
-      <div class="note">
-        Öppen post-it: den här texten beskriver hur väntelistan faktiskt fungerar just nu — bara
-        e-post, inget mer. Innan formuläret kopplas till en riktig endpoint, uppdatera avsnittet
-        om var uppgifterna lagras med Supabase-projektets faktiska region, och bekräfta att
-        {CONTACT_EMAIL} är en adress som verkligen läses.
-      </div>
     </main>
 
     <footer>© 2026 epaRadar · eparadar.se</footer>
