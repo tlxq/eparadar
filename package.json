@@ -2,7 +2,8 @@
   "name": "eparadar",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "devDependencies": {
     "eslint": "^9.39.5",

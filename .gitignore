@@ -50,7 +50,5 @@ apps/mobile/android
 supabase/.branches
 supabase/.temp
 
-# Astro (apps/web)
-.astro/
+# Vercel (apps/web project link — can appear at repo root too)
 .vercel
-.env*
