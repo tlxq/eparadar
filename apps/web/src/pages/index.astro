@@ -381,13 +381,18 @@ const WAITLIST_ENDPOINT = '/api/waitlist';
           body: JSON.stringify({ email }),
           signal: AbortSignal.timeout(10000),
         })
-          .then((response) => {
-            if (!response.ok) throw new Error('Request failed');
+          .then(async (response) => {
+            if (!response.ok) {
+              const body = await response.json().catch(() => null);
+              throw new Error(body?.error || 'Request failed');
+            }
             showSuccess();
           })
           .catch((err) => {
             if (err && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
               errorEl.textContent = 'Det tog för lång tid att skicka. Kontrollera din uppkoppling och försök igen.';
+            } else if (err instanceof Error && err.message && err.message !== 'Request failed') {
+              errorEl.textContent = err.message;
             } else {
               errorEl.textContent = 'Något gick fel. Försök igen om en liten stund.';
             }

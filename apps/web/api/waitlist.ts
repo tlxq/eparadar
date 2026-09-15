@@ -6,6 +6,26 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const RATE_LIMIT_MAX_REQUESTS = 5;
+const requestTimestampsByIp = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const recent = (requestTimestampsByIp.get(ip) ?? []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  recent.push(now);
+  requestTimestampsByIp.set(ip, recent);
+  return recent.length > RATE_LIMIT_MAX_REQUESTS;
+}
+
+function getClientIp(req: VercelRequest): string {
+  const forwardedFor = req.headers['x-forwarded-for'];
+  if (typeof forwardedFor === 'string' && forwardedFor.length > 0) {
+    return forwardedFor.split(',')[0].trim();
+  }
+  return req.socket?.remoteAddress ?? 'unknown';
+}
+
 const CONFIRMATION_HTML = `
 <div style="font-family: -apple-system, sans-serif; max-width: 480px; margin: 0 auto; color: #10131A;">
   <p style="font-size:13px; color:#67738A; letter-spacing:0.06em; text-transform:uppercase; margin:0 0 12px;">epaRadar</p>
@@ -35,6 +55,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
+  if (isRateLimited(getClientIp(req))) {
+    res.status(429).json({ error: 'För många försök. Vänta en stund och försök igen.' });
+    return;
+  }
+
   const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
 
   if (!EMAIL_RE.test(email)) {
@@ -60,22 +85,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'epaRadar <contact@eparadar.se>',
-        to: email,
-        subject: 'Du är med på listan',
-        html: CONFIRMATION_HTML,
-        text: CONFIRMATION_TEXT,
-      }),
-    }).catch((err) => {
+    try {
+      const emailResponse = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'epaRadar <contact@eparadar.se>',
+          to: email,
+          subject: 'Du är med på listan',
+          html: CONFIRMATION_HTML,
+          text: CONFIRMATION_TEXT,
+        }),
+      });
+
+      if (!emailResponse.ok) {
+        console.error('resend send failed', emailResponse.status, await emailResponse.text());
+      }
+    } catch (err) {
       console.error('resend send failed', err);
-    });
+    }
 
     res.status(200).json({ ok: true });
   } catch (err) {
