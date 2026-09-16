@@ -61,8 +61,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "9370c3bd-4f1c-4865-8250-de890e5d08f2"
+        "projectId": "30c38123-aafb-4e11-9e07-c77708ab9ba9"
       }
-    }
+    },
+    "owner": "tlxq"
   }
 }
