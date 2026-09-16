@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mise exec -- npx tsc --noEmit *)",
+      "Bash(npm run lint *)",
+      "Bash(mise exec -- npm run typecheck *)",
+      "Bash(mise exec -- npm run lint *)",
+      "Bash(mise exec -- npx astro check *)",
+      "Bash(mise exec -- supabase migration list *)",
+      "Bash(mise exec -- supabase status *)",
+      "Bash(mise exec -- supabase db diff *)",
+      "Bash(mise exec -- supabase gen types *)",
+      "Bash(mise exec -- supabase test db *)",
+      "Bash(mise exec -- eas build:list *)",
+      "Bash(mise exec -- eas project:info *)",
+      "Bash(mise exec -- npx expo doctor *)",
+      "Bash(npm run test *)",
+      "Bash(npm run typecheck *)",
+      "Bash(git checkout -b *)",
+      "Bash(git push -u origin *)",
+      "Bash(gh pr create *)"
+    ]
+  }
+}
