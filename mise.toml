@@ -2,3 +2,5 @@
 "aqua:supabase/cli" = "2.117.0"
 node = "22.23.2"
 "npm:eas-cli" = "24.3.0"
+java = "temurin-17.0.20+8"
+"android-sdk" = "latest"
