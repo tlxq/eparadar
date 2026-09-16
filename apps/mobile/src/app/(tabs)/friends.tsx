@@ -18,6 +18,7 @@ import {
   respondToFriendRequest,
   type Friendship,
 } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 
 function RequestRow({ request, myUserId }: { request: Friendship; myUserId: string }) {
@@ -27,8 +28,8 @@ function RequestRow({ request, myUserId }: { request: Friendship; myUserId: stri
   const respond = useMutation({
     mutationFn: (accept: boolean) => respondToFriendRequest(request.id, accept),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friends', myUserId] });
-      queryClient.invalidateQueries({ queryKey: ['friendRequests', myUserId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friends(myUserId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friendRequests(myUserId) });
     },
   });
 
@@ -69,7 +70,7 @@ function OutgoingRequestRow({ request, myUserId }: { request: Friendship; myUser
   const cancel = useMutation({
     mutationFn: () => removeFriend(request.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['outgoingRequests', myUserId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(myUserId) });
     },
   });
 
@@ -98,7 +99,7 @@ function FriendRow({ friendship, myUserId }: { friendship: Friendship; myUserId:
   const remove = useMutation({
     mutationFn: () => removeFriend(friendship.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friends', myUserId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friends(myUserId) });
     },
   });
 
@@ -129,19 +130,19 @@ export default function FriendsScreen() {
     refetch,
     isRefetching,
   } = useQuery({
-    queryKey: ['friends', userId],
+    queryKey: queryKeys.friends(userId),
     queryFn: () => fetchFriends(userId!),
     enabled: !!userId,
   });
 
   const { data: requests } = useQuery({
-    queryKey: ['friendRequests', userId],
+    queryKey: queryKeys.friendRequests(userId),
     queryFn: () => fetchPendingRequests(userId!),
     enabled: !!userId,
   });
 
   const { data: outgoingRequests } = useQuery({
-    queryKey: ['outgoingRequests', userId],
+    queryKey: queryKeys.outgoingRequests(userId),
     queryFn: () => fetchOutgoingRequests(userId!),
     enabled: !!userId,
   });

@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useTheme } from '@/hooks/use-theme';
 import { fetchPendingRequests } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
 
@@ -14,7 +15,7 @@ export default function TabsLayout() {
   const queryClient = useQueryClient();
 
   const { data: pendingRequests } = useQuery({
-    queryKey: ['friendRequests', userId],
+    queryKey: queryKeys.friendRequests(userId),
     queryFn: () => fetchPendingRequests(userId!),
     enabled: !!userId,
   });
@@ -24,9 +25,9 @@ export default function TabsLayout() {
     if (!userId) return;
 
     const invalidate = () => {
-      queryClient.invalidateQueries({ queryKey: ['friends', userId] });
-      queryClient.invalidateQueries({ queryKey: ['friendRequests', userId] });
-      queryClient.invalidateQueries({ queryKey: ['outgoingRequests', userId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friends(userId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friendRequests(userId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(userId) });
     };
 
     const channel = supabase
