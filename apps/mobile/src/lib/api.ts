@@ -1,32 +1,12 @@
 import { supabase } from '@/lib/supabase';
+import type { Database } from '@/lib/database.types';
 
-export type Profile = {
-  id: string;
-  username: string;
-  display_name: string;
-  bio: string | null;
-  avatar_url: string | null;
-  created_at: string;
-};
+type DbTables = Database['public']['Tables'];
 
-export type Car = {
-  id: string;
-  owner_id: string;
-  make: string;
-  model: string;
-  year: number | null;
-  nickname: string | null;
-  photo_url: string | null;
-  created_at: string;
-};
+export type Profile = DbTables['profiles']['Row'];
+export type Car = DbTables['cars']['Row'];
 
-export type Post = {
-  id: string;
-  author_id: string;
-  car_id: string | null;
-  body: string | null;
-  image_url: string | null;
-  created_at: string;
+export type Post = DbTables['posts']['Row'] & {
   author: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'> | null;
   car: Pick<Car, 'id' | 'make' | 'model' | 'nickname'> | null;
 };
@@ -95,7 +75,7 @@ export async function fetchMyCars(userId: string): Promise<Car[]> {
     .eq('owner_id', userId)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return (data ?? []) as Car[];
+  return data ?? [];
 }
 
 export async function createCar(input: {
@@ -122,7 +102,7 @@ export async function fetchProfile(userId: string): Promise<Profile | null> {
     .eq('id', userId)
     .maybeSingle();
   if (error) throw error;
-  return data as Profile | null;
+  return data;
 }
 
 export async function updateProfile(
@@ -175,7 +155,7 @@ export async function searchUsers(query: string, excludeUserId: string): Promise
     .neq('id', excludeUserId)
     .limit(20);
   if (error) throw error;
-  return (data ?? []) as Profile[];
+  return data ?? [];
 }
 
 export async function fetchConversations(): Promise<Conversation[]> {
@@ -207,7 +187,7 @@ export async function createConversation(input: {
 }): Promise<string> {
   const { data, error } = await supabase.rpc('create_conversation', {
     other_user_ids: input.otherUserIds,
-    group_name: input.groupName ?? null,
+    group_name: input.groupName ?? undefined,
   });
   if (error) throw error;
   return data as string;
@@ -238,13 +218,8 @@ export async function sendMessage(input: {
 
 export type FriendshipStatus = 'pending' | 'accepted';
 
-export type FriendshipRow = {
-  id: string;
-  requester_id: string;
-  addressee_id: string;
+export type FriendshipRow = Omit<DbTables['friendships']['Row'], 'status'> & {
   status: FriendshipStatus;
-  created_at: string;
-  responded_at: string | null;
 };
 
 export type Friendship = FriendshipRow & {
@@ -313,13 +288,7 @@ export async function removeFriend(friendshipId: string): Promise<void> {
   if (error) throw error;
 }
 
-export type LocationRow = {
-  user_id: string;
-  lat: number;
-  lng: number;
-  sharing_enabled: boolean;
-  updated_at: string;
-};
+export type LocationRow = DbTables['locations']['Row'];
 
 export type FriendLocation = LocationRow & {
   profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
@@ -332,7 +301,7 @@ export async function fetchMyLocation(userId: string): Promise<LocationRow | nul
     .eq('user_id', userId)
     .maybeSingle();
   if (error) throw error;
-  return data as LocationRow | null;
+  return data;
 }
 
 export async function upsertLocation(input: {
@@ -341,7 +310,7 @@ export async function upsertLocation(input: {
   lng: number;
   sharingEnabled?: boolean;
 }): Promise<void> {
-  const payload: Record<string, unknown> = {
+  const payload: DbTables['locations']['Insert'] = {
     user_id: input.userId,
     lat: input.lat,
     lng: input.lng,
@@ -389,5 +358,5 @@ export async function searchUsersToAdd(query: string, userId: string): Promise<P
   }
   const { data, error } = await request;
   if (error) throw error;
-  return (data ?? []) as Profile[];
+  return data ?? [];
 }
