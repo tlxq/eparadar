@@ -13,4 +13,11 @@ module.exports = [
       'react-hooks/set-state-in-effect': 'off',
     },
   },
+  {
+    files: ['**/__tests__/**/*.{ts,tsx}', '**/*.test.{ts,tsx}'],
+    rules: {
+      'import/first': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
 ];

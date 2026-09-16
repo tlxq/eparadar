@@ -16,6 +16,7 @@
     "web": "npm run dev --workspace apps/web",
     "lint": "npm run lint --workspaces --if-present",
     "format": "prettier --write .",
-    "gen:types": "supabase gen types typescript --linked --schema public > apps/mobile/src/lib/database.types.ts"
+    "gen:types": "supabase gen types typescript --linked --schema public > apps/mobile/src/lib/database.types.ts",
+    "db:test": "supabase test db --local"
   }
 }

@@ -32,3 +32,4 @@ jobs:
       - run: npm ci
       - run: npm run lint --workspace apps/mobile
       - run: npm run typecheck --workspace apps/mobile
+      - run: npm run test --workspace apps/mobile

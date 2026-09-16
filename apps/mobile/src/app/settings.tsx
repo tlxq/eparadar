@@ -87,7 +87,12 @@ export default function SettingsScreen() {
               plats, den delas aldrig offentligt, och du kan stänga av det här när du vill.
             </ThemedText>
           </View>
-          <Switch value={sharingEnabled} onValueChange={handleToggle} disabled={busy} />
+          <Switch
+            testID="sharing-toggle"
+            value={sharingEnabled}
+            onValueChange={handleToggle}
+            disabled={busy}
+          />
         </ThemedView>
         {error ? <ThemedText type="error">{error}</ThemedText> : null}
       </SafeAreaView>
