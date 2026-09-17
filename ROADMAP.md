@@ -3,14 +3,14 @@
 Living checklist, source of truth across hosts. Update checkboxes as work lands; don't start a
 new phase until the current one is checked off (keeps one front open at a time).
 
-## Where we are (2026-09-16)
+## Where we are (2026-09-17)
 
 - **Done & verified end-to-end**: Identity + Feed, 1:1 + group Chat, Friendships, Live map
   (background location tracking confirmed on two physical devices).
-- **In progress**: Meetups (`feat/meetups`) — schema, API, hooks, and UI all built; on-device
-  verification underway, one bug already fixed (ambiguous PostgREST embed).
-- **Not started**: photo upload / Supabase Storage, Snapchat-style map polish, store submission
-  readiness (branding, privacy policy, listing assets, release credentials).
+- **Done & merged**: Meetups, photo upload and avatars, map avatar markers, privacy policy,
+  branding, and release-safe store assets.
+- **Remaining for launch**: Expo/EAS account and store credentials, manual store submission, and
+  optional CI automation after the first successful submission.
 
 ## Phase 1 — Finish Meetups
 
@@ -25,7 +25,7 @@ new phase until the current one is checked off (keeps one front open at a time).
       true/false + upsert-not-duplicate). Full local suite passes (23/23).
 - [x] Cross-device realtime check: a meetup interest and GPS check-in appeared on the other
       device's map/detail state during a two-device live check.
-- [ ] Open PR, merge to master.
+- [x] Open PR, merge to master (`tlxq/eparadar#21`, merge commit `0b7184d`).
 
 ## Phase 2 — Photo upload & avatars
 
@@ -45,8 +45,8 @@ Foundation for avatar-style map markers (Phase 3) and for profile customization 
       (upload → Storage → `profiles.avatar_url` → renders in both the profile screen and the
       Feed; a user with no avatar still falls back to initials correctly). Test account and
       uploaded object cleaned up afterward.
-- [ ] Native on-device check still pending (image-picker permission prompt, native crop UI) —
-      same caveat as everything else that only got a web-flow verification pass so far.
+- [x] Native on-device check: image-picker permission, crop flow, Storage upload, and profile
+      refresh verified on the connected Samsung phone.
 
 ## Phase 3 — Snapchat-style map polish
 
@@ -69,16 +69,15 @@ Foundation for avatar-style map markers (Phase 3) and for profile customization 
 - [x] Privacy policy now covers the app (feed, chat, friendships, background location, meetups,
       minors, retention, rights, and deletion) in `apps/web/src/pages/integritetspolicy.astro`
       and is readable from the native in-app `privacy` route linked from mobile Settings.
-- [ ] Store listing assets: real-device Swedish-language screenshots and feature graphic.
-      Initial native captures and a feature-graphic draft are in `docs/store-assets/`; they
-      still need release-safe fixture data and final review. Store description copy is drafted
-      in `docs/store-listing-sv.md`.
+- [x] Store listing assets: release-safe Swedish-language screenshots and the 1024×500 feature
+      graphic are finalized in `docs/store-assets/`; store description copy is in
+      `docs/store-listing-sv.md`.
 - [x] Play Console's mandatory Background Location permission declaration drafted in
       `docs/play-background-location-declaration-sv.md`; submit it only after checking the
       current Play Console form and attaching release screenshots.
 - [ ] Confirm Apple Developer Program enrollment + App Store Connect app record; fill in
-      `eas.json`'s currently-empty `submit.production.ios` credentials. Local EAS credential
-      checks are blocked until an Expo account is logged in; see `docs/store-assets/README.md`.
+      `eas.json`'s currently-empty `submit.production.ios` credentials. `eas whoami` currently
+      reports that the CLI is not logged in; see `docs/store-assets/README.md`.
 - [ ] Optional, after the first successful manual submission: an EAS build/submit GitHub Actions
       workflow, so future releases aren't a fully manual `eas build && eas submit`.
 
