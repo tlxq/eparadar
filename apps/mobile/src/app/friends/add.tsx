@@ -50,7 +50,7 @@ export default function AddFriendScreen() {
             return (
               <Pressable onPress={() => !sent && mutation.mutate(item.id)} disabled={sent}>
                 <ThemedView type="backgroundElement" style={styles.userRow}>
-                  <Avatar name={item.display_name} size={32} />
+                  <Avatar name={item.display_name} imageUrl={item.avatar_url} size={32} />
                   <View style={styles.userRowText}>
                     <ThemedText type="smallBold">{item.display_name}</ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">

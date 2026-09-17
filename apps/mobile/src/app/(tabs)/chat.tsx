@@ -9,7 +9,7 @@ import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { conversationTitle, fetchConversations, type Conversation } from '@/lib/api';
+import { conversationAvatarUrl, conversationTitle, fetchConversations, type Conversation } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
 
 function ConversationRow({
@@ -21,10 +21,11 @@ function ConversationRow({
 }) {
   const lastMessage = conversation.messages?.[0];
   const title = conversationTitle(conversation, myUserId);
+  const avatarUrl = conversationAvatarUrl(conversation, myUserId);
   return (
     <Pressable onPress={() => router.push(`/chat/${conversation.id}`)}>
       <ThemedView type="backgroundElement" style={styles.row}>
-        <Avatar name={title} />
+        <Avatar name={title} imageUrl={avatarUrl} />
         <View style={styles.rowText}>
           <ThemedText type="smallBold">{title}</ThemedText>
           {lastMessage ? (

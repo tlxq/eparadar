@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
 
+import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
@@ -11,7 +14,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { fetchMyCars, fetchProfile, signOut, updateProfile, type Car } from '@/lib/api';
+import { uploadAvatar } from '@/lib/avatar-upload';
 import { useAuthStore } from '@/store/auth';
+import { useTheme } from '@/hooks/use-theme';
 
 function CarRow({ car }: { car: Car }) {
   return (
@@ -25,6 +30,7 @@ function CarRow({ car }: { car: Car }) {
 }
 
 export default function ProfileScreen() {
+  const theme = useTheme();
   const userId = useAuthStore((state) => state.session?.user.id);
   const queryClient = useQueryClient();
 
@@ -42,23 +48,54 @@ export default function ProfileScreen() {
 
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
   const [loadedProfileId, setLoadedProfileId] = useState<string | null>(null);
 
   if (profile && profile.id !== loadedProfileId) {
     setLoadedProfileId(profile.id);
     setDisplayName(profile.display_name);
     setBio(profile.bio ?? '');
+    setAvatarUrl(profile.avatar_url);
   }
 
   async function handleSave() {
     if (!userId) return;
     setSaving(true);
     try {
-      await updateProfile(userId, { displayName, bio: bio || null });
+      await updateProfile(userId, { displayName, bio: bio || null, avatarUrl: avatarUrl ?? undefined });
       queryClient.invalidateQueries({ queryKey: ['profile', userId] });
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handlePickAvatar() {
+    if (!userId) return;
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (result.canceled || !result.assets[0]) return;
+
+    setUploadingAvatar(true);
+    setAvatarError(null);
+    try {
+      const publicUrl = await uploadAvatar(userId, result.assets[0].uri);
+      setAvatarUrl(publicUrl);
+      await updateProfile(userId, { displayName, bio: bio || null, avatarUrl: publicUrl });
+      queryClient.invalidateQueries({ queryKey: ['profile', userId] });
+    } catch (error) {
+      setAvatarError(error instanceof Error ? error.message : 'Bilden kunde inte laddas upp.');
+    } finally {
+      setUploadingAvatar(false);
     }
   }
 
@@ -73,6 +110,23 @@ export default function ProfileScreen() {
           ListHeaderComponent={
             <View style={styles.header}>
               <ThemedText type="title">Profil</ThemedText>
+              <Pressable
+                onPress={handlePickAvatar}
+                disabled={uploadingAvatar}
+                style={styles.avatarPicker}
+              >
+                <Avatar name={displayName || '?'} imageUrl={avatarUrl} size={88} />
+                <View style={[styles.avatarBadge, { backgroundColor: theme.brand, borderColor: theme.background }]}>
+                  {uploadingAvatar ? (
+                    <ActivityIndicator size="small" color={theme.brandText} />
+                  ) : (
+                    <Ionicons name="camera" size={16} color={theme.brandText} />
+                  )}
+                </View>
+              </Pressable>
+              {avatarError ? (
+                <ThemedText themeColor="danger">{avatarError}</ThemedText>
+              ) : null}
               <TextField
                 placeholder="Visningsnamn"
                 value={displayName}
@@ -120,6 +174,18 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: Spacing.three },
   header: { gap: Spacing.two, paddingVertical: Spacing.three },
+  avatarPicker: { alignSelf: 'flex-start' },
+  avatarBadge: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   carsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',

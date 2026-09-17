@@ -35,7 +35,7 @@ function RequestRow({ request, myUserId }: { request: Friendship; myUserId: stri
 
   return (
     <ThemedView type="backgroundElement" style={styles.row}>
-      <Avatar name={requester.display_name} />
+      <Avatar name={requester.display_name} imageUrl={requester.avatar_url} />
       <View style={styles.rowText}>
         <ThemedText type="smallBold">{requester.display_name}</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
@@ -76,7 +76,7 @@ function OutgoingRequestRow({ request, myUserId }: { request: Friendship; myUser
 
   return (
     <ThemedView type="backgroundElement" style={styles.row}>
-      <Avatar name={addressee.display_name} />
+      <Avatar name={addressee.display_name} imageUrl={addressee.avatar_url} />
       <View style={styles.rowText}>
         <ThemedText type="smallBold">{addressee.display_name}</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
@@ -105,7 +105,7 @@ function FriendRow({ friendship, myUserId }: { friendship: Friendship; myUserId:
 
   return (
     <ThemedView type="backgroundElement" style={styles.row}>
-      <Avatar name={friend.display_name} />
+      <Avatar name={friend.display_name} imageUrl={friend.avatar_url} />
       <View style={styles.rowText}>
         <ThemedText type="smallBold">{friend.display_name}</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">

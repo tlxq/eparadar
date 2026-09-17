@@ -16,7 +16,7 @@ function PostCard({ post }: { post: Post }) {
   return (
     <ThemedView type="backgroundElement" style={styles.card}>
       <View style={styles.cardHeader}>
-        <Avatar name={authorName} size={32} />
+        <Avatar name={authorName} imageUrl={post.author?.avatar_url} size={32} />
         <View style={styles.cardHeaderText}>
           <ThemedText type="smallBold">{authorName}</ThemedText>
           {post.car ? (

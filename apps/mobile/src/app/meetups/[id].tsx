@@ -1,0 +1,175 @@
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router, useLocalSearchParams } from 'expo-router';
+
+import { Avatar } from '@/components/avatar';
+import { ScreenBackground } from '@/components/screen-background';
+import { ThemedText } from '@/components/themed-text';
+import { Spacing } from '@/constants/theme';
+import { useAutoCheckIn, useMeetupDetail, useToggleInterest } from '@/features/meetups/hooks';
+import { formatMeetupTime } from '@/features/meetups/time';
+import { useTheme } from '@/hooks/use-theme';
+import { useAuthStore } from '@/store/auth';
+
+export default function MeetupDetailScreen() {
+  const theme = useTheme();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const userId = useAuthStore((state) => state.session?.user.id);
+
+  const { data: meetup, isLoading, isError, error } = useMeetupDetail(id, userId);
+  const toggleInterest = useToggleInterest(id, userId);
+  useAutoCheckIn(id);
+
+  if (isError) {
+    return (
+      <ScreenBackground style={styles.center}>
+        <Pressable onPress={() => router.back()} style={styles.errorClose} hitSlop={12}>
+          <ThemedText type="link" themeColor="textSecondary">
+            Stäng
+          </ThemedText>
+        </Pressable>
+        <ThemedText themeColor="danger" style={styles.errorText}>
+          Kunde inte hämta träffen.{'\n'}
+          {(() => {
+            if (error instanceof Error) return error.message;
+            if (error && typeof error === 'object') {
+              const err = error as { message?: string; details?: string; hint?: string; code?: string };
+              return [err.code, err.message, err.details, err.hint].filter(Boolean).join(' — ');
+            }
+            return String(error);
+          })()}
+        </ThemedText>
+      </ScreenBackground>
+    );
+  }
+
+  if (isLoading || !meetup) {
+    return (
+      <ScreenBackground style={styles.center}>
+        <ActivityIndicator color={theme.brand} />
+      </ScreenBackground>
+    );
+  }
+
+  const iAmHereNow = meetup.hereNow.some((p) => p.id === userId);
+
+  return (
+    <ScreenBackground style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <Pressable onPress={() => router.back()} hitSlop={12}>
+            <ThemedText type="link" themeColor="textSecondary">
+              Stäng
+            </ThemedText>
+          </Pressable>
+        </View>
+
+        <ScrollView contentContainerStyle={styles.content}>
+          {meetup.hereNow.length > 0 && (
+            <View style={[styles.liveBanner, { backgroundColor: `${theme.success}24` }]}>
+              <View style={[styles.liveDot, { backgroundColor: theme.success }]} />
+              <ThemedText type="smallBold" themeColor="success">
+                {meetup.hereNow.length} är här nu
+              </ThemedText>
+            </View>
+          )}
+
+          <ThemedText type="title" style={styles.title}>
+            {meetup.title} {meetup.vibe_emoji}
+          </ThemedText>
+
+          <ThemedText themeColor="textSecondary">
+            {meetup.creator ? `${meetup.creator.display_name} skapade denna` : null}
+          </ThemedText>
+
+          <ThemedText type="smallBold" style={styles.meta}>
+            {formatMeetupTime(meetup.starts_at)}
+          </ThemedText>
+
+          {meetup.interested.length > 0 && (
+            <View style={styles.avatarStrip}>
+              <View style={styles.avatars}>
+                {meetup.interested.slice(0, 6).map((person) => (
+                  <View key={person.id} style={styles.avatarWrap}>
+                    <Avatar name={person.display_name} imageUrl={person.avatar_url} size={30} />
+                  </View>
+                ))}
+              </View>
+              <ThemedText type="small" themeColor="textSecondary">
+                {meetup.interest_count} intresserade
+              </ThemedText>
+            </View>
+          )}
+
+          <Pressable
+            onPress={() => toggleInterest.mutate(!meetup.isInterested)}
+            disabled={toggleInterest.isPending}
+            style={[
+              styles.interestedButton,
+              { backgroundColor: meetup.isInterested ? theme.brandOnSurface : theme.brand },
+            ]}
+          >
+            <ThemedText type="smallBold" style={{ color: theme.brandText, fontSize: 15 }}>
+              👀 Intresserad · {meetup.interest_count}
+            </ThemedText>
+          </Pressable>
+
+          {iAmHereNow && (
+            <View style={[styles.autoStatus, { borderColor: theme.success, backgroundColor: `${theme.success}18` }]}>
+              <View style={[styles.liveDot, { backgroundColor: theme.success }]} />
+              <ThemedText type="smallBold" themeColor="success">
+                Du är här nu
+              </ThemedText>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.autoTag}>
+                GPS · automatiskt
+              </ThemedText>
+            </View>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </ScreenBackground>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  errorClose: { position: 'absolute', top: Spacing.five, right: Spacing.four },
+  errorText: { textAlign: 'center', paddingHorizontal: Spacing.four },
+  safeArea: { flex: 1 },
+  header: { flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: Spacing.four, paddingTop: Spacing.two },
+  content: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.five, gap: Spacing.two },
+  liveBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    borderRadius: Spacing.three,
+    marginBottom: Spacing.two,
+  },
+  liveDot: { width: 7, height: 7, borderRadius: 4 },
+  title: { fontSize: 28, lineHeight: 34 },
+  meta: { marginTop: Spacing.one },
+  avatarStrip: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, marginTop: Spacing.three },
+  avatars: { flexDirection: 'row' },
+  avatarWrap: { marginLeft: -Spacing.two },
+  interestedButton: {
+    marginTop: Spacing.four,
+    borderRadius: 999,
+    paddingVertical: Spacing.three,
+    alignItems: 'center',
+  },
+  autoStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderWidth: 1.5,
+    borderRadius: 999,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    marginTop: Spacing.two,
+  },
+  autoTag: { marginLeft: 'auto' },
+});

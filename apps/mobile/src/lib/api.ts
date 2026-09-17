@@ -107,11 +107,11 @@ export async function fetchProfile(userId: string): Promise<Profile | null> {
 
 export async function updateProfile(
   userId: string,
-  input: { displayName: string; bio: string | null },
+  input: { displayName: string; bio: string | null; avatarUrl?: string },
 ) {
   const { error } = await supabase
     .from('profiles')
-    .update({ display_name: input.displayName, bio: input.bio })
+    .update({ display_name: input.displayName, bio: input.bio, avatar_url: input.avatarUrl })
     .eq('id', userId);
   if (error) throw error;
 }
@@ -145,6 +145,12 @@ export function conversationTitle(conversation: Conversation, myUserId: string):
   }
   const other = conversation.conversation_members.find((member) => member.user_id !== myUserId);
   return other?.profiles.display_name ?? 'Okänd användare';
+}
+
+export function conversationAvatarUrl(conversation: Conversation, myUserId: string): string | null {
+  if (conversation.is_group) return null;
+  const other = conversation.conversation_members.find((member) => member.user_id !== myUserId);
+  return other?.profiles.avatar_url ?? null;
 }
 
 export async function searchUsers(query: string, excludeUserId: string): Promise<Profile[]> {
