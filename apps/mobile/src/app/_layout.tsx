@@ -80,6 +80,12 @@ export default function RootLayout() {
               options={{ presentation: 'modal', headerShown: true, title: 'Lägg till vän' }}
             />
             <Stack.Screen name="settings" options={{ headerShown: true, title: 'Inställningar' }} />
+            <Stack.Screen
+              name="privacy"
+              options={{ headerShown: true, title: 'Integritetspolicy' }}
+            />
+            <Stack.Screen name="meetups/create" options={{ presentation: 'modal', headerShown: false }} />
+            <Stack.Screen name="meetups/[id]" options={{ presentation: 'modal', headerShown: false }} />
           </Stack.Protected>
         </Stack>
       </ThemeProvider>

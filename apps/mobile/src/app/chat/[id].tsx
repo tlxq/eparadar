@@ -24,7 +24,9 @@ import { useAuthStore } from '@/store/auth';
 function MessageBubble({ message, isMine }: { message: Message; isMine: boolean }) {
   return (
     <View style={[styles.bubbleRow, isMine && styles.bubbleRowMine]}>
-      {!isMine ? <Avatar name={message.sender?.display_name ?? '?'} size={28} /> : null}
+      {!isMine ? (
+        <Avatar name={message.sender?.display_name ?? '?'} imageUrl={message.sender?.avatar_url} size={28} />
+      ) : null}
       <ThemedView type={isMine ? 'backgroundSelected' : 'backgroundElement'} style={styles.bubble}>
         {!isMine ? (
           <ThemedText type="small" themeColor="textSecondary">

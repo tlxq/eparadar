@@ -49,7 +49,7 @@ export async function requestLocationPermissions(): Promise<PermissionResult> {
 }
 
 export async function startLocationSharing(): Promise<void> {
-  const alreadyStarted = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
+  const alreadyStarted = await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME);
   if (alreadyStarted) return;
   await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
     accuracy: Location.Accuracy.Balanced,
@@ -59,13 +59,14 @@ export async function startLocationSharing(): Promise<void> {
     showsBackgroundLocationIndicator: true,
     foregroundService: {
       notificationTitle: 'epaRadar delar din plats',
-      notificationBody: 'Dina vänner kan se var du är just nu. Stäng av i Inställningar när du vill.',
+      notificationBody:
+        'Dina vänner kan se var du är just nu. Stäng av i Inställningar när du vill.',
       notificationColor: Colors.dark.brand,
     },
   });
 }
 
 export async function stopLocationSharing(): Promise<void> {
-  const started = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
+  const started = await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME);
   if (started) await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
 }

@@ -4,12 +4,12 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE } from '../config/site';
 
-const LAST_UPDATED = '15 september 2026';
+const LAST_UPDATED = '17 september 2026';
 ---
 
 <BaseLayout
   title="Integritetspolicy — epaRadar"
-  description="Hur epaRadar hanterar din e-postadress när du anmäler dig till väntelistan."
+  description="Hur epaRadar hanterar personuppgifter i appen och på eparadar.se."
   canonicalPath={SITE.routes.privacy}
   robotsNoindex
 >
@@ -22,9 +22,10 @@ const LAST_UPDATED = '15 september 2026';
     <p class="updated">Senast uppdaterad: {LAST_UPDATED}</p>
 
     <p>
-      Den här sidan gäller väntelistan på eparadar.se, där du kan lämna din e-postadress för
-      att bli meddelad när appen epaRadar lanseras. Den beskriver vilka uppgifter vi samlar in,
-      varför, och vilka rättigheter du har.
+      Den här policyn beskriver hur epaRadar hanterar personuppgifter i mobilappen och på
+      eparadar.se. epaRadar är en community-app för ungdomar med EPA-traktorer, där du kan
+      skapa en profil, lägga till en bil, hitta vänner, chatta, delta i meetups och dela din
+      plats med vänner.
     </p>
 
     <h2>Vem är ansvarig för dina uppgifter</h2>
@@ -35,38 +36,57 @@ const LAST_UPDATED = '15 september 2026';
     </p>
 
     <h2>Vilka uppgifter vi samlar in</h2>
-    <p>Bara det du själv skriver in i formuläret: din e-postadress.</p>
+    <p>Vi behandlar bara uppgifter som behövs för appens funktioner och som du själv väljer att lämna:</p>
+    <ul>
+      <li>e-postadress och inloggningsuppgifter för ditt konto,</li>
+      <li>visningsnamn, profiltext, profilbild, vänskaper och biluppgifter,</li>
+      <li>inlägg, kommentarer, meddelanden och gruppmedlemskap,</li>
+      <li>meetups du skapar, intressemarkeringar och frivilliga check-ins,</li>
+      <li>platsinformation när du uttryckligen aktiverar platsdelning, samt</li>
+      <li>teknisk information som behövs för att appen ska fungera och skyddas mot missbruk.</li>
+    </ul>
     <p>
-      Vi ber inte om namn, telefonnummer, adress eller andra uppgifter för att gå med i
-      väntelistan.
+      På webbplatsens väntelista samlar vi in din e-postadress om du själv fyller i den.
     </p>
 
-    <h2>Varför vi samlar in den</h2>
-    <p>Enda syftet är att kunna skicka ett meddelande till dig när appen lanseras.</p>
+    <h2>Varför vi behandlar uppgifterna</h2>
+    <p>
+      Uppgifterna används för att skapa och driva ditt konto, visa innehåll och vänskaper,
+      leverera chat och meetups, visa din bilprofil, hålla appen säker och ge support.
+      Platsinformation används bara för kartan, platsbaserade meetup-check-ins och
+      platsdelning som du själv har aktiverat.
+    </p>
 
     <h2>Rättslig grund</h2>
     <p>
-      Ditt samtycke — du lämnar din e-postadress frivilligt genom att skicka in formuläret.
-      Du kan när som helst dra tillbaka samtycket genom att be oss radera din adress.
+      Behandlingen som behövs för att tillhandahålla appen grundar sig på avtalet med dig.
+      Platsdelning och annan frivillig publicering bygger på ditt samtycke och kan stängas
+      av i appen när som helst. Säkerhet och missbruksförebyggande åtgärder grundar sig på
+      vårt berättigade intresse av att hålla tjänsten trygg.
     </p>
 
-    <h2>Hur länge vi sparar uppgifterna</h2>
+    <h2>Platsdelning</h2>
     <p>
-      Till dess att appen har lanserats och du fått ditt meddelande, eller tills du ber oss ta
-      bort din e-postadress tidigare — det som sker först.
+      Platsdelning är avstängd från början. När du aktiverar den kan dina accepterade vänner
+      se din ungefärliga aktuella position på kartan. Platsen delas aldrig offentligt och
+      skickas inte till andra användare som du inte är vän med. Bakgrundsplats används bara
+      när du har gett Android eller iOS den behörigheten och aktiverat platsdelning i appen.
+      Du kan stänga av delningen i Inställningar eller återkalla telefonens behörighet.
     </p>
 
     <h2>Vem som har tillgång</h2>
     <p>
-      Ingen utom oss och de leverantörer som hanterar tekniken bakom väntelistan å våra
-      vägnar (Supabase och Resend, se nedan). Vi säljer inte, hyr inte ut och delar inte din
-      e-postadress med någon i marknadsförings- eller analyssyfte.
+      Dina profiluppgifter, inlägg, kommentarer och meddelanden visas enligt appens
+      behörighetsregler för de personer och grupper som funktionen kräver. Platsdata visas
+      bara för dina vänner när platsdelning är på. Vi säljer inte personuppgifter och delar
+      dem inte för annonsering.
     </p>
 
     <h2>Var uppgifterna lagras</h2>
     <p>
-      E-postadresserna lagras hos vår databasleverantör Supabase, i deras EU-region
-      (eu-west-1, Irland).
+      Uppgifter lagras hos Supabase i deras EU-region (eu-west-1, Irland). Profilbilder
+      lagras i Supabase Storage. Vi använder Resend för e-post från väntelistan. Dessa
+      leverantörer behandlar uppgifter åt oss enligt sina villkor och personuppgiftsbiträdesavtal.
     </p>
 
     <h2>Tredjepartstjänster på den här sidan</h2>
@@ -75,12 +95,22 @@ const LAST_UPDATED = '15 september 2026';
       IP-adress till Google för att kunna leverera typsnittet.
     </p>
     <p>
-      När du skickar in formuläret skickas din e-postadress till Resend, som är
+      När du skickar in väntelisteformuläret skickas din e-postadress till Resend, som är
       e-postleverantören vi använder för att skicka bekräftelsemejlet från
-      contact@eparadar.se. Resend behandlar adressen som vårt personuppgiftsbiträde, enligt
-      deras egen integritetspolicy, för att kunna leverera mejlet.
+      contact@eparadar.se.
     </p>
-    <p>Sidan använder inga cookies och ingen analys- eller spårningsteknik.</p>
+    <p>
+      Sidan använder inga cookies och ingen analys- eller spårningsteknik. Mobilappen
+      använder OpenStreetMap-kartor via Leaflet för kartvisningen.
+    </p>
+
+    <h2>Hur länge vi sparar uppgifterna</h2>
+    <p>
+      Vi sparar kontouppgifter medan ditt konto finns kvar och raderar eller anonymiserar
+      dem när kontot tas bort, om vi inte måste spara viss information enligt lag. Du kan
+      radera ditt konto eller be oss göra det genom att kontakta oss. Väntelisteadresser
+      sparas tills lanseringsmeddelandet har skickats eller tills du ber oss radera dem.
+    </p>
 
     <h2>Dina rättigheter</h2>
     <ul>
@@ -94,14 +124,17 @@ const LAST_UPDATED = '15 september 2026';
       </li>
     </ul>
     <p>
-      För att utöva någon av dina rättigheter, maila <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>.
+      För att utöva någon av dina rättigheter, maila
+      <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>.
     </p>
 
     <h2>Minderåriga</h2>
     <p>
-      epaRadar riktar sig till EPA-traktorålder, ungefär 15–18 år. Den här väntelistan samlar
-      inte in mer än en e-postadress, oavsett ålder. Själva appen har egna, striktare regler
-      för känsligare funktioner som platsdelning — det beskrivs när appen lanseras, inte här.
+      epaRadar riktar sig till ungdomar i EPA-traktorålder. Vi försöker utforma appen med
+      extra försiktighet eftersom många användare är minderåriga: plats är privat som
+      standard, delning kräver ett aktivt val och vänners plats visas bara inom vänskapen.
+      Använd inte appen för att dela uppgifter som du inte vill ska synas för den målgrupp
+      eller de vänner som funktionen visar dem för.
     </p>
 
     <h2>Ändringar i den här policyn</h2>

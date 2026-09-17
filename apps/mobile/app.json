@@ -52,6 +52,12 @@
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "epaRadar behöver tillgång till dina bilder för att du ska kunna välja en profilbild."
+        }
       ]
     ],
     "experiments": {

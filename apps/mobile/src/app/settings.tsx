@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import * as Location from 'expo-location';
-import { useFocusEffect } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -38,7 +38,9 @@ export default function SettingsScreen() {
         if (permission.status !== 'granted') {
           await stopLocationSharing();
           await setLocationSharing(userId, false);
-          setError('Platsåtkomst har inaktiverats i telefonens inställningar. Platsdelning är nu avstängd.');
+          setError(
+            'Platsåtkomst har inaktiverats i telefonens inställningar. Platsdelning är nu avstängd.',
+          );
           refetch();
         }
       });
@@ -56,7 +58,11 @@ export default function SettingsScreen() {
           setError(permission.reason);
           return;
         }
-        const position = await Location.getCurrentPositionAsync({});
+        const position = await Location.getLastKnownPositionAsync();
+        if (!position) {
+          setError('epaRadar kunde inte hitta en aktuell plats. Öppna kartan och försök igen.');
+          return;
+        }
         await upsertLocation({
           userId,
           lat: position.coords.latitude,
@@ -94,6 +100,14 @@ export default function SettingsScreen() {
             disabled={busy}
           />
         </ThemedView>
+        <Pressable
+          accessibilityRole="link"
+          onPress={() => router.push('/privacy')}
+        >
+          <ThemedText type="small" themeColor="brand">
+            Läs epaRadars integritetspolicy
+          </ThemedText>
+        </Pressable>
         {error ? <ThemedText type="error">{error}</ThemedText> : null}
       </SafeAreaView>
     </ScreenBackground>
@@ -102,7 +116,12 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  safeArea: { flex: 1, paddingHorizontal: Spacing.three, paddingTop: Spacing.three, gap: Spacing.two },
+  safeArea: {
+    flex: 1,
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.three,
+    gap: Spacing.two,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

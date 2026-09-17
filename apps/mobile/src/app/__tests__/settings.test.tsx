@@ -40,7 +40,7 @@ jest.mock('@/lib/location-task', () => ({
 }));
 
 jest.mock('expo-location', () => ({
-  getCurrentPositionAsync: jest.fn(),
+  getLastKnownPositionAsync: jest.fn(),
   getBackgroundPermissionsAsync: jest.fn(),
 }));
 
@@ -69,7 +69,7 @@ describe('SettingsScreen sharing toggle', () => {
   it('requests permission and upserts a shared location when enabled', async () => {
     mockFetchMyLocation.mockResolvedValue(null as never);
     mockRequestLocationPermissions.mockResolvedValue({ granted: true } as never);
-    jest.mocked(Location.getCurrentPositionAsync).mockResolvedValue({
+    jest.mocked(Location.getLastKnownPositionAsync).mockResolvedValue({
       coords: { latitude: 59.3, longitude: 18.1 },
     } as never);
     mockUpsertLocation.mockResolvedValue(undefined as never);
@@ -90,6 +90,21 @@ describe('SettingsScreen sharing toggle', () => {
       sharingEnabled: true,
     });
     expect(mockStartLocationSharing).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows an error and does not enable sharing when no cached location exists', async () => {
+    mockFetchMyLocation.mockResolvedValue(null as never);
+    mockRequestLocationPermissions.mockResolvedValue({ granted: true } as never);
+    jest.mocked(Location.getLastKnownPositionAsync).mockResolvedValue(null);
+
+    const { findByTestId, findByText } = await renderSettings();
+    const toggle = await findByTestId('sharing-toggle');
+
+    fireEvent(toggle, 'valueChange', true);
+
+    await findByText('epaRadar kunde inte hitta en aktuell plats. Öppna kartan och försök igen.');
+    expect(mockUpsertLocation).not.toHaveBeenCalled();
+    expect(mockStartLocationSharing).not.toHaveBeenCalled();
   });
 
   it('shows the Swedish denial reason and never upserts when permission is denied', async () => {

@@ -222,6 +222,127 @@ export type Database = {
           },
         ]
       }
+      meetup_checkins: {
+        Row: {
+          checked_in_at: string
+          meetup_id: string
+          user_id: string
+        }
+        Insert: {
+          checked_in_at?: string
+          meetup_id: string
+          user_id: string
+        }
+        Update: {
+          checked_in_at?: string
+          meetup_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetup_checkins_meetup_id_fkey"
+            columns: ["meetup_id"]
+            isOneToOne: false
+            referencedRelation: "meetups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetup_checkins_meetup_id_fkey"
+            columns: ["meetup_id"]
+            isOneToOne: false
+            referencedRelation: "meetups_with_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetup_checkins_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meetup_interests: {
+        Row: {
+          created_at: string
+          meetup_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          meetup_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          meetup_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetup_interests_meetup_id_fkey"
+            columns: ["meetup_id"]
+            isOneToOne: false
+            referencedRelation: "meetups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetup_interests_meetup_id_fkey"
+            columns: ["meetup_id"]
+            isOneToOne: false
+            referencedRelation: "meetups_with_stats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetup_interests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meetups: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          lat: number
+          lng: number
+          starts_at: string
+          title: string
+          vibe_emoji: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          lat: number
+          lng: number
+          starts_at: string
+          title: string
+          vibe_emoji?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          lat?: number
+          lng?: number
+          starts_at?: string
+          title?: string
+          vibe_emoji?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetups_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           body: string
@@ -350,9 +471,35 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      meetups_with_stats: {
+        Row: {
+          created_at: string | null
+          creator_id: string | null
+          here_now_count: number | null
+          id: string | null
+          interest_count: number | null
+          lat: number | null
+          lng: number | null
+          starts_at: string | null
+          title: string | null
+          vibe_emoji: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetups_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      check_in_at_meetup: {
+        Args: { p_lat: number; p_lng: number; p_meetup_id: string }
+        Returns: boolean
+      }
       create_conversation: {
         Args: { group_name?: string; other_user_ids: string[] }
         Returns: string

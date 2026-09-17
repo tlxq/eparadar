@@ -76,7 +76,7 @@ export default function NewChatScreen() {
                   type={isSelected ? 'backgroundSelected' : 'backgroundElement'}
                   style={styles.userRow}
                 >
-                  <Avatar name={item.display_name} size={32} />
+                  <Avatar name={item.display_name} imageUrl={item.avatar_url} size={32} />
                   <View style={styles.userRowText}>
                     <ThemedText type="smallBold">{item.display_name}</ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">

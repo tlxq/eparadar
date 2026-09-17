@@ -11,8 +11,8 @@ import { Spacing } from '@/constants/theme';
 import { signIn } from '@/lib/api';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(__DEV__ ? 'test@test.se' : '');
+  const [password, setPassword] = useState(__DEV__ ? 'testtest' : '');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
