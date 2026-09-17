@@ -51,6 +51,7 @@ export default function ProfileScreen() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
   const [loadedProfileId, setLoadedProfileId] = useState<string | null>(null);
 
   if (profile && profile.id !== loadedProfileId) {
@@ -85,11 +86,14 @@ export default function ProfileScreen() {
     if (result.canceled || !result.assets[0]) return;
 
     setUploadingAvatar(true);
+    setAvatarError(null);
     try {
       const publicUrl = await uploadAvatar(userId, result.assets[0].uri);
       setAvatarUrl(publicUrl);
       await updateProfile(userId, { displayName, bio: bio || null, avatarUrl: publicUrl });
       queryClient.invalidateQueries({ queryKey: ['profile', userId] });
+    } catch (error) {
+      setAvatarError(error instanceof Error ? error.message : 'Bilden kunde inte laddas upp.');
     } finally {
       setUploadingAvatar(false);
     }
@@ -120,6 +124,9 @@ export default function ProfileScreen() {
                   )}
                 </View>
               </Pressable>
+              {avatarError ? (
+                <ThemedText themeColor="danger">{avatarError}</ThemedText>
+              ) : null}
               <TextField
                 placeholder="Visningsnamn"
                 value={displayName}
