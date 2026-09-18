@@ -6,8 +6,13 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
+    "commitizen": "^4.3.2",
+    "cz-conventional-changelog": "^3.3.0",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
     "prettier": "^3.9.6",
     "typescript": "~6.0.3"
   },
@@ -17,6 +22,14 @@
     "lint": "npm run lint --workspaces --if-present",
     "format": "prettier --write .",
     "gen:types": "supabase gen types typescript --linked --schema public > apps/mobile/src/lib/database.types.ts",
-    "db:test": "supabase test db --local"
+    "db:test": "supabase test db --local",
+    "commit": "cz",
+    "commitlint": "commitlint",
+    "prepare": "node .husky/install.mjs"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
   }
 }
