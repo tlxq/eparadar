@@ -5,7 +5,7 @@ module.exports = [
   ...expoConfig,
   eslintConfigPrettier,
   {
-    ignores: ['dist/*'],
+    ignores: ['dist/*', '.expo/*'],
   },
   {
     files: ['src/hooks/use-color-scheme.web.ts'],
