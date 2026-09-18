@@ -118,3 +118,16 @@ You make every Git commit using your own identity. Do not add AI co-author trail
 or AI attribution to source, project documentation, submissions, or thesis materials. AI may help
 with investigation, implementation, tests, and review, but you define the requirement, review the
 diff, run the checks, and understand every change before committing it.
+
+## Creating commits
+
+After reviewing and staging the files, run:
+
+```sh
+npm run commit
+```
+
+Commitizen asks you to choose the conventional type and write the summary. It then runs Git using
+your configured identity. Husky and Commitlint validate the message automatically, including when
+you use `git commit` directly. Install dependencies with `mise exec -- npm ci` on each computer to
+activate the hook.
