@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 jest.mock('@/hooks/use-color-scheme', () => ({
@@ -51,11 +51,12 @@ async function renderSettings() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
-  return render(
+  const screen = await render(
     <QueryClientProvider client={client}>
       <SettingsScreen />
     </QueryClientProvider>,
   );
+  return { client, screen };
 }
 
 beforeEach(() => {
@@ -75,11 +76,14 @@ describe('SettingsScreen sharing toggle', () => {
     mockUpsertLocation.mockResolvedValue(undefined as never);
     mockStartLocationSharing.mockResolvedValue(undefined as never);
 
-    const { findByTestId } = await renderSettings();
+    const { client, screen } = await renderSettings();
+    const { findByTestId, unmount } = screen;
     const toggle = await findByTestId('sharing-toggle');
     expect(toggle.props.value).toBe(false);
 
-    fireEvent(toggle, 'valueChange', true);
+    await act(async () => {
+      fireEvent(toggle, 'valueChange', true);
+    });
 
     await waitFor(() => expect(mockUpsertLocation).toHaveBeenCalledTimes(1));
     expect(mockRequestLocationPermissions).toHaveBeenCalledTimes(1);
@@ -90,6 +94,8 @@ describe('SettingsScreen sharing toggle', () => {
       sharingEnabled: true,
     });
     expect(mockStartLocationSharing).toHaveBeenCalledTimes(1);
+    await unmount();
+    client.clear();
   });
 
   it('shows an error and does not enable sharing when no cached location exists', async () => {
@@ -114,14 +120,19 @@ describe('SettingsScreen sharing toggle', () => {
       reason: 'epaRadar behöver åtkomst till din plats för att kunna visa dig på kartan.',
     } as never);
 
-    const { findByTestId, findByText } = await renderSettings();
+    const { client, screen } = await renderSettings();
+    const { findByTestId, findByText, unmount } = screen;
     const toggle = await findByTestId('sharing-toggle');
 
-    fireEvent(toggle, 'valueChange', true);
+    await act(async () => {
+      fireEvent(toggle, 'valueChange', true);
+    });
 
     await findByText('epaRadar behöver åtkomst till din plats för att kunna visa dig på kartan.');
     expect(mockUpsertLocation).not.toHaveBeenCalled();
     expect(mockStartLocationSharing).not.toHaveBeenCalled();
+    await unmount();
+    client.clear();
   });
 
   it('stops sharing and persists the off-state when disabled', async () => {
@@ -135,14 +146,19 @@ describe('SettingsScreen sharing toggle', () => {
     mockStopLocationSharing.mockResolvedValue(undefined as never);
     mockSetLocationSharing.mockResolvedValue(undefined as never);
 
-    const { findByTestId } = await renderSettings();
+    const { client, screen } = await renderSettings();
+    const { findByTestId, unmount } = screen;
     const toggle = await findByTestId('sharing-toggle');
     await waitFor(() => expect(toggle.props.value).toBe(true));
 
-    fireEvent(toggle, 'valueChange', false);
+    await act(async () => {
+      fireEvent(toggle, 'valueChange', false);
+    });
 
     await waitFor(() => expect(mockSetLocationSharing).toHaveBeenCalledWith('user-1', false));
     expect(mockStopLocationSharing).toHaveBeenCalledTimes(1);
     expect(mockUpsertLocation).not.toHaveBeenCalled();
+    await unmount();
+    client.clear();
   });
 });
