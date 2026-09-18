@@ -52,4 +52,3 @@ att epaRadar visar användarens plats för vänner på kartan när bakgrundsdeln
 epaRadar riktar sig till ungdomar i EPA-traktorålder. Platsdelning kräver ett aktivt val,
 är vänner-begränsad och är inte offentlig. Detta är en communityfunktion, inte en
 övervakningsfunktion; användaren kan när som helst stänga av den.
-
