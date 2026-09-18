@@ -103,14 +103,19 @@ describe('SettingsScreen sharing toggle', () => {
     mockRequestLocationPermissions.mockResolvedValue({ granted: true } as never);
     jest.mocked(Location.getLastKnownPositionAsync).mockResolvedValue(null);
 
-    const { findByTestId, findByText } = await renderSettings();
+    const { client, screen } = await renderSettings();
+    const { findByTestId, findByText, unmount } = screen;
     const toggle = await findByTestId('sharing-toggle');
 
-    fireEvent(toggle, 'valueChange', true);
+    await act(async () => {
+      fireEvent(toggle, 'valueChange', true);
+    });
 
     await findByText('epaRadar kunde inte hitta en aktuell plats. Öppna kartan och försök igen.');
     expect(mockUpsertLocation).not.toHaveBeenCalled();
     expect(mockStartLocationSharing).not.toHaveBeenCalled();
+    await unmount();
+    client.clear();
   });
 
   it('shows the Swedish denial reason and never upserts when permission is denied', async () => {
