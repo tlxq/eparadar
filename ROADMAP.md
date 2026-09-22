@@ -77,16 +77,30 @@ Cross-cutting, do first — everything after benefits from having it in place.
 
 ## Phase B — Photos: cars + posts
 
-Reuses the avatar upload pattern (`apps/mobile/src/lib/avatar-upload.ts`) rather than inventing a
-new one.
+Reuses the avatar upload pattern (generalized into `apps/mobile/src/lib/image-upload.ts` —
+`uploadImage(bucket, pathPrefix, uri)` plus thin `uploadAvatar`/`uploadCarPhoto`/`uploadPostImage`
+wrappers, renamed from `avatar-upload.ts`) rather than inventing a new one.
 
-- [ ] Photo picker on `cars/new.tsx`, writes to `cars.photo_url` (schema column already exists,
-      unused); show the photo wherever a car is already surfaced (post composer's car picker at
-      minimum — no dedicated car detail/list screen exists yet, don't build one just for this).
-- [ ] Image field on `post/new.tsx`, writes to `posts.image_url` (schema column already exists,
-      unused); render it in the Feed.
-- [ ] Verify end-to-end via `expo start --web` + Playwright against the live project, same as the
-      avatar work, including Storage-object test-data cleanup afterward.
+- [x] Photo picker on `cars/new.tsx`, writes to `cars.photo_url`. New `car-photos` Storage bucket
+      (`supabase/migrations/20260922160000_car_and_post_photos_storage.sql`, same public-read/
+      owner-write-by-folder-prefix RLS shape as avatars). Shown via a new `CarPhoto` component
+      wherever a car is already surfaced: the profile's "Mina bilar" list and the post composer's
+      car picker (still no dedicated car detail/list screen — not needed for this).
+- [x] Image field on `post/new.tsx`, writes to `posts.image_url` via a new `post-images` bucket
+      (same migration); renders full-width in the Feed's `PostCard`.
+- [x] Verified twice: first end-to-end via `expo start --web` + Playwright against a local
+      Supabase instance (signup → add a car with a photo → create a post with an image →
+      confirmed both `photo_url`/`image_url` landed via direct SQL, both public URLs resolve, both
+      render correctly in the Feed and profile car list; Storage RLS scripted directly too — own
+      upload succeeds, public read works, cross-user write into another user's folder is
+      rejected). Migration then pushed to the live project and the same flow re-verified live
+      on-device via `mobile-mcp` on Tom's real phone/account (car photo pick → crop → save →
+      shows in "Mina bilar" and the post composer's car picker; post image pick → crop → publish
+      → renders full-width in the Feed) — confirmed no crash on load either (the Sentry PR from
+      Phase A is safe without a native rebuild). All test rows/Storage objects deleted afterward
+      (posts/car via SQL, Storage objects via the Storage REST API + a service-role key fetched
+      just for that call, since direct SQL delete on `storage.objects` is blocked by Supabase's
+      own `protect_delete()` trigger) and confirmed gone.
 
 ## Phase C — Push notifications
 
