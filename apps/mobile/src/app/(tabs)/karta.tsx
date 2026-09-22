@@ -1,19 +1,21 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as Location from 'expo-location';
-import { Platform, Pressable, StyleSheet, Vibration, View } from 'react-native';
+import { FlatList, Platform, Pressable, StyleSheet, Vibration, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
+import { Avatar } from '@/components/avatar';
 import { ScreenBackground } from '@/components/screen-background';
+import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { markInterested } from '@/features/meetups/api';
 import { useMeetups } from '@/features/meetups/hooks';
 import { useRealtimeTable } from '@/hooks/use-realtime-table';
-import { fetchFriendLocations } from '@/lib/api';
+import { fetchFriendLocations, type FriendLocation } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 import { useTheme } from '@/hooks/use-theme';
@@ -258,10 +260,18 @@ export default function MapScreen() {
   const { data: meetups } = useMeetups();
   const hasCentered = useRef(false);
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [picker, setPicker] = useState<'none' | 'search' | 'friends'>('none');
+  const [pickerQuery, setPickerQuery] = useState('');
   const [placingStep, setPlacingStep] = useState<'idle' | 'placing' | 'confirming'>('idle');
   const [draftPin, setDraftPin] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
+
+  const pickerResults = useMemo(() => {
+    const friends = friendLocations ?? [];
+    if (picker !== 'search' || !pickerQuery.trim()) return friends;
+    const needle = pickerQuery.trim().toLowerCase();
+    return friends.filter((f) => f.profile.display_name.toLowerCase().includes(needle));
+  }, [friendLocations, picker, pickerQuery]);
 
   const centerOnMe = useCallback(async () => {
     const { status } = await Location.getForegroundPermissionsAsync();
@@ -346,8 +356,20 @@ export default function MapScreen() {
     );
   }, [meetups]);
 
+  const closePicker = () => {
+    setPicker('none');
+    setPickerQuery('');
+  };
+
+  const centerOnFriend = (friend: FriendLocation) => {
+    webviewRef.current?.postMessage(
+      JSON.stringify({ type: 'CENTER_ON', lat: friend.lat, lng: friend.lng, zoom: 15 }),
+    );
+    closePicker();
+  };
+
   const startPlacing = () => {
-    setMenuOpen(false);
+    closePicker();
     setPlacingStep('placing');
     setDraftPin(null);
     webviewRef.current?.postMessage(JSON.stringify({ type: 'START_PLACING' }));
@@ -449,47 +471,104 @@ export default function MapScreen() {
           </View>
         )}
 
-        {placingStep === 'idle' && menuOpen && (
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => setMenuOpen(false)} />
+        {placingStep === 'idle' && picker !== 'none' && (
+          <Pressable style={StyleSheet.absoluteFill} onPress={closePicker} />
         )}
-        {placingStep === 'idle' && menuOpen && (
+        {placingStep === 'idle' && picker !== 'none' && (
           <View
             style={[
-              styles.menu,
+              styles.pickerPanel,
               { backgroundColor: theme.backgroundElement, borderColor: theme.border },
             ]}
           >
-            <Pressable onPress={startPlacing} style={styles.menuItem} hitSlop={4}>
-              <ThemedText type="smallBold">➕ Skapa träff</ThemedText>
-            </Pressable>
+            {picker === 'search' && (
+              <TextField
+                placeholder="Sök vän"
+                value={pickerQuery}
+                onChangeText={setPickerQuery}
+                autoFocus
+              />
+            )}
+            <FlatList
+              data={pickerResults}
+              keyExtractor={(item) => item.user_id}
+              style={styles.pickerList}
+              renderItem={({ item }) => (
+                <Pressable
+                  onPress={() => centerOnFriend(item)}
+                  style={styles.pickerRow}
+                  hitSlop={4}
+                >
+                  <Avatar
+                    name={item.profile.display_name}
+                    imageUrl={item.profile.avatar_url}
+                    size={32}
+                  />
+                  <ThemedText type="smallBold">{item.profile.display_name}</ThemedText>
+                </Pressable>
+              )}
+              ListEmptyComponent={
+                <ThemedText type="small" themeColor="textSecondary" style={styles.pickerEmpty}>
+                  Inga vänner delar sin plats just nu.
+                </ThemedText>
+              }
+            />
           </View>
         )}
+
         {placingStep === 'idle' && (
-          <Pressable
-            onPress={centerOnMe}
-            disabled={locating}
+          <View
             style={[
-              styles.fab,
-              styles.locateFab,
+              styles.actionBar,
               { backgroundColor: theme.backgroundElement, borderColor: theme.border },
             ]}
-            hitSlop={8}
           >
-            <Ionicons
-              name={locating ? 'ellipsis-horizontal' : 'locate'}
-              size={22}
-              color={theme.text}
-            />
-          </Pressable>
-        )}
-        {placingStep === 'idle' && (
-          <Pressable
-            onPress={() => setMenuOpen((open) => !open)}
-            style={[styles.fab, { backgroundColor: theme.brand }]}
-            hitSlop={8}
-          >
-            <ThemedText style={styles.fabLabel}>{menuOpen ? '✕' : '☰'}</ThemedText>
-          </Pressable>
+            <Pressable
+              onPress={() => setPicker(picker === 'search' ? 'none' : 'search')}
+              style={styles.actionBarBtn}
+              hitSlop={8}
+              accessibilityLabel="Sök vän"
+            >
+              <Ionicons
+                name="search"
+                size={22}
+                color={picker === 'search' ? theme.brand : theme.text}
+              />
+            </Pressable>
+            <Pressable
+              onPress={() => setPicker(picker === 'friends' ? 'none' : 'friends')}
+              style={styles.actionBarBtn}
+              hitSlop={8}
+              accessibilityLabel="Vänner på kartan"
+            >
+              <Ionicons
+                name="people"
+                size={22}
+                color={picker === 'friends' ? theme.brand : theme.text}
+              />
+            </Pressable>
+            <Pressable
+              onPress={startPlacing}
+              style={styles.actionBarBtn}
+              hitSlop={8}
+              accessibilityLabel="Skapa träff"
+            >
+              <Ionicons name="add-circle" size={26} color={theme.brand} />
+            </Pressable>
+            <Pressable
+              onPress={centerOnMe}
+              disabled={locating}
+              style={styles.actionBarBtn}
+              hitSlop={8}
+              accessibilityLabel="Min position"
+            >
+              <Ionicons
+                name={locating ? 'ellipsis-horizontal' : 'locate'}
+                size={22}
+                color={theme.text}
+              />
+            </Pressable>
+          </View>
         )}
       </SafeAreaView>
     </ScreenBackground>
@@ -500,40 +579,47 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: Spacing.three },
   webview: { flex: 1 },
-  locateFab: {
-    bottom: Spacing.five + 64,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  fab: {
+  actionBar: {
     position: 'absolute',
+    left: Spacing.four,
     right: Spacing.four,
     bottom: Spacing.five,
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingVertical: Spacing.three,
     shadowColor: '#000',
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,
   },
-  fabLabel: { color: '#fff', fontSize: 22, lineHeight: 24 },
-  menu: {
+  actionBarBtn: { alignItems: 'center', justifyContent: 'center' },
+  pickerPanel: {
     position: 'absolute',
+    left: Spacing.four,
     right: Spacing.four,
-    bottom: Spacing.five + 128,
+    bottom: Spacing.five + 76,
+    maxHeight: 280,
     borderRadius: Spacing.three,
     borderWidth: StyleSheet.hairlineWidth,
-    paddingVertical: Spacing.one,
+    padding: Spacing.three,
+    gap: Spacing.two,
     shadowColor: '#000',
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,
   },
-  menuItem: { paddingVertical: Spacing.three, paddingHorizontal: Spacing.four },
+  pickerList: { flexGrow: 0 },
+  pickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    paddingVertical: Spacing.two,
+  },
+  pickerEmpty: { paddingVertical: Spacing.two },
   hintBanner: {
     position: 'absolute',
     top: Spacing.three,
