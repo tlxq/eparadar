@@ -1,6 +1,7 @@
 import { Alert, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+import { router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 
 import { Colors } from '@/constants/theme';
@@ -48,6 +49,24 @@ export async function syncPushTokenIfGranted(userId: string): Promise<void> {
   } catch (err) {
     console.warn('registerPushToken failed', err);
   }
+}
+
+function navigateForNotificationData(data: Record<string, unknown> | undefined): void {
+  if (!data) return;
+  if (data.type === 'message' && typeof data.conversationId === 'string') {
+    router.push(`/chat/${data.conversationId}`);
+  } else if (data.type === 'friend_request' || data.type === 'friend_accepted') {
+    router.push('/friends');
+  } else if (data.type === 'meetup_interest' && typeof data.meetupId === 'string') {
+    router.push(`/meetups/${data.meetupId}`);
+  }
+}
+
+export function setupNotificationResponseListener(): () => void {
+  const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+    navigateForNotificationData(response.notification.request.content.data);
+  });
+  return () => subscription.remove();
 }
 
 export async function maybeRequestNotificationPermission(userId: string): Promise<void> {
