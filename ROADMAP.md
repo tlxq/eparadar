@@ -107,8 +107,15 @@ wrappers, renamed from `avatar-upload.ts`) rather than inventing a new one.
 The biggest lift in this batch — needs schema and a sending mechanism, not just a package
 install.
 
-- [ ] Install `expo-notifications`, register push tokens on login, store them in a new
-      `push_tokens` table (`user_id`, `token`, `platform`) keyed for multi-device.
+- [x] Schema: `push_tokens` table (`supabase/migrations/20260922170000_push_tokens.sql` —
+      `user_id`, `token`, `platform` check-constrained to ios/android/web, `unique(user_id,
+      token)` so re-registering the same token on login is a plain upsert), owner-only
+      insert/select/delete RLS, pgTAP-covered (5 assertions: own-token insert, cross-user insert
+      rejected, invalid platform rejected, owner sees their row, another user sees zero). Known
+      simplification: no cross-user cleanup if the same physical device's token later belongs to
+      a different account (shared/family-phone edge case) — not handled, low stakes for now.
+- [ ] Install `expo-notifications`, register push tokens on login, store them via the schema
+      above, keyed for multi-device.
 - [ ] Sending mechanism: a Supabase Edge Function triggered by a DB webhook on `messages` insert,
       `friendships` insert/accept, and `meetup_interests` insert — calls Expo's push API
       server-side, keeping sending logic in one place.
