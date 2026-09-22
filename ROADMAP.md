@@ -9,9 +9,11 @@ new phase until the current one is checked off (keeps one front open at a time).
   (background location tracking confirmed on two physical devices).
 - **Done & merged**: Meetups, photo upload and avatars, map avatar markers, privacy policy,
   branding, and release-safe store assets.
-- **Next up (Phase A)**: foundation infra — pre-commit quality gate, error tracking, analytics.
-  See Phases A–F below for the full sequencing decided 2026-09-22 (audit + planning session);
-  rationale lives in memory (`project_eparadar.md`), not duplicated here.
+- **Phase A nearly done**: pre-commit quality gate and analytics are merged and live; error
+  tracking is wired but needs a Sentry project/DSN (Tom's to create) and a native rebuild before
+  it's active. Next up: Phase B (car/post photos). See Phases A–F below for the full sequencing
+  decided 2026-09-22 (audit + planning session); rationale lives in memory
+  (`project_eparadar.md`), not duplicated here.
 - **Remaining for launch (Phase F)**: Expo/EAS account and store credentials, manual store
   submission, and optional CI automation after the first successful submission.
 
@@ -55,9 +57,9 @@ Foundation for avatar-style map markers (Phase 3) and for profile customization 
 
 Cross-cutting, do first — everything after benefits from having it in place.
 
-- [ ] **Pre-commit quality gate**: extend the existing husky setup with a `pre-commit` hook
-      (lint-staged) running `eslint --fix` + `tsc --noEmit` on staged files, alongside the
-      existing commit-msg hook. Staged-files-only, keep it fast.
+- [x] **Pre-commit quality gate**: husky `pre-commit` hook running `lint-staged`
+      (`lint-staged.config.mjs`), alongside the existing commit-msg hook — runs the affected
+      workspace's full lint+typecheck on any staged mobile/web file.
 - [ ] **Error tracking**: `@sentry/react-native` (mobile) + `@sentry/astro` (web) installed and
       wired — `Sentry.init`/`Sentry.wrap` in `src/app/_layout.tsx` gated on
       `EXPO_PUBLIC_SENTRY_DSN`, the Astro integration gated on `PUBLIC_SENTRY_DSN`, both no-op
@@ -65,13 +67,13 @@ Cross-cutting, do first — everything after benefits from having it in place.
       DSN(s) in `.env` (see `.env.example`) — nothing reports until that happens — and a fresh
       native build (`expo run:android`/EAS) before native (non-JS) crash capture is active on
       mobile. Once wired in Phase E, its `onError` hook should feed the ErrorBoundary too.
-- [ ] **Analytics**: first-party `analytics_events` table (`supabase/migrations/20260922150000_analytics_events.sql`)
+- [x] **Analytics**: first-party `analytics_events` table (`supabase/migrations/20260922150000_analytics_events.sql`)
       — insert-only RLS (`user_id is null or user_id = auth.uid()`), no select policy for regular
       users, pgTAP-covered (4 assertions). `apps/mobile/src/lib/analytics.ts`'s `trackEvent(name,
       props)` wrapper is wired in, with a first real call site (`app_opened` in `_layout.tsx`).
-      Verified against a local Supabase instance (insert succeeds, RLS blocks read for other
-      users, service_role can read, test data cleaned up) — **not yet pushed to the live
-      project**, so nothing is actually being recorded until that migration is applied remotely.
+      Migration pushed to the live project 2026-09-22 and verified live (throwaway account,
+      insert → confirmed via direct SQL → RLS blocks a regular user's `select` → test row and
+      account deleted afterward).
 
 ## Phase B — Photos: cars + posts
 
