@@ -8,24 +8,28 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
+import { CarPhoto } from '@/components/car-photo';
 import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { fetchMyCars, fetchProfile, signOut, updateProfile, type Car } from '@/lib/api';
-import { uploadAvatar } from '@/lib/avatar-upload';
+import { uploadAvatar } from '@/lib/image-upload';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 import { useTheme } from '@/hooks/use-theme';
 
 function CarRow({ car }: { car: Car }) {
   return (
-    <ThemedView type="backgroundElement" style={styles.carRow}>
-      <ThemedText type="smallBold">{car.nickname ?? `${car.make} ${car.model}`}</ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">
-        {car.make} {car.model} {car.year ?? ''}
-      </ThemedText>
+    <ThemedView type="backgroundElement" style={[styles.carRow, styles.carRowContent]}>
+      <CarPhoto imageUrl={car.photo_url} size={40} />
+      <View>
+        <ThemedText type="smallBold">{car.nickname ?? `${car.make} ${car.model}`}</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          {car.make} {car.model} {car.year ?? ''}
+        </ThemedText>
+      </View>
     </ThemedView>
   );
 }
@@ -194,6 +198,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
   },
   list: { gap: Spacing.two, paddingBottom: Spacing.four },
-  carRow: { padding: Spacing.three, borderRadius: Spacing.three, gap: Spacing.half },
+  carRow: { padding: Spacing.three, borderRadius: Spacing.three },
+  carRowContent: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   footer: { marginTop: Spacing.three, gap: Spacing.two },
 });

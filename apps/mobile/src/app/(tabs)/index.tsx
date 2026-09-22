@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { FlatList, Image, RefreshControl, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 
@@ -28,6 +28,7 @@ function PostCard({ post }: { post: Post }) {
         </View>
       </View>
       <ThemedText>{post.body}</ThemedText>
+      {post.image_url ? <Image source={{ uri: post.image_url }} style={styles.postImage} /> : null}
     </ThemedView>
   );
 }
@@ -73,4 +74,5 @@ const styles = StyleSheet.create({
   card: { padding: Spacing.three, borderRadius: Spacing.three, gap: Spacing.two },
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   cardHeaderText: { gap: Spacing.half },
+  postImage: { width: '100%', aspectRatio: 4 / 3, borderRadius: Spacing.two },
 });

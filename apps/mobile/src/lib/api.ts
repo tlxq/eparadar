@@ -8,7 +8,7 @@ export type Car = DbTables['cars']['Row'];
 
 export type Post = DbTables['posts']['Row'] & {
   author: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'> | null;
-  car: Pick<Car, 'id' | 'make' | 'model' | 'nickname'> | null;
+  car: Pick<Car, 'id' | 'make' | 'model' | 'nickname' | 'photo_url'> | null;
 };
 
 export async function signUpWithProfile(input: {
@@ -47,14 +47,18 @@ export async function fetchPosts(): Promise<Post[]> {
   const { data, error } = await supabase
     .from('posts')
     .select(
-      '*, author:profiles!posts_author_id_fkey(id, username, display_name, avatar_url), car:cars(id, make, model, nickname)',
+      '*, author:profiles!posts_author_id_fkey(id, username, display_name, avatar_url), car:cars(id, make, model, nickname, photo_url)',
     )
     .order('created_at', { ascending: false });
   if (error) throw error;
   return (data ?? []) as unknown as Post[];
 }
 
-export async function createPost(input: { body: string; carId: string | null }) {
+export async function createPost(input: {
+  body: string;
+  carId: string | null;
+  imageUrl?: string | null;
+}) {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError) throw userError;
   const authorId = userData.user?.id;
@@ -64,6 +68,7 @@ export async function createPost(input: { body: string; carId: string | null }) 
     author_id: authorId,
     car_id: input.carId,
     body: input.body,
+    image_url: input.imageUrl ?? null,
   });
   if (error) throw error;
 }
@@ -84,6 +89,7 @@ export async function createCar(input: {
   model: string;
   year: number | null;
   nickname: string | null;
+  photoUrl?: string | null;
 }) {
   const { error } = await supabase.from('cars').insert({
     owner_id: input.ownerId,
@@ -91,6 +97,7 @@ export async function createCar(input: {
     model: input.model,
     year: input.year,
     nickname: input.nickname,
+    photo_url: input.photoUrl ?? null,
   });
   if (error) throw error;
 }
