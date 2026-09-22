@@ -16,6 +16,7 @@ import '@/lib/location-task';
 
 import { trackEvent } from '@/lib/analytics';
 import { queryClient } from '@/lib/queryClient';
+import { syncPushTokenIfGranted } from '@/lib/push-notifications';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
 
@@ -42,10 +43,12 @@ function RootLayout() {
       useAuthStore.getState().setSession(data.session);
       useAuthStore.getState().setInitializing(false);
       trackEvent('app_opened');
+      if (data.session) syncPushTokenIfGranted(data.session.user.id);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       useAuthStore.getState().setSession(newSession);
+      if (newSession) syncPushTokenIfGranted(newSession.user.id);
     });
 
     return () => listener.subscription.unsubscribe();

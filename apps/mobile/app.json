@@ -59,6 +59,12 @@
           "photosPermission": "epaRadar behöver tillgång till dina bilder för att du ska kunna välja en profilbild."
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "color": "#2F6FED"
+        }
+      ],
       "@sentry/react-native/expo"
     ],
     "experiments": {

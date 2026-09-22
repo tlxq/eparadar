@@ -1,6 +1,6 @@
 begin;
 
-select plan(5);
+select plan(6);
 
 insert into auth.users (id) values
   ('c3000000-0000-0000-0000-000000000001'),
@@ -35,6 +35,11 @@ select is(
   (select count(*)::int from public.push_tokens),
   1,
   'the owner sees exactly their own token'
+);
+
+select lives_ok(
+  $$insert into public.push_tokens (user_id, token, platform) values ('c3000000-0000-0000-0000-000000000001', 'expo-token-a', 'android') on conflict (user_id, token) do update set platform = excluded.platform$$,
+  're-registering the same token on a later login (upsert on conflict) does not violate RLS'
 );
 
 set local request.jwt.claim.sub = 'd3000000-0000-0000-0000-000000000002';

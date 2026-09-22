@@ -18,6 +18,7 @@ import {
   respondToFriendRequest,
   type Friendship,
 } from '@/lib/api';
+import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 
@@ -27,9 +28,10 @@ function RequestRow({ request, myUserId }: { request: Friendship; myUserId: stri
 
   const respond = useMutation({
     mutationFn: (accept: boolean) => respondToFriendRequest(request.id, accept),
-    onSuccess: () => {
+    onSuccess: (_data, accepted) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.friends(myUserId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.friendRequests(myUserId) });
+      if (accepted) maybeRequestNotificationPermission(myUserId);
     },
   });
 

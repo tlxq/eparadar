@@ -17,6 +17,11 @@ create policy "users view their own push tokens"
   on push_tokens for select
   using (auth.uid() = user_id);
 
+create policy "users update their own push tokens"
+  on push_tokens for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
 create policy "users delete their own push tokens"
   on push_tokens for delete
   using (auth.uid() = user_id);

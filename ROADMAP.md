@@ -110,21 +110,28 @@ install.
 - [x] Schema: `push_tokens` table (`supabase/migrations/20260922170000_push_tokens.sql` —
       `user_id`, `token`, `platform` check-constrained to ios/android/web, `unique(user_id,
       token)` so re-registering the same token on login is a plain upsert), owner-only
-      insert/select/delete RLS, pgTAP-covered (5 assertions: own-token insert, cross-user insert
-      rejected, invalid platform rejected, owner sees their row, another user sees zero). Known
-      simplification: no cross-user cleanup if the same physical device's token later belongs to
-      a different account (shared/family-phone edge case) — not handled, low stakes for now.
-- [ ] Install `expo-notifications`, register push tokens on login, store them via the schema
-      above, keyed for multi-device.
+      insert/select/update/delete RLS (update policy needed too — an upsert's `ON CONFLICT DO
+      UPDATE` path is an UPDATE under the hood, missed on the first pass, caught by testing the
+      re-registration case specifically). pgTAP-covered (6 assertions). Known simplification: no
+      cross-user cleanup if the same physical device's token later belongs to a different account
+      (shared/family-phone edge case) — not handled, low stakes for now. **Not yet pushed live.**
+- [x] Client: `expo-notifications` + `@react-native-async-storage/async-storage` installed,
+      `apps/mobile/src/lib/push-notifications.ts` — `syncPushTokenIfGranted` on login/session
+      init, `maybeRequestNotificationPermission` wired into the two "first meaningful action"
+      triggers (friend request accepted, meetup interest marked). Pre-permission Alert before the
+      OS dialog, `canAskAgain`-gated so it only shows once and respects a permanent decline.
+      **Real bug caught and fixed via on-device testing**: Android's `getPermissionsAsync()`
+      returns `status: "denied"` (not `"undetermined"`) even when the permission was never
+      actually requested — the correct "haven't asked yet" signal on Android is
+      `canAskAgain: true`, not the status string. Verified live end-to-end on-device: real Alert →
+      real OS permission dialog → real grant, confirmed via `adb dumpsys package`. Test meetup and
+      test account cleaned up afterward. Actual push-token DB write couldn't be verified yet since
+      the schema above isn't live (caught gracefully, no crash) — will confirm once it is.
 - [ ] Sending mechanism: a Supabase Edge Function triggered by a DB webhook on `messages` insert,
       `friendships` insert/accept, and `meetup_interests` insert — calls Expo's push API
       server-side, keeping sending logic in one place.
-- [ ] UX: never prompt on first launch — ask after a first meaningful action (first friend added
-      or first meetup joined), with a custom pre-permission screen explaining why, matching the
-      existing in-context pattern used for location permission.
 - [ ] Tapping a notification deep-links to the right screen (chat thread, friend request, meetup
       detail) via Expo Router's linking config.
-- [ ] pgTAP coverage for `push_tokens` RLS (owner-only), same treatment as friendships/locations.
 
 ## Phase D — Snapchat-style map polish
 

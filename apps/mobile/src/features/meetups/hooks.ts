@@ -10,6 +10,7 @@ import {
   setInterested,
 } from '@/features/meetups/api';
 import { queryKeys } from '@/lib/query-keys';
+import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { useRealtimeTable } from '@/hooks/use-realtime-table';
 
 export function useMeetups() {
@@ -64,9 +65,10 @@ export function useToggleInterest(meetupId: string, myUserId: string | undefined
 
   return useMutation({
     mutationFn: (interested: boolean) => setInterested(meetupId, myUserId!, interested),
-    onSuccess: () => {
+    onSuccess: (_data, interested) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.meetupDetail(meetupId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.meetups() });
+      if (interested && myUserId) maybeRequestNotificationPermission(myUserId);
     },
   });
 }
