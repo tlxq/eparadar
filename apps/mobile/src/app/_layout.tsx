@@ -14,6 +14,7 @@ import { useColorScheme } from 'react-native';
 
 import '@/lib/location-task';
 
+import { trackEvent } from '@/lib/analytics';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
@@ -40,6 +41,7 @@ function RootLayout() {
     supabase.auth.getSession().then(({ data }) => {
       useAuthStore.getState().setSession(data.session);
       useAuthStore.getState().setInitializing(false);
+      trackEvent('app_opened');
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
