@@ -65,11 +65,13 @@ Cross-cutting, do first — everything after benefits from having it in place.
       DSN(s) in `.env` (see `.env.example`) — nothing reports until that happens — and a fresh
       native build (`expo run:android`/EAS) before native (non-JS) crash capture is active on
       mobile. Once wired in Phase E, its `onError` hook should feed the ErrorBoundary too.
-- [ ] **Analytics**: a first-party `analytics_events` table in Supabase (`user_id` nullable,
-      `event_name`, `props jsonb`, `created_at`) + a thin `trackEvent(name, props)` client
-      wrapper, instead of a third-party SDK — consistent with the project's existing pattern
-      (Supabase over Firebase, Leaflet/OSM over Google Maps) and a stronger GDPR story for the
-      thesis: no data leaves the project's own Supabase instance.
+- [ ] **Analytics**: first-party `analytics_events` table (`supabase/migrations/20260922150000_analytics_events.sql`)
+      — insert-only RLS (`user_id is null or user_id = auth.uid()`), no select policy for regular
+      users, pgTAP-covered (4 assertions). `apps/mobile/src/lib/analytics.ts`'s `trackEvent(name,
+      props)` wrapper is wired in, with a first real call site (`app_opened` in `_layout.tsx`).
+      Verified against a local Supabase instance (insert succeeds, RLS blocks read for other
+      users, service_role can read, test data cleaned up) — **not yet pushed to the live
+      project**, so nothing is actually being recorded until that migration is applied remotely.
 
 ## Phase B — Photos: cars + posts
 
