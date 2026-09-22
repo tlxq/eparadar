@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@eparadar/theme": "*",
+    "@sentry/astro": "^10.75.2",
     "astro": "^7.3.2"
   },
   "allowScripts": {
