@@ -9,6 +9,7 @@ import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { signUpWithProfile } from '@/lib/api';
+import { getErrorMessage } from '@/lib/errors';
 
 export default function SignUpScreen() {
   const [displayName, setDisplayName] = useState('');
@@ -24,7 +25,7 @@ export default function SignUpScreen() {
     try {
       await signUpWithProfile({ email, password, username, displayName });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Något gick fel.');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

@@ -11,11 +11,13 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { fetchMyLocation, setLocationSharing, upsertLocation } from '@/lib/api';
+import { getErrorMessage } from '@/lib/errors';
 import {
   requestLocationPermissions,
   startLocationSharing,
   stopLocationSharing,
 } from '@/lib/location-task';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 
 export default function SettingsScreen() {
@@ -25,7 +27,7 @@ export default function SettingsScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const { data: location, refetch } = useQuery({
-    queryKey: ['myLocation', userId],
+    queryKey: queryKeys.myLocation(userId),
     queryFn: () => fetchMyLocation(userId!),
     enabled: !!userId,
   });
@@ -74,9 +76,9 @@ export default function SettingsScreen() {
         await stopLocationSharing();
         await setLocationSharing(userId, false);
       }
-      queryClient.invalidateQueries({ queryKey: ['myLocation', userId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.myLocation(userId) });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Något gick fel.');
+      setError(getErrorMessage(err));
     } finally {
       setBusy(false);
     }

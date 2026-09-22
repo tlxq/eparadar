@@ -10,6 +10,8 @@ import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { createCar } from '@/lib/api';
+import { getErrorMessage } from '@/lib/errors';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 
 export default function NewCarScreen() {
@@ -31,10 +33,10 @@ export default function NewCarScreen() {
         nickname: nickname || null,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cars', userId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cars(userId) });
       router.back();
     },
-    onError: (err) => setError(err instanceof Error ? err.message : 'Något gick fel.'),
+    onError: (err) => setError(getErrorMessage(err)),
   });
 
   return (

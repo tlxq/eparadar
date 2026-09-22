@@ -10,6 +10,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { fetchPosts, type Post } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 function PostCard({ post }: { post: Post }) {
   const authorName = post.author?.display_name ?? 'Okänd användare';
@@ -33,7 +34,7 @@ function PostCard({ post }: { post: Post }) {
 
 export default function FeedScreen() {
   const { data, isLoading, refetch, isRefetching } = useQuery({
-    queryKey: ['posts'],
+    queryKey: queryKeys.posts(),
     queryFn: fetchPosts,
   });
 

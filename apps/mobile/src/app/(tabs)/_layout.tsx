@@ -1,12 +1,11 @@
-import { useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useRealtimeTable } from '@/hooks/use-realtime-table';
 import { useTheme } from '@/hooks/use-theme';
 import { fetchPendingRequests } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
-import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
 
 export default function TabsLayout() {
@@ -21,33 +20,27 @@ export default function TabsLayout() {
   });
   const pendingCount = pendingRequests?.length ?? 0;
 
-  useEffect(() => {
-    if (!userId) return;
+  function invalidateFriendships() {
+    queryClient.invalidateQueries({ queryKey: queryKeys.friends(userId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.friendRequests(userId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(userId) });
+  }
 
-    const invalidate = () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.friends(userId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.friendRequests(userId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(userId) });
-    };
+  useRealtimeTable({
+    channelName: `friendships:requester:${userId}`,
+    table: 'friendships',
+    filter: `requester_id=eq.${userId}`,
+    enabled: !!userId,
+    onChange: invalidateFriendships,
+  });
 
-    const channel = supabase
-      .channel(`friendships:${userId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'friendships', filter: `requester_id=eq.${userId}` },
-        invalidate,
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'friendships', filter: `addressee_id=eq.${userId}` },
-        invalidate,
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId, queryClient]);
+  useRealtimeTable({
+    channelName: `friendships:addressee:${userId}`,
+    table: 'friendships',
+    filter: `addressee_id=eq.${userId}`,
+    enabled: !!userId,
+    onChange: invalidateFriendships,
+  });
 
   return (
     <Tabs

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,6 +11,7 @@ import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useRealtimeTable } from '@/hooks/use-realtime-table';
 import {
   conversationTitle,
   fetchConversation,
@@ -18,7 +19,7 @@ import {
   sendMessage,
   type Message,
 } from '@/lib/api';
-import { supabase } from '@/lib/supabase';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 
 function MessageBubble({ message, isMine }: { message: Message; isMine: boolean }) {
@@ -48,32 +49,25 @@ export default function ConversationScreen() {
   const [sending, setSending] = useState(false);
 
   const { data: conversation } = useQuery({
-    queryKey: ['conversation', id],
+    queryKey: queryKeys.conversation(id),
     queryFn: () => fetchConversation(id!),
     enabled: !!id,
   });
 
   const { data: messages } = useQuery({
-    queryKey: ['messages', id],
+    queryKey: queryKeys.messages(id),
     queryFn: () => fetchMessages(id!),
     enabled: !!id,
   });
 
-  useEffect(() => {
-    if (!id) return;
-    const channel = supabase
-      .channel(`messages:${id}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${id}` },
-        () => queryClient.invalidateQueries({ queryKey: ['messages', id] }),
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [id, queryClient]);
+  useRealtimeTable({
+    channelName: `messages:${id}`,
+    table: 'messages',
+    event: 'INSERT',
+    filter: `conversation_id=eq.${id}`,
+    enabled: !!id,
+    onChange: () => queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) }),
+  });
 
   async function handleSend() {
     if (!userId || !id || !body.trim()) return;
@@ -81,7 +75,7 @@ export default function ConversationScreen() {
     try {
       await sendMessage({ conversationId: id, senderId: userId, body: body.trim() });
       setBody('');
-      queryClient.invalidateQueries({ queryKey: ['messages', id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) });
     } finally {
       setSending(false);
     }

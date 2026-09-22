@@ -4,4 +4,12 @@ export const queryKeys = {
   outgoingRequests: (userId: string | undefined) => ['outgoingRequests', userId] as const,
   meetups: () => ['meetups'] as const,
   meetupDetail: (meetupId: string | undefined) => ['meetupDetail', meetupId] as const,
+  posts: () => ['posts'] as const,
+  cars: (userId: string | undefined) => ['cars', userId] as const,
+  profile: (userId: string | undefined) => ['profile', userId] as const,
+  conversations: (userId: string | undefined) => ['conversations', userId] as const,
+  conversation: (conversationId: string | undefined) => ['conversation', conversationId] as const,
+  messages: (conversationId: string | undefined) => ['messages', conversationId] as const,
+  myLocation: (userId: string | undefined) => ['myLocation', userId] as const,
+  friendLocations: (userId: string | undefined) => ['friendLocations', userId] as const,
 };

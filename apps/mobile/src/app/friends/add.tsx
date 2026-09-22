@@ -1,33 +1,24 @@
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMutation } from '@tanstack/react-query';
 
-import { Avatar } from '@/components/avatar';
 import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { UserSearchRow } from '@/components/user-search-row';
 import { Spacing } from '@/constants/theme';
-import { searchUsersToAdd, sendFriendRequest, type Profile } from '@/lib/api';
+import { getErrorMessage } from '@/lib/errors';
+import { useUserSearch } from '@/hooks/use-user-search';
+import { searchUsersToAdd, sendFriendRequest } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
 
 export default function AddFriendScreen() {
   const userId = useAuthStore((state) => state.session?.user.id);
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Profile[]>([]);
+  const { query, results, handleSearch } = useUserSearch(searchUsersToAdd, userId);
   const [sentIds, setSentIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
-
-  async function handleSearch(text: string) {
-    setQuery(text);
-    if (!userId || text.trim().length < 2) {
-      setResults([]);
-      return;
-    }
-    const users = await searchUsersToAdd(text, userId);
-    setResults(users);
-  }
 
   const mutation = useMutation({
     mutationFn: (targetUserId: string) => sendFriendRequest(targetUserId),
@@ -35,7 +26,7 @@ export default function AddFriendScreen() {
       setSentIds((current) => new Set(current).add(targetUserId));
       setError(null);
     },
-    onError: (err) => setError(err instanceof Error ? err.message : 'Något gick fel.'),
+    onError: (err) => setError(getErrorMessage(err)),
   });
 
   return (
@@ -50,13 +41,7 @@ export default function AddFriendScreen() {
             return (
               <Pressable onPress={() => !sent && mutation.mutate(item.id)} disabled={sent}>
                 <ThemedView type="backgroundElement" style={styles.userRow}>
-                  <Avatar name={item.display_name} imageUrl={item.avatar_url} size={32} />
-                  <View style={styles.userRowText}>
-                    <ThemedText type="smallBold">{item.display_name}</ThemedText>
-                    <ThemedText type="small" themeColor="textSecondary">
-                      @{item.username}
-                    </ThemedText>
-                  </View>
+                  <UserSearchRow user={item} />
                   <ThemedText type="small" themeColor={sent ? 'success' : 'brandOnSurface'}>
                     {sent ? 'Skickad' : 'Lägg till'}
                   </ThemedText>
@@ -88,5 +73,4 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     borderRadius: Spacing.three,
   },
-  userRowText: { flex: 1, gap: Spacing.half },
 });

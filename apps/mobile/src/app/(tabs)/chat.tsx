@@ -10,6 +10,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { conversationAvatarUrl, conversationTitle, fetchConversations, type Conversation } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 
 function ConversationRow({
@@ -43,7 +44,7 @@ export default function ChatListScreen() {
   const userId = useAuthStore((state) => state.session?.user.id);
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
-    queryKey: ['conversations', userId],
+    queryKey: queryKeys.conversations(userId),
     queryFn: fetchConversations,
     enabled: !!userId,
   });

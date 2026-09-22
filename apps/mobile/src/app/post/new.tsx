@@ -10,6 +10,8 @@ import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { createPost, fetchMyCars, type Car } from '@/lib/api';
+import { getErrorMessage } from '@/lib/errors';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 
 export default function NewPostScreen() {
@@ -20,7 +22,7 @@ export default function NewPostScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const { data: cars } = useQuery({
-    queryKey: ['cars', userId],
+    queryKey: queryKeys.cars(userId),
     queryFn: () => fetchMyCars(userId!),
     enabled: !!userId,
   });
@@ -28,10 +30,10 @@ export default function NewPostScreen() {
   const mutation = useMutation({
     mutationFn: () => createPost({ body, carId }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts() });
       router.back();
     },
-    onError: (err) => setError(err instanceof Error ? err.message : 'Något gick fel.'),
+    onError: (err) => setError(getErrorMessage(err)),
   });
 
   return (

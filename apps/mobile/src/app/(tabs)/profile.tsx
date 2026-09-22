@@ -15,6 +15,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { fetchMyCars, fetchProfile, signOut, updateProfile, type Car } from '@/lib/api';
 import { uploadAvatar } from '@/lib/avatar-upload';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -35,13 +36,13 @@ export default function ProfileScreen() {
   const queryClient = useQueryClient();
 
   const { data: profile } = useQuery({
-    queryKey: ['profile', userId],
+    queryKey: queryKeys.profile(userId),
     queryFn: () => fetchProfile(userId!),
     enabled: !!userId,
   });
 
   const { data: cars } = useQuery({
-    queryKey: ['cars', userId],
+    queryKey: queryKeys.cars(userId),
     queryFn: () => fetchMyCars(userId!),
     enabled: !!userId,
   });
@@ -66,7 +67,7 @@ export default function ProfileScreen() {
     setSaving(true);
     try {
       await updateProfile(userId, { displayName, bio: bio || null, avatarUrl: avatarUrl ?? undefined });
-      queryClient.invalidateQueries({ queryKey: ['profile', userId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile(userId) });
     } finally {
       setSaving(false);
     }
@@ -91,7 +92,7 @@ export default function ProfileScreen() {
       const publicUrl = await uploadAvatar(userId, result.assets[0].uri);
       setAvatarUrl(publicUrl);
       await updateProfile(userId, { displayName, bio: bio || null, avatarUrl: publicUrl });
-      queryClient.invalidateQueries({ queryKey: ['profile', userId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile(userId) });
     } catch (error) {
       setAvatarError(error instanceof Error ? error.message : 'Bilden kunde inte laddas upp.');
     } finally {

@@ -9,6 +9,7 @@ import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { signIn } from '@/lib/api';
+import { getErrorMessage } from '@/lib/errors';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState(__DEV__ ? 'test@test.se' : '');
@@ -22,7 +23,7 @@ export default function LoginScreen() {
     try {
       await signIn(email, password);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Något gick fel.');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

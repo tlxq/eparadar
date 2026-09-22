@@ -1,37 +1,29 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { UserSearchRow } from '@/components/user-search-row';
 import { Spacing } from '@/constants/theme';
+import { useUserSearch } from '@/hooks/use-user-search';
 import { createConversation, searchUsers, type Profile } from '@/lib/api';
+import { getErrorMessage } from '@/lib/errors';
+import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 
 export default function NewChatScreen() {
   const userId = useAuthStore((state) => state.session?.user.id);
   const queryClient = useQueryClient();
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Profile[]>([]);
+  const { query, results, handleSearch } = useUserSearch(searchUsers, userId);
   const [selected, setSelected] = useState<Profile[]>([]);
   const [groupName, setGroupName] = useState('');
   const [error, setError] = useState<string | null>(null);
-
-  async function handleSearch(text: string) {
-    setQuery(text);
-    if (!userId || text.trim().length < 2) {
-      setResults([]);
-      return;
-    }
-    const users = await searchUsers(text, userId);
-    setResults(users);
-  }
 
   function toggleSelected(user: Profile) {
     setSelected((current) =>
@@ -48,10 +40,10 @@ export default function NewChatScreen() {
         groupName: selected.length > 1 ? groupName || null : null,
       }),
     onSuccess: (conversationId) => {
-      queryClient.invalidateQueries({ queryKey: ['conversations', userId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });
       router.replace(`/chat/${conversationId}`);
     },
-    onError: (err) => setError(err instanceof Error ? err.message : 'Något gick fel.'),
+    onError: (err) => setError(getErrorMessage(err)),
   });
 
   return (
@@ -76,13 +68,7 @@ export default function NewChatScreen() {
                   type={isSelected ? 'backgroundSelected' : 'backgroundElement'}
                   style={styles.userRow}
                 >
-                  <Avatar name={item.display_name} imageUrl={item.avatar_url} size={32} />
-                  <View style={styles.userRowText}>
-                    <ThemedText type="smallBold">{item.display_name}</ThemedText>
-                    <ThemedText type="small" themeColor="textSecondary">
-                      @{item.username}
-                    </ThemedText>
-                  </View>
+                  <UserSearchRow user={item} />
                 </ThemedView>
               </Pressable>
             );
@@ -117,5 +103,4 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     borderRadius: Spacing.three,
   },
-  userRowText: { gap: Spacing.half },
 });

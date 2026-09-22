@@ -12,9 +12,9 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { markInterested } from '@/features/meetups/api';
 import { useMeetups } from '@/features/meetups/hooks';
+import { useRealtimeTable } from '@/hooks/use-realtime-table';
 import { fetchFriendLocations } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
-import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -251,7 +251,7 @@ export default function MapScreen() {
   const queryClient = useQueryClient();
 
   const { data: friendLocations } = useQuery({
-    queryKey: ['friendLocations', userId],
+    queryKey: queryKeys.friendLocations(userId),
     queryFn: () => fetchFriendLocations(userId!),
     enabled: !!userId,
   });
@@ -306,18 +306,12 @@ export default function MapScreen() {
     centerOnMe();
   }, [centerOnMe]);
 
-  useEffect(() => {
-    if (!userId) return;
-    const channel = supabase
-      .channel(`locations:${userId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'locations' }, () =>
-        queryClient.invalidateQueries({ queryKey: ['friendLocations', userId] }),
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId, queryClient]);
+  useRealtimeTable({
+    channelName: `locations:${userId}`,
+    table: 'locations',
+    enabled: !!userId,
+    onChange: () => queryClient.invalidateQueries({ queryKey: queryKeys.friendLocations(userId) }),
+  });
 
   useEffect(() => {
     if (!friendLocations) return;
