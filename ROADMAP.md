@@ -58,9 +58,13 @@ Cross-cutting, do first — everything after benefits from having it in place.
 - [ ] **Pre-commit quality gate**: extend the existing husky setup with a `pre-commit` hook
       (lint-staged) running `eslint --fix` + `tsc --noEmit` on staged files, alongside the
       existing commit-msg hook. Staged-files-only, keep it fast.
-- [ ] **Error tracking**: `@sentry/react-native` for mobile, `@sentry/astro` (or the plain
-      browser SDK) for `apps/web`. Free tier. Wire into `src/app/_layout.tsx` init and (once
-      Phase E's ErrorBoundary exists) its `onError`.
+- [ ] **Error tracking**: `@sentry/react-native` (mobile) + `@sentry/astro` (web) installed and
+      wired — `Sentry.init`/`Sentry.wrap` in `src/app/_layout.tsx` gated on
+      `EXPO_PUBLIC_SENTRY_DSN`, the Astro integration gated on `PUBLIC_SENTRY_DSN`, both no-op
+      cleanly with no DSN set. Still needed: create the actual Sentry project(s) and put the
+      DSN(s) in `.env` (see `.env.example`) — nothing reports until that happens — and a fresh
+      native build (`expo run:android`/EAS) before native (non-JS) crash capture is active on
+      mobile. Once wired in Phase E, its `onError` hook should feed the ErrorBoundary too.
 - [ ] **Analytics**: a first-party `analytics_events` table in Supabase (`user_id` nullable,
       `event_name`, `props jsonb`, `created_at`) + a thin `trackEvent(name, props)` client
       wrapper, instead of a third-party SDK — consistent with the project's existing pattern

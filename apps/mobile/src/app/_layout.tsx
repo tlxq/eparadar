@@ -6,6 +6,7 @@ import {
   Inter_700Bold,
   useFonts,
 } from '@expo-google-fonts/inter';
+import * as Sentry from '@sentry/react-native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -19,7 +20,12 @@ import { useAuthStore } from '@/store/auth';
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+const sentryDsn = process.env.EXPO_PUBLIC_SENTRY_DSN;
+if (sentryDsn) {
+  Sentry.init({ dsn: sentryDsn });
+}
+
+function RootLayout() {
   const colorScheme = useColorScheme();
   const session = useAuthStore((state) => state.session);
   const initializing = useAuthStore((state) => state.initializing);
@@ -92,3 +98,5 @@ export default function RootLayout() {
     </QueryClientProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);
