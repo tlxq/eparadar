@@ -16,7 +16,7 @@ import '@/lib/location-task';
 
 import { trackEvent } from '@/lib/analytics';
 import { queryClient } from '@/lib/queryClient';
-import { syncPushTokenIfGranted } from '@/lib/push-notifications';
+import { setupNotificationResponseListener, syncPushTokenIfGranted } from '@/lib/push-notifications';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
 
@@ -53,6 +53,8 @@ function RootLayout() {
 
     return () => listener.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => setupNotificationResponseListener(), []);
 
   useEffect(() => {
     if (!initializing && fontsLoaded) {

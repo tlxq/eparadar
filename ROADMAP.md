@@ -9,11 +9,16 @@ new phase until the current one is checked off (keeps one front open at a time).
   (background location tracking confirmed on two physical devices).
 - **Done & merged**: Meetups, photo upload and avatars, map avatar markers, privacy policy,
   branding, and release-safe store assets.
-- **Phase A nearly done**: pre-commit quality gate and analytics are merged and live; error
-  tracking is wired but needs a Sentry project/DSN (Tom's to create) and a native rebuild before
-  it's active. Next up: Phase B (car/post photos). See Phases A–F below for the full sequencing
-  decided 2026-09-22 (audit + planning session); rationale lives in memory
-  (`project_eparadar.md`), not duplicated here.
+- **Done & merged**: Phase A (pre-commit gate, analytics — both live; Sentry wired but needs a
+  DSN, Tom's to create) and Phase B (car/post photos, live and on-device verified).
+- **Phase C code-complete, not fully live-verified**: schema, client permission flow, sending
+  mechanism (Edge Function + DB triggers), and notification-tap deep-linking are all built and
+  individually verified — but real device delivery is blocked on Firebase/FCM credentials for
+  Android, which needs Tom to create a Firebase project (external account, not something to do
+  without him). See Phase C below for exactly what's needed. Next up after that: Phase D
+  (Snapchat-style map polish). See Phases A–F below for the full sequencing decided 2026-09-22
+  (audit + planning session); rationale lives in memory (`project_eparadar.md`), not duplicated
+  here.
 - **Remaining for launch (Phase F)**: Expo/EAS account and store credentials, manual store
   submission, and optional CI automation after the first successful submission.
 
@@ -114,8 +119,9 @@ install.
       UPDATE` path is an UPDATE under the hood, missed on the first pass, caught by testing the
       re-registration case specifically). pgTAP-covered (6 assertions). Known simplification: no
       cross-user cleanup if the same physical device's token later belongs to a different account
-      (shared/family-phone edge case) — not handled, low stakes for now. **Not yet pushed live.**
-- [x] Client: `expo-notifications` + `@react-native-async-storage/async-storage` installed,
+      (shared/family-phone edge case) — not handled, low stakes for now. **Live**, upsert
+      (including re-registration) verified against the real project with a throwaway account.
+- [x] Client: `expo-notifications` + `@react-native-async-storage/async-storage`,
       `apps/mobile/src/lib/push-notifications.ts` — `syncPushTokenIfGranted` on login/session
       init, `maybeRequestNotificationPermission` wired into the two "first meaningful action"
       triggers (friend request accepted, meetup interest marked). Pre-permission Alert before the
@@ -124,14 +130,44 @@ install.
       returns `status: "denied"` (not `"undetermined"`) even when the permission was never
       actually requested — the correct "haven't asked yet" signal on Android is
       `canAskAgain: true`, not the status string. Verified live end-to-end on-device: real Alert →
-      real OS permission dialog → real grant, confirmed via `adb dumpsys package`. Test meetup and
-      test account cleaned up afterward. Actual push-token DB write couldn't be verified yet since
-      the schema above isn't live (caught gracefully, no crash) — will confirm once it is.
-- [ ] Sending mechanism: a Supabase Edge Function triggered by a DB webhook on `messages` insert,
-      `friendships` insert/accept, and `meetup_interests` insert — calls Expo's push API
-      server-side, keeping sending logic in one place.
-- [ ] Tapping a notification deep-links to the right screen (chat thread, friend request, meetup
-      detail) via Expo Router's linking config.
+      real OS permission dialog → real grant, confirmed via `adb dumpsys package`.
+      **Blocked on Android device delivery**: `getExpoPushTokenAsync()` throws
+      `E_REGISTRATION_FAILED` — "Unable to get Firebase Messaging instance... Did you configure
+      `googleServicesFile`" — Android push requires Firebase Cloud Messaging credentials
+      (`google-services.json`), which this project has never set up. **Needs Tom**: create a
+      Firebase project (free tier), add an Android app with package `com.tlxq.eparadar`, download
+      `google-services.json` into `apps/mobile/`, reference it via `expo.android.googleServicesFile`
+      in `app.json`, then a native rebuild. Not something to do without the user — it's account
+      creation on an external service. iOS doesn't need this (APNs via Expo's own credentials).
+- [x] Sending mechanism: Supabase Edge Function (`supabase/functions/send-push/index.ts`, uses the
+      newer `withSupabase`/`apiKey`-`secret` auth pattern rather than a JWT bearer token) triggered
+      by `pg_net`-based DB triggers on `messages` insert, `friendships` insert/update, and
+      `meetup_interests` insert (`supabase/migrations/20260922180000_push_send_triggers.sql`).
+      Trigger auth secret and function URL stored in Supabase Vault (`vault.create_secret`, run
+      directly — never committed to a migration), referenced by name in the trigger function so no
+      secret value lives in git. Trigger gracefully no-ops if the vault secrets aren't set (fails
+      open, never blocks the underlying insert/update). All four notification paths (new message,
+      new friend request, friend request accepted — deduplicated so a repeat UPDATE doesn't
+      re-fire, meetup interest — skips creator marking their own meetup) verified individually via
+      direct HTTP calls to a local `supabase functions serve` instance with seeded fixtures.
+      End-to-end trigger→function chain verified **live**: a real `send_friend_request` RPC call
+      produced a real `POST 200` to the deployed function within ~1s (confirmed via
+      `function_edge_logs`/`function_logs`), test accounts cleaned up after. Local Docker networking
+      on this dev machine couldn't reach a locally-served function from inside the DB container
+      (a host-firewall quirk, not a code issue) — live testing covered what local couldn't.
+- [x] Tapping a notification deep-links to the right screen via `setupNotificationResponseListener`
+      in `push-notifications.ts` (`Notifications.addNotificationResponseReceivedListener`, wired
+      into `_layout.tsx`) — routes on the notification's `data.type` (message → the conversation,
+      friend_request/friend_accepted → the friends tab, meetup_interest → the meetup detail).
+      Not yet verified on a real device since it depends on the FCM blocker above to receive a real
+      notification to tap; the routing logic itself typechecks against the app's typed routes.
+
+**Phase C is code-complete but not fully live-verified** — the whole pipeline (schema → RLS →
+client registration → permission UX → DB triggers → Edge Function → Expo's push API) works and is
+proven piece-by-piece, but nothing has actually landed on a phone's notification tray yet, because
+Android needs Firebase/FCM credentials this project doesn't have. Once Tom sets that up (see the
+client bullet above) and does one native rebuild, the remaining verification is a single real
+send-and-receive test, not new code.
 
 ## Phase D — Snapchat-style map polish
 
