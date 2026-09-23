@@ -61,9 +61,9 @@ export default function ChatListScreen() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <ConversationRow conversation={item} myUserId={userId!} />}
           contentContainerStyle={styles.list}
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => void refetch()} />}
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
           ListEmptyComponent={
-            !isLoading ? <ThemedText themeColor="textSecondary">Inga chattar än.</ThemedText> : undefined
+            !isLoading ? <ThemedText themeColor="textSecondary">Inga chattar än.</ThemedText> : null
           }
         />
       </SafeAreaView>
