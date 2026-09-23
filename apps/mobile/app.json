@@ -27,7 +27,8 @@
         "android.permission.FOREGROUND_SERVICE_LOCATION",
         "android.permission.RECEIVE_BOOT_COMPLETED"
       ],
-      "package": "com.tlxq.eparadar"
+      "package": "com.tlxq.eparadar",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",

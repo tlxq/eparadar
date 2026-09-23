@@ -3,21 +3,20 @@
 Living checklist, source of truth across hosts. Update checkboxes as work lands; don't start a
 new phase until the current one is checked off (keeps one front open at a time).
 
-## Where we are (2026-09-22)
+## Where we are (2026-09-23)
 
 - **Done & verified end-to-end**: Identity + Feed, 1:1 + group Chat, Friendships, Live map
   (background location tracking confirmed on two physical devices).
 - **Done & merged**: Meetups, photo upload and avatars, map avatar markers, privacy policy,
   branding, and release-safe store assets.
 - **Done & merged**: Phase A (pre-commit gate, analytics — both live; Sentry wired but needs a
-  DSN, Tom's to create) and Phase B (car/post photos, live and on-device verified).
-- **Phase C code-complete, not fully live-verified**: schema, client permission flow, sending
-  mechanism (Edge Function + DB triggers), and notification-tap deep-linking are all built and
-  individually verified — but real device delivery is blocked on Firebase/FCM credentials for
-  Android, which needs Tom to create a Firebase project (external account, not something to do
-  without him). See Phase C below for exactly what's needed. Next up after that: Phase D
-  (Snapchat-style map polish). See Phases A–F below for the full sequencing decided 2026-09-22
-  (audit + planning session); rationale lives in memory (`project_eparadar.md`), not duplicated
+  DSN, Tom's to create), Phase B (car/post photos, live and on-device verified), and Phase C (push
+  notifications — Firebase/FCM credentials set up, real device send-and-receive verified
+  2026-09-23).
+- **Next up: Phase D** (Snapchat-style map polish) — avatar markers already done; ghost mode/
+  precision tiers and activity/heat feedback remain. See Phases A–F below for the full sequencing
+  decided 2026-09-22 (audit + planning session); rationale lives in memory (`project_eparadar.md`),
+  not duplicated
   here.
 - **Remaining for launch (Phase F)**: Expo/EAS account and store credentials, manual store
   submission, and optional CI automation after the first successful submission.
@@ -131,14 +130,16 @@ install.
       actually requested — the correct "haven't asked yet" signal on Android is
       `canAskAgain: true`, not the status string. Verified live end-to-end on-device: real Alert →
       real OS permission dialog → real grant, confirmed via `adb dumpsys package`.
-      **Blocked on Android device delivery**: `getExpoPushTokenAsync()` throws
-      `E_REGISTRATION_FAILED` — "Unable to get Firebase Messaging instance... Did you configure
-      `googleServicesFile`" — Android push requires Firebase Cloud Messaging credentials
-      (`google-services.json`), which this project has never set up. **Needs Tom**: create a
-      Firebase project (free tier), add an Android app with package `com.tlxq.eparadar`, download
-      `google-services.json` into `apps/mobile/`, reference it via `expo.android.googleServicesFile`
-      in `app.json`, then a native rebuild. Not something to do without the user — it's account
-      creation on an external service. iOS doesn't need this (APNs via Expo's own credentials).
+      **Firebase/FCM credentials set up 2026-09-23**: Firebase project `eparadar-6e652`, Android
+      app registered under `com.tlxq.eparadar`, `google-services.json` downloaded into
+      `apps/mobile/` and wired via `expo.android.googleServicesFile` in `app.json`, then a native
+      rebuild (`expo prebuild` + `expo run:android`). That fixed device-side FCM registration
+      (confirmed via a throwaway account's real `ExponentPushToken[...]` landing in `push_tokens`),
+      but Expo's push *send* relay separately needed a Firebase service account key (Firebase
+      console → Project settings → Service accounts → generate key) uploaded to the EAS project
+      (expo.dev/accounts/tlxq/projects/eparadar → Credentials → Android → FCM V1 service account
+      key) — without it, Expo's push API returned `InvalidCredentials`/"Unable to retrieve the FCM
+      server key". iOS never needed any of this (APNs via Expo's own credentials).
 - [x] Sending mechanism: Supabase Edge Function (`supabase/functions/send-push/index.ts`, uses the
       newer `withSupabase`/`apiKey`-`secret` auth pattern rather than a JWT bearer token) triggered
       by `pg_net`-based DB triggers on `messages` insert, `friendships` insert/update, and
@@ -159,15 +160,22 @@ install.
       in `push-notifications.ts` (`Notifications.addNotificationResponseReceivedListener`, wired
       into `_layout.tsx`) — routes on the notification's `data.type` (message → the conversation,
       friend_request/friend_accepted → the friends tab, meetup_interest → the meetup detail).
-      Not yet verified on a real device since it depends on the FCM blocker above to receive a real
-      notification to tap; the routing logic itself typechecks against the app's typed routes.
+      Routing logic typechecks against the app's typed routes; tap-to-deep-link itself still
+      untested against a real delivered notification (see below), lower risk than the send path.
+- [x] **Real device send-and-receive, verified 2026-09-23**: two throwaway accounts on the
+      physical device — one created a meetup and registered a real FCM token, the other marked
+      interest (inserted directly into `meetup_interests` to exercise the same `AFTER INSERT`
+      trigger the app's own "Intresserad" button fires) — produced a real notification in the
+      Android notification tray: "Någon är intresserad / \<name\> är intresserad av \<meetup\>".
+      Confirms the whole chain end-to-end: DB trigger → Edge Function → Expo push API → FCM →
+      device. Both test accounts, their token/meetup/interest rows, and the notification were
+      cleaned up afterward.
 
-**Phase C is code-complete but not fully live-verified** — the whole pipeline (schema → RLS →
-client registration → permission UX → DB triggers → Edge Function → Expo's push API) works and is
-proven piece-by-piece, but nothing has actually landed on a phone's notification tray yet, because
-Android needs Firebase/FCM credentials this project doesn't have. Once Tom sets that up (see the
-client bullet above) and does one native rebuild, the remaining verification is a single real
-send-and-receive test, not new code.
+**Phase C is done.** The whole pipeline (schema → RLS → client registration → permission UX → DB
+triggers → Edge Function → Expo's push API → FCM → device tray) is verified live, including a real
+notification landing on a physical device. The one still-unverified edge is deep-linking from a
+tapped notification (routing code is typechecked but untested against a live tap) — low risk,
+revisit opportunistically rather than blocking on it.
 
 ## Phase D — Snapchat-style map polish
 
