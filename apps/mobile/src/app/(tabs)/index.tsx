@@ -51,9 +51,9 @@ export default function FeedScreen() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <PostCard post={item} />}
           contentContainerStyle={styles.list}
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => void refetch()} />}
           ListEmptyComponent={
-            !isLoading ? <ThemedText themeColor="textSecondary">Inga inlägg än.</ThemedText> : null
+            !isLoading ? <ThemedText themeColor="textSecondary">Inga inlägg än.</ThemedText> : undefined
           }
         />
       </SafeAreaView>
