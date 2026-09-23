@@ -177,8 +177,13 @@ send-and-receive test, not new code.
       needs a real design decision (exact vs. approximate vs. off, global or per-friend). Run
       this through the design-pitch workflow before building — it's also a live ethics/GDPR
       thesis discussion point, not just a UI choice.
-- [ ] **Bitmoji-style action bar**: a bottom bar for search/friends-list/quick actions,
-      replacing or extending today's single FAB + slide-up menu on Karta.
+- [x] **Bitmoji-style action bar**: Karta's single FAB + slide-up menu replaced with a
+      persistent bottom bar — search (filter friends by name), friends-list (browse all
+      friends sharing location), create-meetup, and locate-me, all folded into one bar. Search
+      and friends-list share one picker panel component. Verified working on a fresh Android
+      Studio emulator (t14s) after resolving an unrelated dev-client setup issue
+      (`@react-native-async-storage/async-storage@2.x` requires a custom dev client, not Expo
+      Go — `npx expo run:android` fixed it). Merged `tlxq/eparadar#37`.
 - [ ] **Activity/heat feedback**: extend the "live" pulse + interest-count treatment Meetups
       already has to friend clustering or a general "who's around" signal on the map.
 
