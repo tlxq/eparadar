@@ -165,7 +165,7 @@ export default function FriendsScreen() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <FriendRow friendship={item} myUserId={userId!} />}
           contentContainerStyle={styles.list}
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => void refetch()} />}
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
           ListHeaderComponent={
             <>
               {requests && requests.length > 0 ? (
@@ -193,7 +193,7 @@ export default function FriendsScreen() {
           ListEmptyComponent={
             !friendsLoading ? (
               <ThemedText themeColor="textSecondary">Inga vänner än.</ThemedText>
-            ) : undefined
+            ) : null
           }
         />
       </SafeAreaView>
