@@ -1,6 +1,6 @@
 begin;
 
-select plan(5);
+select plan(8);
 
 insert into auth.users (id) values
   ('a1000000-0000-0000-0000-000000000011'),
@@ -62,6 +62,34 @@ select is(
   (select count(*)::int from public.locations where user_id = 'e1000000-0000-0000-0000-000000000014'),
   1,
   'Eve always sees her own location row, even with sharing disabled'
+);
+
+select ok(
+  (select lat = 59.3 and lng = 18.1 from public.locations
+    where user_id = 'a1000000-0000-0000-0000-000000000011'),
+  'Alice''s exact coordinates are untouched when approximate_enabled is false (the default)'
+);
+
+set local request.jwt.claim.sub = 'b1000000-0000-0000-0000-000000000012';
+
+insert into public.locations (user_id, lat, lng, sharing_enabled, approximate_enabled) values
+  ('b1000000-0000-0000-0000-000000000012', 59.31234, 18.05678, true, true);
+
+select ok(
+  (select abs(lat - 59.313) < 0.0001 and abs(lng - 18.057) < 0.0001
+    from public.locations where user_id = 'b1000000-0000-0000-0000-000000000012'),
+  'Bob''s coordinates are snapped to the ~300m grid on insert when approximate_enabled is true'
+);
+
+set local request.jwt.claim.sub = 'e1000000-0000-0000-0000-000000000014';
+
+update public.locations set approximate_enabled = true
+  where user_id = 'e1000000-0000-0000-0000-000000000014';
+
+select ok(
+  (select abs(lat - 57.699) < 0.0001 and abs(lng - 11.901) < 0.0001
+    from public.locations where user_id = 'e1000000-0000-0000-0000-000000000014'),
+  'Eve''s previously-exact coordinates get snapped to the grid the moment approximate_enabled flips on'
 );
 
 select * from finish();

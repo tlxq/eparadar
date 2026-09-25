@@ -114,7 +114,17 @@ export default function ProfileScreen() {
           contentContainerStyle={styles.list}
           ListHeaderComponent={
             <View style={styles.header}>
-              <ThemedText type="title">Profil</ThemedText>
+              <View style={styles.headerRow}>
+                <ThemedText type="title">Profil</ThemedText>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Inställningar"
+                  onPress={() => router.push('/settings')}
+                  style={[styles.iconButton, { backgroundColor: theme.backgroundElement }]}
+                >
+                  <Ionicons name="settings-outline" size={20} color={theme.brandOnSurface} />
+                </Pressable>
+              </View>
               <Pressable
                 onPress={handlePickAvatar}
                 disabled={uploadingAvatar}
@@ -156,12 +166,6 @@ export default function ProfileScreen() {
           ListFooterComponent={
             <View style={styles.footer}>
               <Button
-                label="Inställningar"
-                variant="secondary"
-                icon="settings-outline"
-                onPress={() => router.push('/settings')}
-              />
-              <Button
                 label="Logga ut"
                 variant="secondary"
                 icon="log-out-outline"
@@ -179,6 +183,18 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: Spacing.three },
   header: { gap: Spacing.two, paddingVertical: Spacing.three },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   avatarPicker: { alignSelf: 'flex-start' },
   avatarBadge: {
     position: 'absolute',

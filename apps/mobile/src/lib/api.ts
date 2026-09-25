@@ -344,6 +344,14 @@ export async function setLocationSharing(userId: string, enabled: boolean): Prom
   if (error) throw error;
 }
 
+export async function setLocationApproximate(userId: string, enabled: boolean): Promise<void> {
+  const { error } = await supabase
+    .from('locations')
+    .update({ approximate_enabled: enabled, updated_at: new Date().toISOString() })
+    .eq('user_id', userId);
+  if (error) throw error;
+}
+
 export async function fetchFriendLocations(userId: string): Promise<FriendLocation[]> {
   const { data, error } = await supabase
     .from('locations')

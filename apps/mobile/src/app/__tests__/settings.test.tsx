@@ -21,11 +21,13 @@ jest.mock('@/store/auth', () => ({
 
 const mockFetchMyLocation = jest.fn();
 const mockSetLocationSharing = jest.fn();
+const mockSetLocationApproximate = jest.fn();
 const mockUpsertLocation = jest.fn();
 
 jest.mock('@/lib/api', () => ({
   fetchMyLocation: (...args: unknown[]) => mockFetchMyLocation(...args),
   setLocationSharing: (...args: unknown[]) => mockSetLocationSharing(...args),
+  setLocationApproximate: (...args: unknown[]) => mockSetLocationApproximate(...args),
   upsertLocation: (...args: unknown[]) => mockUpsertLocation(...args),
 }));
 
@@ -163,6 +165,48 @@ describe('SettingsScreen sharing toggle', () => {
     await waitFor(() => expect(mockSetLocationSharing).toHaveBeenCalledWith('user-1', false));
     expect(mockStopLocationSharing).toHaveBeenCalledTimes(1);
     expect(mockUpsertLocation).not.toHaveBeenCalled();
+    await unmount();
+    client.clear();
+  });
+});
+
+describe('SettingsScreen approximate toggle', () => {
+  it('is disabled while sharing is off', async () => {
+    mockFetchMyLocation.mockResolvedValue(null as never);
+
+    const { client, screen } = await renderSettings();
+    const { findByTestId, unmount } = screen;
+    const toggle = await findByTestId('approximate-toggle');
+
+    expect(toggle.props.disabled).toBe(true);
+    expect(toggle.props.value).toBe(false);
+    await unmount();
+    client.clear();
+  });
+
+  it('reflects the stored value and can be turned on while sharing is enabled', async () => {
+    mockFetchMyLocation.mockResolvedValue({
+      user_id: 'user-1',
+      lat: 59.3,
+      lng: 18.1,
+      sharing_enabled: true,
+      approximate_enabled: false,
+      updated_at: new Date().toISOString(),
+    } as never);
+    mockSetLocationApproximate.mockResolvedValue(undefined as never);
+
+    const { client, screen } = await renderSettings();
+    const { findByTestId, unmount } = screen;
+    const toggle = await findByTestId('approximate-toggle');
+    await waitFor(() => expect(toggle.props.disabled).toBe(false));
+
+    await act(async () => {
+      fireEvent(toggle, 'valueChange', true);
+    });
+
+    await waitFor(() =>
+      expect(mockSetLocationApproximate).toHaveBeenCalledWith('user-1', true),
+    );
     await unmount();
     client.clear();
   });
