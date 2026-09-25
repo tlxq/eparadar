@@ -10,7 +10,7 @@ import { Switch } from '@/components/switch';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { fetchMyLocation, setLocationSharing, upsertLocation } from '@/lib/api';
+import { fetchMyLocation, setLocationApproximate, setLocationSharing, upsertLocation } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import {
   requestLocationPermissions,
@@ -32,6 +32,8 @@ export default function SettingsScreen() {
     enabled: !!userId,
   });
   const sharingEnabled = location?.sharing_enabled ?? false;
+  const approximateEnabled = location?.approximate_enabled ?? false;
+  const [approximateBusy, setApproximateBusy] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -84,6 +86,20 @@ export default function SettingsScreen() {
     }
   }
 
+  async function handleApproximateToggle(value: boolean) {
+    if (!userId) return;
+    setError(null);
+    setApproximateBusy(true);
+    try {
+      await setLocationApproximate(userId, value);
+      queryClient.invalidateQueries({ queryKey: queryKeys.myLocation(userId) });
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setApproximateBusy(false);
+    }
+  }
+
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['bottom']}>
@@ -100,6 +116,25 @@ export default function SettingsScreen() {
             value={sharingEnabled}
             onValueChange={handleToggle}
             disabled={busy}
+          />
+        </ThemedView>
+        <ThemedView
+          type="backgroundElement"
+          style={[styles.row, !sharingEnabled && styles.rowDisabled]}
+        >
+          <View style={styles.rowText}>
+            <ThemedText type="smallBold">Ungefärlig plats</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              Visa bara ett ungefärligt område för dina vänner — cirka 300 meter — istället för
+              exakt var du står. Bra när du vill dela att du är i närheten utan att visa exakt
+              position.
+            </ThemedText>
+          </View>
+          <Switch
+            testID="approximate-toggle"
+            value={approximateEnabled}
+            onValueChange={handleApproximateToggle}
+            disabled={!sharingEnabled || approximateBusy}
           />
         </ThemedView>
         <Pressable
@@ -133,4 +168,5 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.three,
   },
   rowText: { flex: 1, gap: Spacing.half },
+  rowDisabled: { opacity: 0.55 },
 });

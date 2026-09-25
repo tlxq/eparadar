@@ -50,6 +50,11 @@ const MAP_HTML = `<!DOCTYPE html>
       content: ''; position: absolute; inset: -7px; border: 2px solid rgba(47,111,237,0.75);
       border-radius: 50%; animation: friendPulse 2.2s ease-out infinite;
     }
+    .friend-marker.is-approximate::before {
+      content: ''; position: absolute; inset: -26px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(47,111,237,0.68) 0%, rgba(47,111,237,0.12) 55%, rgba(47,111,237,0) 75%);
+    }
+    .friend-marker.is-approximate::after { display: none; }
     .friend-avatar {
       width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
       display: block; position: relative; z-index: 1;
@@ -127,9 +132,10 @@ const MAP_HTML = `<!DOCTYPE html>
       const avatar = friend.avatarUrl
         ? '<img class="friend-avatar" src="' + escapeHtml(friend.avatarUrl) + '" />'
         : '<span class="friend-initials">' + friendInitials(friend.label) + '</span>';
+      const markerClass = friend.approximate ? 'friend-marker is-approximate' : 'friend-marker';
       return L.divIcon({
         className: '',
-        html: '<div class="friend-marker">' + avatar + '<span class="friend-status"></span></div>',
+        html: '<div class="' + markerClass + '">' + avatar + '<span class="friend-status"></span></div>',
         iconSize: [48, 48],
         iconAnchor: [24, 24],
       });
@@ -334,6 +340,7 @@ export default function MapScreen() {
           lng: f.lng,
           label: f.profile.display_name,
           avatarUrl: f.profile.avatar_url,
+          approximate: f.approximate_enabled,
         })),
       }),
     );

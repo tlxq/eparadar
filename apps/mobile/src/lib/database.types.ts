@@ -224,6 +224,7 @@ export type Database = {
       }
       locations: {
         Row: {
+          approximate_enabled: boolean
           lat: number
           lng: number
           sharing_enabled: boolean
@@ -231,6 +232,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          approximate_enabled?: boolean
           lat: number
           lng: number
           sharing_enabled?: boolean
@@ -238,6 +240,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          approximate_enabled?: boolean
           lat?: number
           lng?: number
           sharing_enabled?: boolean
