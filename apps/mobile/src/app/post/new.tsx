@@ -1,54 +1,40 @@
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Image, Pressable, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 
+import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
-import { CarPhoto } from '@/components/car-photo';
-import { ScreenBackground } from '@/components/screen-background';
-import { TextField } from '@/components/text-field';
+import { FormScreen } from '@/components/form-screen';
+import { IconButton } from '@/components/icon-button';
 import { ThemedText } from '@/components/themed-text';
+import { Fonts, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { Spacing } from '@/constants/theme';
-import { createPost, fetchMyCars, type Car } from '@/lib/api';
+import { createPost, fetchMyCars, fetchProfile } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import { uploadPostImage } from '@/lib/image-upload';
 import { queryKeys } from '@/lib/query-keys';
+import { showToast } from '@/store/toast';
 import { useAuthStore } from '@/store/auth';
 
-function CarPickerRow({
-  car,
-  selected,
-  onPress,
-}: {
-  car: Car;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  const theme = useTheme();
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[
-        styles.carRow,
-        { borderColor: selected ? theme.brand : theme.border },
-      ]}
-    >
-      <CarPhoto imageUrl={car.photo_url} size={32} />
-      <ThemedText type="small">{car.nickname ?? `${car.make} ${car.model}`}</ThemedText>
-    </Pressable>
-  );
-}
+const MAX_LENGTH = 500;
 
 export default function NewPostScreen() {
+  const theme = useTheme();
   const userId = useAuthStore((state) => state.session?.user.id);
   const queryClient = useQueryClient();
   const [body, setBody] = useState('');
   const [carId, setCarId] = useState<string | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const { data: profile } = useQuery({
+    queryKey: queryKeys.profile(userId),
+    queryFn: () => fetchProfile(userId!),
+    enabled: !!userId,
+  });
 
   const { data: cars } = useQuery({
     queryKey: queryKeys.cars(userId),
@@ -58,7 +44,10 @@ export default function NewPostScreen() {
 
   async function handlePickImage() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') return;
+    if (status !== 'granted') {
+      showToast({ tone: 'error', message: 'epaRadar behöver tillgång till dina bilder.' });
+      return;
+    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
@@ -73,75 +62,149 @@ export default function NewPostScreen() {
   const mutation = useMutation({
     mutationFn: async () => {
       const imageUrl = imageUri ? await uploadPostImage(userId!, imageUri) : null;
-      return createPost({ body, carId, imageUrl });
+      return createPost({ body: body.trim(), carId, imageUrl });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.posts() });
+      showToast({ tone: 'success', message: 'Inlägget är publicerat.' });
       router.back();
     },
     onError: (err) => setError(getErrorMessage(err)),
   });
 
+  const name = profile?.display_name ?? '';
+
   return (
-    <ScreenBackground style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <TextField
-          placeholder="Vad har du på hjärtat?"
-          value={body}
-          onChangeText={setBody}
-          multiline
-          style={styles.textarea}
-        />
-        <Pressable onPress={handlePickImage}>
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={styles.imagePreview} />
-          ) : (
-            <ThemedText type="small" themeColor="textSecondary">
-              Lägg till bild
+    <FormScreen
+      footer={
+        <>
+          {error ? <ThemedText type="error">{error}</ThemedText> : null}
+          <View style={styles.footerRow}>
+            <IconButton
+              icon="image-outline"
+              accessibilityLabel="Lägg till bild"
+              onPress={handlePickImage}
+            />
+            <ThemedText type="caption" themeColor="textSecondary" style={styles.counter}>
+              {body.length}/{MAX_LENGTH}
             </ThemedText>
-          )}
-        </Pressable>
-        {cars && cars.length > 0 ? (
-          <>
-            <ThemedText type="smallBold">Koppla till bil</ThemedText>
-            {cars.map((car: Car) => (
-              <CarPickerRow
-                key={car.id}
-                car={car}
-                selected={carId === car.id}
-                onPress={() => setCarId(carId === car.id ? null : car.id)}
-              />
-            ))}
-          </>
-        ) : null}
-        {error ? <ThemedText type="error">{error}</ThemedText> : null}
-        <Button
-          label="Publicera"
-          onPress={() => mutation.mutate()}
-          loading={mutation.isPending}
-          disabled={!body.trim()}
-        />
-      </SafeAreaView>
-    </ScreenBackground>
+            <Button
+              label="Publicera"
+              size="sm"
+              onPress={() => mutation.mutate()}
+              loading={mutation.isPending}
+              disabled={!body.trim()}
+            />
+          </View>
+        </>
+      }
+    >
+      <View style={styles.composer}>
+        <Avatar name={name || '?'} imageUrl={profile?.avatar_url} size={40} />
+        <View style={styles.composerBody}>
+          <ThemedText type="headline">{name}</ThemedText>
+          <TextInput
+            value={body}
+            onChangeText={setBody}
+            placeholder="Vad händer med bilen?"
+            placeholderTextColor={theme.textSecondary}
+            accessibilityLabel="Inlägg"
+            multiline
+            autoFocus
+            maxLength={MAX_LENGTH}
+            style={[styles.input, { color: theme.text }]}
+          />
+        </View>
+      </View>
+
+      {imageUri ? (
+        <View>
+          <Image
+            source={{ uri: imageUri }}
+            style={styles.imagePreview}
+            accessibilityLabel="Vald bild"
+          />
+          <View style={styles.removeImage}>
+            <IconButton
+              icon="close"
+              size={32}
+              accessibilityLabel="Ta bort bild"
+              onPress={() => setImageUri(null)}
+            />
+          </View>
+        </View>
+      ) : null}
+
+      {cars && cars.length > 0 ? (
+        <View style={styles.carSection}>
+          <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
+            TAGGA BIL
+          </ThemedText>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chips}
+          >
+            {cars.map((car) => {
+              const selected = carId === car.id;
+              return (
+                <Pressable
+                  key={car.id}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  onPress={() => setCarId(selected ? null : car.id)}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: selected ? theme.brand : theme.backgroundElement,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name={selected ? 'checkmark' : 'car-sport-outline'}
+                    size={16}
+                    color={selected ? theme.brandText : theme.text}
+                  />
+                  <ThemedText
+                    type="smallBold"
+                    style={selected ? { color: theme.brandText } : undefined}
+                  >
+                    {car.nickname ?? `${car.make} ${car.model}`}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
+      ) : null}
+    </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-    gap: Spacing.three,
+  composer: { flexDirection: 'row', gap: Spacing.three },
+  composerBody: { flex: 1, gap: Spacing.one },
+  input: {
+    minHeight: 120,
+    fontSize: 18,
+    lineHeight: 26,
+    fontFamily: Fonts.inter.regular,
+    textAlignVertical: 'top',
+    padding: 0,
   },
-  textarea: { minHeight: 100, textAlignVertical: 'top' },
-  imagePreview: { width: '100%', aspectRatio: 4 / 3, borderRadius: Spacing.three },
-  carRow: {
+  imagePreview: { width: '100%', aspectRatio: 4 / 3, borderRadius: Radius.lg },
+  removeImage: { position: 'absolute', top: Spacing.two, right: Spacing.two },
+  carSection: { gap: Spacing.two },
+  sectionLabel: { letterSpacing: 0.6 },
+  chips: { gap: Spacing.two },
+  chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.two,
-    padding: Spacing.two,
-    borderRadius: Spacing.two,
-    borderWidth: StyleSheet.hairlineWidth,
+    gap: Spacing.one,
+    minHeight: 40,
+    paddingHorizontal: Spacing.three,
+    borderRadius: Radius.pill,
   },
+  footerRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  counter: { flex: 1, textAlign: 'right' },
 });

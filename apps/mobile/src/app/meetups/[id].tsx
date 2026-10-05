@@ -1,11 +1,14 @@
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { Avatar } from '@/components/avatar';
+import { Button } from '@/components/button';
+import { IconButton } from '@/components/icon-button';
 import { ScreenBackground } from '@/components/screen-background';
+import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { useAutoCheckIn, useMeetupDetail, useToggleInterest } from '@/features/meetups/hooks';
 import { formatMeetupTime } from '@/features/meetups/time';
 import { useTheme } from '@/hooks/use-theme';
@@ -23,11 +26,9 @@ export default function MeetupDetailScreen() {
   if (isError) {
     return (
       <ScreenBackground style={styles.center}>
-        <Pressable onPress={() => router.back()} style={styles.errorClose} hitSlop={12}>
-          <ThemedText type="link" themeColor="textSecondary">
-            Stäng
-          </ThemedText>
-        </Pressable>
+        <View style={styles.errorClose}>
+          <IconButton icon="close" accessibilityLabel="Stäng" onPress={() => router.back()} />
+        </View>
         <ThemedText themeColor="danger" style={styles.errorText}>
           Kunde inte hämta träffen.{'\n'}
           {(() => {
@@ -45,8 +46,18 @@ export default function MeetupDetailScreen() {
 
   if (isLoading || !meetup) {
     return (
-      <ScreenBackground style={styles.center}>
-        <ActivityIndicator color={theme.brand} />
+      <ScreenBackground style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.header}>
+            <IconButton icon="close" accessibilityLabel="Stäng" onPress={() => router.back()} />
+          </View>
+          <View style={styles.content}>
+            <Skeleton width="70%" height={32} />
+            <Skeleton width="45%" />
+            <Skeleton width="35%" />
+            <Skeleton height={48} radius={Radius.pill} style={styles.skeletonButton} />
+          </View>
+        </SafeAreaView>
       </ScreenBackground>
     );
   }
@@ -57,11 +68,7 @@ export default function MeetupDetailScreen() {
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
-            <ThemedText type="link" themeColor="textSecondary">
-              Stäng
-            </ThemedText>
-          </Pressable>
+          <IconButton icon="close" accessibilityLabel="Stäng" onPress={() => router.back()} />
         </View>
 
         <ScrollView contentContainerStyle={styles.content}>
@@ -101,18 +108,15 @@ export default function MeetupDetailScreen() {
             </View>
           )}
 
-          <Pressable
-            onPress={() => toggleInterest.mutate(!meetup.isInterested)}
-            disabled={toggleInterest.isPending}
-            style={[
-              styles.interestedButton,
-              { backgroundColor: meetup.isInterested ? theme.brandOnSurface : theme.brand },
-            ]}
-          >
-            <ThemedText type="smallBold" style={{ color: theme.brandText, fontSize: 15 }}>
-              👀 Intresserad · {meetup.interest_count}
-            </ThemedText>
-          </Pressable>
+          <View style={styles.interestedButton}>
+            <Button
+              label={`${meetup.isInterested ? 'Du är intresserad' : 'Jag är intresserad'} · ${meetup.interest_count}`}
+              icon={meetup.isInterested ? 'checkmark-circle' : 'eye-outline'}
+              variant={meetup.isInterested ? 'secondary' : 'primary'}
+              onPress={() => toggleInterest.mutate(!meetup.isInterested)}
+              disabled={toggleInterest.isPending}
+            />
+          </View>
 
           {iAmHereNow && (
             <View style={[styles.autoStatus, { borderColor: theme.success, backgroundColor: `${theme.success}18` }]}>
@@ -134,10 +138,16 @@ export default function MeetupDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  errorClose: { position: 'absolute', top: Spacing.five, right: Spacing.four },
+  errorClose: { position: 'absolute', top: Spacing.five, right: Spacing.three },
   errorText: { textAlign: 'center', paddingHorizontal: Spacing.four },
   safeArea: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: Spacing.four, paddingTop: Spacing.two },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.two,
+  },
+  skeletonButton: { marginTop: Spacing.four },
   content: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.five, gap: Spacing.two },
   liveBanner: {
     flexDirection: 'row',
@@ -146,7 +156,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
-    borderRadius: Spacing.three,
+    borderRadius: Radius.pill,
     marginBottom: Spacing.two,
   },
   liveDot: { width: 7, height: 7, borderRadius: 4 },
@@ -155,12 +165,7 @@ const styles = StyleSheet.create({
   avatarStrip: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, marginTop: Spacing.three },
   avatars: { flexDirection: 'row' },
   avatarWrap: { marginLeft: -Spacing.two },
-  interestedButton: {
-    marginTop: Spacing.four,
-    borderRadius: 999,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
-  },
+  interestedButton: { marginTop: Spacing.four },
   autoStatus: {
     flexDirection: 'row',
     alignItems: 'center',

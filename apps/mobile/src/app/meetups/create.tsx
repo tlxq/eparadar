@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { Button } from '@/components/button';
+import { IconButton } from '@/components/icon-button';
 import { ScreenBackground } from '@/components/screen-background';
+import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { useCreateMeetup } from '@/features/meetups/hooks';
 import { quickTimeToDate, type QuickTimeOption } from '@/features/meetups/time';
 import { useTheme } from '@/hooks/use-theme';
@@ -49,11 +51,7 @@ export default function CreateMeetupScreen() {
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
-            <ThemedText type="link" themeColor="textSecondary">
-              Avbryt
-            </ThemedText>
-          </Pressable>
+          <IconButton icon="close" accessibilityLabel="Avbryt" onPress={() => router.back()} />
         </View>
 
         <ThemedText type="subtitle" style={styles.heading}>
@@ -64,6 +62,8 @@ export default function CreateMeetupScreen() {
           {VIBES.map((emoji) => (
             <Pressable
               key={emoji}
+              accessibilityRole="button"
+              accessibilityState={{ selected: vibe === emoji }}
               onPress={() => setVibe(emoji)}
               style={[
                 styles.vibeCircle,
@@ -75,12 +75,12 @@ export default function CreateMeetupScreen() {
           ))}
         </View>
 
-        <TextInput
+        <TextField
+          label="Namn på träffen"
           value={title}
           onChangeText={setTitle}
           placeholder='T.ex. "Cruising vid torget"'
-          placeholderTextColor={theme.textSecondary}
-          style={[styles.input, { backgroundColor: theme.backgroundElement, color: theme.text }]}
+          maxLength={60}
           autoFocus
         />
 
@@ -88,6 +88,8 @@ export default function CreateMeetupScreen() {
           {TIME_OPTIONS.map((option) => (
             <Pressable
               key={option.value}
+              accessibilityRole="button"
+              accessibilityState={{ selected: time === option.value }}
               onPress={() => setTime(option.value)}
               style={[
                 styles.timeChip,
@@ -106,7 +108,8 @@ export default function CreateMeetupScreen() {
 
         <View style={styles.submitRow}>
           <Button
-            label="Släpp pinnen 🚀"
+            label="Släpp pinnen"
+            icon="location"
             onPress={handleSubmit}
             disabled={!title.trim()}
             loading={createMeetup.isPending}
@@ -131,17 +134,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   vibeEmoji: { fontSize: 22 },
-  input: {
-    borderRadius: Spacing.three,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.three,
-    fontSize: 16,
-  },
   timeRow: { flexDirection: 'row', gap: Spacing.two, flexWrap: 'wrap' },
   timeChip: {
+    minHeight: 40,
+    justifyContent: 'center',
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    borderRadius: 999,
+    borderRadius: Radius.pill,
   },
   submitRow: { marginTop: 'auto', paddingBottom: Spacing.four },
 });

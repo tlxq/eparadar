@@ -16,6 +16,7 @@ import { useColorScheme } from 'react-native';
 import '@/lib/location-task';
 
 import { ToastHost } from '@/components/toast-host';
+import { Colors, Fonts } from '@/constants/theme';
 import { trackEvent } from '@/lib/analytics';
 import { queryClient } from '@/lib/queryClient';
 import { setupNotificationResponseListener, syncPushTokenIfGranted } from '@/lib/push-notifications';
@@ -31,6 +32,7 @@ if (sentryDsn) {
 
 function RootLayout() {
   const colorScheme = useColorScheme();
+  const palette = Colors[colorScheme === 'dark' ? 'dark' : 'light'];
   const session = useAuthStore((state) => state.session);
   const initializing = useAuthStore((state) => state.initializing);
   const [fontsLoaded] = useFonts({
@@ -72,7 +74,16 @@ function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            headerStyle: { backgroundColor: palette.gradientTop },
+            headerShadowVisible: false,
+            headerTintColor: palette.brandOnSurface,
+            headerTitleStyle: { fontFamily: Fonts.inter.semiBold, fontSize: 17, color: palette.text },
+            headerBackButtonDisplayMode: 'minimal',
+          }}
+        >
           <Stack.Protected guard={!session}>
             <Stack.Screen name="(auth)" />
           </Stack.Protected>

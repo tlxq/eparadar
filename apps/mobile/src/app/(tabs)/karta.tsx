@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '@/components/avatar';
 import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
+import { EmptyState } from '@/components/empty-state';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { markInterested } from '@/features/meetups/api';
@@ -426,7 +427,11 @@ export default function MapScreen() {
     return (
       <ScreenBackground style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
-          <ThemedText themeColor="textSecondary">Kartan kräver appen på en telefon.</ThemedText>
+          <EmptyState
+            icon="map-outline"
+            title="Kartan finns i appen"
+            message="Öppna epaRadar på din telefon för att se vänner och träffar på kartan."
+          />
         </SafeAreaView>
       </ScreenBackground>
     );
