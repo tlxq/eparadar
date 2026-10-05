@@ -3,22 +3,30 @@
 Living checklist, source of truth across hosts. Update checkboxes as work lands; don't start a
 new phase until the current one is checked off (keeps one front open at a time).
 
-## Where we are (2026-09-23)
+## Where we are (2026-10-05)
 
 - **Done & verified end-to-end**: Identity + Feed, 1:1 + group Chat, Friendships, Live map
-  (background location tracking confirmed on two physical devices).
+  (background location tracking confirmed on two physical devices). "Done" here means functional,
+  not finished — see the priority shift below.
 - **Done & merged**: Meetups, photo upload and avatars, map avatar markers, privacy policy,
   branding, and release-safe store assets.
 - **Done & merged**: Phase A (pre-commit gate, analytics — both live; Sentry wired but needs a
-  DSN, Tom's to create), Phase B (car/post photos, live and on-device verified), and Phase C (push
+  DSN, Tom's to create), Phase B (car/post photos, live and on-device verified), Phase C (push
   notifications — Firebase/FCM credentials set up, real device send-and-receive verified
-  2026-09-23).
-- **Next up: Phase D** (Snapchat-style map polish) — avatar markers already done; ghost mode/
-  precision tiers and activity/heat feedback remain. See Phases A–F below for the full sequencing
-  decided 2026-09-22 (audit + planning session); rationale lives in memory (`project_eparadar.md`),
-  not duplicated
-  here.
-- **Remaining for launch (Phase F)**: Expo/EAS account and store credentials, manual store
+  2026-09-23), and Phase D (Snapchat-style map polish — avatar markers, ghost mode/precision
+  tiers, and the Bitmoji-style action bar all shipped; activity/heat feedback still open, low
+  priority, revisit opportunistically).
+- **Priority shift, 2026-09-25**: friend-adding is an unscoped search across every user in the
+  app, and chat is missing basic depth (timestamps, read state, edit/delete, leave-group) at the
+  DB-policy level, not just the UI. Both, plus a recurring pattern of missing delete/remove
+  affordances and a general "doesn't feel like Messenger/Snapchat" polish gap, are now the
+  priority — ahead of the previously-planned onboarding/empty-states pass. **Next up: Phase E**
+  (Friends 2.0 — proximity-gated discovery), then Phase F (Chat 2.0), Phase G (delete/remove
+  everywhere), Phase H (full page-by-page UX audit), before Phase I's original UX polish items.
+  See Phases E–H below; rationale lives in memory (`project_eparadar.md`), not duplicated here.
+- **Phase E progress, 2026-10-05**: PR1 (open search removed, meetup + mutual-friend suggestions,
+  blocking) is done; QR friend-code (PR2) and live-nearby radar (PR3) remain.
+- **Remaining for launch (Phase J)**: Expo/EAS account and store credentials, manual store
   submission, and optional CI automation after the first successful submission.
 
 ## Phase 1 — Finish Meetups
@@ -70,7 +78,7 @@ Cross-cutting, do first — everything after benefits from having it in place.
       cleanly with no DSN set. Still needed: create the actual Sentry project(s) and put the
       DSN(s) in `.env` (see `.env.example`) — nothing reports until that happens — and a fresh
       native build (`expo run:android`/EAS) before native (non-JS) crash capture is active on
-      mobile. Once wired in Phase E, its `onError` hook should feed the ErrorBoundary too.
+      mobile. Once wired in Phase I, its `onError` hook should feed the ErrorBoundary too.
 - [x] **Analytics**: first-party `analytics_events` table (`supabase/migrations/20260922150000_analytics_events.sql`)
       — insert-only RLS (`user_id is null or user_id = auth.uid()`), no select policy for regular
       users, pgTAP-covered (4 assertions). `apps/mobile/src/lib/analytics.ts`'s `trackEvent(name,
@@ -181,10 +189,12 @@ revisit opportunistically rather than blocking on it.
 
 - [x] **Avatar markers**: friend locations now render as avatar-in-a-circle markers with initials
       fallback, live status ring, and friends-only data.
-- [ ] **Ghost mode / precision tiers**: extend location sharing past today's binary on/off —
-      needs a real design decision (exact vs. approximate vs. off, global or per-friend). Run
-      this through the design-pitch workflow before building — it's also a live ethics/GDPR
-      thesis discussion point, not just a UI choice.
+- [x] **Ghost mode / precision tiers**: extended location sharing past binary on/off with an
+      approximate (~300m) mode — global scope, plain on/off `Switch` alongside the sharing
+      toggle. Ran through the design-pitch workflow first (radar-signal metaphor: solid pin =
+      Exakt, blurred halo = Ungefärlig, absent = Av). Fuzzing happens in the database via a
+      `BEFORE INSERT OR UPDATE` trigger on `locations`, so the exact coordinate is never
+      persisted in approximate mode — the stronger GDPR-thesis story. Merged `tlxq/eparadar#51`.
 - [x] **Bitmoji-style action bar**: Karta's single FAB + slide-up menu replaced with a
       persistent bottom bar — search (filter friends by name), friends-list (browse all
       friends sharing location), create-meetup, and locate-me, all folded into one bar. Search
@@ -195,7 +205,97 @@ revisit opportunistically rather than blocking on it.
 - [ ] **Activity/heat feedback**: extend the "live" pulse + interest-count treatment Meetups
       already has to friend clustering or a general "who's around" signal on the map.
 
-## Phase E — UX polish pass
+## Phase E — Friends 2.0: proximity-gated discovery
+
+Today's `friends/add.tsx` runs an unscoped `ilike` search against the entire `profiles` table —
+any user can find and request any other user, with no proximity, mutual-friend, or in-person
+signal required. `friendships` also only has `pending`/`accepted` states (no `blocked`), so a
+removed friend can immediately re-request. This phase replaces open search with a hard-gated
+model, following real precedent (Snapchat's Quick Add mutual-signal suggestions + separate
+GPS-based "Add Nearby"; BeReal's move from open Discovery to "Friends of Friends" only; Zenly's
+QR-code add on a live friend map) but grounded in epaRadar's own strongest signal: real GPS meetup
+check-ins and the live map, not generic social-graph guessing.
+
+- [x] **Kill open search.** Remove the unscoped `profiles`-table search in `friends/add.tsx` /
+      `searchUsersToAdd`. There is no path to finding a total stranger through the app anymore.
+- [x] **Meetup co-attendance candidates**: surface people who checked in at the same meetup
+      as addable — `suggested_friends_from_meetups()`, deliberately check-ins only (physical
+      co-presence), not `meetup_interests`/RSVP.
+- [ ] **Live-nearby candidates**: surface people currently sharing location within a small radius
+      on the map (mirrors Snapchat's "Add Nearby" — both users' apps open), reusing the existing
+      `locations`/`is_friend()` RLS pattern.
+- [x] **Mutual-friend suggestions**: friend-of-friend graph traversal off the existing
+      `is_friend()` helper.
+- [ ] **Personal QR/friend-code**: a per-user code, shown and scanned in person, for the case
+      none of the above signals line up yet (e.g. traded phones at a meet).
+- [x] **`blocked` friendship state**: extend `friendships.status` (today `pending`/`accepted`
+      only) so a removed friend can't immediately re-request.
+- [x] Run this through `eparadar-design-pitch` (now including the `mobile-app-ui-design`
+      structural checklist) before building — a real product/ethics decision, same framing as the
+      Phase D ghost-mode item, not just a UI reskin.
+
+## Phase F — Chat 2.0: depth + group management
+
+Chat's schema (`supabase/migrations/20260913120000_chat.sql`) has only SELECT/INSERT RLS on
+`conversations`/`conversation_members`/`messages` — no UPDATE or DELETE policy exists at all, so
+today's absence of edit/delete/leave-group/rename-group is a DB-level gap, not just a missing
+button. No timestamps render, no date separators, no read state, no typing indicator, no
+reactions, no media messages, group chats render with no avatar, and the chat list tab has no
+realtime subscription (it doesn't live-update). This phase closes that gap.
+
+- [ ] **Timestamps, date separators, consecutive-message grouping** in the conversation view
+      (`created_at` is already fetched but never rendered).
+- [ ] **Read receipts** — needed for the message-unsend rule below, not just a checkmark.
+- [ ] **Typing indicators.**
+- [ ] **Reactions.**
+- [ ] **Media/image messages** — reuse `uploadImage(bucket, pathPrefix, uri)` from Phase B rather
+      than inventing a new upload path.
+- [ ] **Message delete/unsend, only while unread** — new `messages` UPDATE/DELETE RLS (currently
+      absent entirely), gated server-side on the read-receipt state from above.
+- [ ] **Leave a group chat** — new `conversation_members` DELETE RLS + a `leaveConversation` call.
+- [ ] **Remove a group member** — needs a role/admin concept (new column on
+      `conversation_members`); currently no owner exists who could do this.
+- [ ] **Rename a group** — new `conversations` UPDATE RLS + RPC (today the name is set once at
+      creation with no way to change it).
+- [ ] **Group avatar** — new Storage bucket, same public-read/owner-write-by-folder-prefix pattern
+      as `avatars`/`car-photos`/`post-images`.
+- [ ] **Chat list live-update** — `(tabs)/chat.tsx` currently has no realtime subscription at all.
+- [ ] Visual pass (bubble styling, unread badges, presence) via `eparadar-design-pitch`, including
+      the `mobile-app-ui-design` structural checklist.
+
+## Phase G — Delete/remove everywhere
+
+A recurring gap across the app: most delete RLS policies already exist at the DB level, but
+nothing in the UI calls them. This phase hooks up what's missing plus adds the one genuinely new
+piece of backend work, in-app account deletion.
+
+- [ ] **Delete a post** — UI hookup only; `"users delete their own posts"` RLS already exists.
+- [ ] **Delete a car** — UI hookup only; `"users delete their own cars"` RLS already exists.
+- [ ] **Delete a meetup you created** — UI hookup only; `"creator deletes their meetup"` RLS
+      already exists (un-marking interest already works, this is the missing creator-side path).
+- [ ] **Remove/clear a profile photo** — revert to initials; the avatar Storage delete policy
+      already exists, just no "remove" action in the UI (today avatars can only be replaced).
+- [ ] **In-app account deletion, with password re-confirmation** — replaces today's email-only
+      path (`privacy.tsx` → contact@eparadar.se). Needs a new service-role Edge Function cascading
+      through posts/cars/chats/locations/friendships before deleting the `auth.users` row itself.
+      (Leave-group and message-delete live in Phase F since they need new chat schema work
+      regardless — see there, not duplicated here.)
+
+## Phase H — Full page-by-page UX audit
+
+Run every screen in the app — not just friends/chat — through `eparadar-design-pitch` (now
+including the `mobile-app-ui-design` structural checklist) as one coherent pass, aimed squarely at
+closing the "doesn't feel like Messenger/Snapchat" gap: feed, chat list + conversation, friends,
+map, profile, settings, privacy, the post/car/meetup create and detail screens, and the auth
+screens. Reuse the existing tokens (dark-first `#2F6FED`, Inter, WCAG AA) — this phase is about
+structure and polish, not re-deriving the palette.
+
+- [ ] Audit and fix each screen's thumb-zone placement, spacing-grid consistency, typography
+      limits, and empty/loading/error/success state coverage per the design-pitch checklist.
+- [ ] Feed, friends tab, map picker, profile, and settings each get a pass; chat's visual pass is
+      covered by Phase F above (cross-referenced, not repeated here).
+
+## Phase I — UX polish pass
 
 Run through the `eparadar-design-pitch` workflow (taste questions → rendered Artifact →
 implement) as one coherent visual pass rather than piecemeal.
@@ -209,7 +309,7 @@ implement) as one coherent visual pass rather than piecemeal.
 - [ ] **Toast + ErrorBoundary**: consistent failure surfacing instead of only inline form errors;
       this is also where Phase A's Sentry `onError` hook gets wired in.
 
-## Phase F — Store submission readiness
+## Phase J — Store submission readiness
 
 - [x] Real app icon + splash generated from the existing `packages/theme` brand assets
       (`icon.svg`/`icon-minimal.svg`/`icon-app.svg`); replaced the stock Expo template icon in

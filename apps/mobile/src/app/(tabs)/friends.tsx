@@ -9,6 +9,7 @@ import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useBlockUser } from '@/features/friends/hooks';
 import {
   fetchFriends,
   fetchOutgoingRequests,
@@ -25,6 +26,7 @@ import { useAuthStore } from '@/store/auth';
 function RequestRow({ request, myUserId }: { request: Friendship; myUserId: string }) {
   const queryClient = useQueryClient();
   const requester = request.requester;
+  const block = useBlockUser(myUserId);
 
   const respond = useMutation({
     mutationFn: (accept: boolean) => respondToFriendRequest(request.id, accept),
@@ -61,6 +63,11 @@ function RequestRow({ request, myUserId }: { request: Friendship; myUserId: stri
           onPress={() => respond.mutate(false)}
         />
       </View>
+      <Pressable onPress={() => block.mutate(requester.id)} disabled={block.isPending}>
+        <ThemedText type="link" themeColor="danger">
+          Blockera
+        </ThemedText>
+      </Pressable>
     </ThemedView>
   );
 }
@@ -97,6 +104,7 @@ function OutgoingRequestRow({ request, myUserId }: { request: Friendship; myUser
 function FriendRow({ friendship, myUserId }: { friendship: Friendship; myUserId: string }) {
   const queryClient = useQueryClient();
   const friend = friendProfile(friendship, myUserId);
+  const block = useBlockUser(myUserId);
 
   const remove = useMutation({
     mutationFn: () => removeFriend(friendship.id),
@@ -114,11 +122,18 @@ function FriendRow({ friendship, myUserId }: { friendship: Friendship; myUserId:
           @{friend.username}
         </ThemedText>
       </View>
-      <Pressable onPress={() => remove.mutate()} disabled={remove.isPending}>
-        <ThemedText type="link" themeColor="danger">
-          Ta bort
-        </ThemedText>
-      </Pressable>
+      <View style={styles.friendActions}>
+        <Pressable onPress={() => remove.mutate()} disabled={remove.isPending}>
+          <ThemedText type="link" themeColor="danger">
+            Ta bort
+          </ThemedText>
+        </Pressable>
+        <Pressable onPress={() => block.mutate(friend.id)} disabled={block.isPending}>
+          <ThemedText type="link" themeColor="danger">
+            Blockera
+          </ThemedText>
+        </Pressable>
+      </View>
     </ThemedView>
   );
 }
@@ -213,6 +228,7 @@ const styles = StyleSheet.create({
   list: { gap: Spacing.two, paddingBottom: Spacing.four },
   requestsSection: { gap: Spacing.two, marginBottom: Spacing.four },
   requestActions: { gap: Spacing.two },
+  friendActions: { gap: Spacing.two, alignItems: 'flex-end' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

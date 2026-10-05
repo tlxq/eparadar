@@ -42,6 +42,7 @@ export function Button({
               borderColor: onSurfaceColor,
             }
           : { backgroundColor: solidColor },
+        disabled && styles.disabled,
       ]}
       onPress={onPress}
       disabled={disabled || loading}
@@ -64,6 +65,9 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
     paddingHorizontal: Spacing.four,
     alignItems: 'center',
+  },
+  disabled: {
+    opacity: 0.4,
   },
   content: {
     flexDirection: 'row',
