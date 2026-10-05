@@ -1,16 +1,17 @@
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { FlatList, Pressable, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
-import { ScreenBackground } from '@/components/screen-background';
+import { FormScreen } from '@/components/form-screen';
+import { ListRow } from '@/components/list-row';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { UserSearchRow } from '@/components/user-search-row';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { useUserSearch } from '@/hooks/use-user-search';
 import { createConversation, searchUsers, type Profile } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
@@ -18,6 +19,7 @@ import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 
 export default function NewChatScreen() {
+  const theme = useTheme();
   const userId = useAuthStore((state) => state.session?.user.id);
   const queryClient = useQueryClient();
   const { query, results, handleSearch } = useUserSearch(searchUsers, userId);
@@ -47,60 +49,98 @@ export default function NewChatScreen() {
   });
 
   return (
-    <ScreenBackground style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <TextField placeholder="Sök användarnamn" value={query} onChangeText={handleSearch} />
-        {selected.length > 1 ? (
-          <TextField
-            placeholder="Gruppnamn (valfritt)"
-            value={groupName}
-            onChangeText={setGroupName}
+    <FormScreen
+      footer={
+        <>
+          {error ? <ThemedText type="error">{error}</ThemedText> : null}
+          <Button
+            label={selected.length > 1 ? `Starta grupp (${selected.length + 1})` : 'Starta chatt'}
+            onPress={() => mutation.mutate()}
+            loading={mutation.isPending}
+            disabled={selected.length === 0}
           />
-        ) : null}
-        <FlatList
-          data={results}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => {
+        </>
+      }
+    >
+      <TextField
+        label="Till"
+        placeholder="Sök på namn eller användarnamn"
+        autoCapitalize="none"
+        autoFocus
+        value={query}
+        onChangeText={handleSearch}
+      />
+      {selected.length > 0 ? (
+        <View style={styles.chips}>
+          {selected.map((user) => (
+            <Pressable
+              key={user.id}
+              accessibilityRole="button"
+              accessibilityLabel={`Ta bort ${user.display_name}`}
+              onPress={() => toggleSelected(user)}
+              style={[styles.chip, { backgroundColor: theme.backgroundElement }]}
+            >
+              <Avatar name={user.display_name} imageUrl={user.avatar_url} size={24} />
+              <ThemedText type="smallBold">{user.display_name}</ThemedText>
+              <Ionicons name="close" size={16} color={theme.textSecondary} />
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+      {selected.length > 1 ? (
+        <TextField
+          label="Gruppnamn (valfritt)"
+          placeholder="Traktorgänget"
+          value={groupName}
+          onChangeText={setGroupName}
+        />
+      ) : null}
+      {query.trim().length < 2 ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Skriv minst två tecken för att söka.
+        </ThemedText>
+      ) : results.length === 0 ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          Ingen hittades.
+        </ThemedText>
+      ) : (
+        <View style={styles.results}>
+          {results.map((item) => {
             const isSelected = selected.some((u) => u.id === item.id);
             return (
-              <Pressable onPress={() => toggleSelected(item)}>
-                <ThemedView
-                  type={isSelected ? 'backgroundSelected' : 'backgroundElement'}
-                  style={styles.userRow}
-                >
-                  <UserSearchRow user={item} />
-                </ThemedView>
-              </Pressable>
+              <ListRow
+                key={item.id}
+                title={item.display_name}
+                subtitle={`@${item.username}`}
+                leading={<Avatar name={item.display_name} imageUrl={item.avatar_url} size={44} />}
+                trailing={
+                  <Ionicons
+                    name={isSelected ? 'checkmark-circle' : 'ellipse-outline'}
+                    size={26}
+                    color={isSelected ? theme.brand : theme.border}
+                  />
+                }
+                accessibilityLabel={`${isSelected ? 'Avmarkera' : 'Välj'} ${item.display_name}`}
+                onPress={() => toggleSelected(item)}
+              />
             );
-          }}
-          contentContainerStyle={styles.list}
-        />
-        {error ? <ThemedText type="error">{error}</ThemedText> : null}
-        <Button
-          label="Starta chatt"
-          onPress={() => mutation.mutate()}
-          loading={mutation.isPending}
-          disabled={selected.length === 0}
-        />
-      </SafeAreaView>
-    </ScreenBackground>
+          })}
+        </View>
+      )}
+    </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-    gap: Spacing.three,
-  },
-  list: { gap: Spacing.two },
-  userRow: {
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  chip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
-    padding: Spacing.three,
-    borderRadius: Spacing.three,
+    minHeight: 36,
+    paddingLeft: Spacing.one,
+    paddingRight: Spacing.two + Spacing.one,
+    borderRadius: Radius.pill,
   },
+  results: { marginHorizontal: -Spacing.three },
 });

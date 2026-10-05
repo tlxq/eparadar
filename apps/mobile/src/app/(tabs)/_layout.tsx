@@ -2,14 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { FloatingTabBar } from '@/components/floating-tab-bar';
 import { useRealtimeTable } from '@/hooks/use-realtime-table';
-import { useTheme } from '@/hooks/use-theme';
 import { fetchPendingRequests } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 
 export default function TabsLayout() {
-  const theme = useTheme();
   const userId = useAuthStore((state) => state.session?.user.id);
   const queryClient = useQueryClient();
 
@@ -43,14 +42,7 @@ export default function TabsLayout() {
   });
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: theme.brandOnSurface,
-        tabBarInactiveTintColor: theme.textSecondary,
-        tabBarStyle: { backgroundColor: theme.background, borderTopColor: theme.border },
-      }}
-    >
+    <Tabs tabBar={(props) => <FloatingTabBar {...props} />} screenOptions={{ headerShown: false }}>
       <Tabs.Screen
         name="index"
         options={{
@@ -74,7 +66,6 @@ export default function TabsLayout() {
         options={{
           title: 'Vänner',
           tabBarBadge: pendingCount > 0 ? pendingCount : undefined,
-          tabBarBadgeStyle: { backgroundColor: theme.accent },
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons name={focused ? 'people' : 'people-outline'} size={size} color={color} />
           ),

@@ -10,6 +10,7 @@
     "./colors": "./src/colors.ts",
     "./spacing": "./src/spacing.ts",
     "./fonts": "./src/fonts.ts",
+    "./radius": "./src/radius.ts",
     "./assets/*": "./assets/*"
   }
 }

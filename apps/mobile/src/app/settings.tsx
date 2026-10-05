@@ -1,16 +1,24 @@
 import { useCallback, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { router, useFocusEffect } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { ScreenBackground } from '@/components/screen-background';
 import { Switch } from '@/components/switch';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
-import { fetchMyLocation, setLocationApproximate, setLocationSharing, upsertLocation } from '@/lib/api';
+import { Radius, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import {
+  fetchMyLocation,
+  setLocationApproximate,
+  setLocationSharing,
+  signOut,
+  upsertLocation,
+} from '@/lib/api';
+import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import {
   requestLocationPermissions,
@@ -21,6 +29,7 @@ import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 
 export default function SettingsScreen() {
+  const theme = useTheme();
   const userId = useAuthStore((state) => state.session?.user.id);
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
@@ -100,52 +109,97 @@ export default function SettingsScreen() {
     }
   }
 
+  async function handleSignOut() {
+    const ok = await confirmDestructive({
+      title: 'Logga ut?',
+      message: 'Du kan logga in igen när du vill.',
+      confirmLabel: 'Logga ut',
+    });
+    if (ok) await signOut();
+  }
+
   return (
     <ScreenBackground style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['bottom']}>
-        <ThemedView type="backgroundElement" style={styles.row}>
-          <View style={styles.rowText}>
-            <ThemedText type="smallBold">Dela min plats</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              När det här är på kan dina vänner se var du är på kartan. Ingen annan kan se din
-              plats, den delas aldrig offentligt, och du kan stänga av det här när du vill.
-            </ThemedText>
-          </View>
-          <Switch
-            testID="sharing-toggle"
-            value={sharingEnabled}
-            onValueChange={handleToggle}
-            disabled={busy}
-          />
-        </ThemedView>
-        <ThemedView
-          type="backgroundElement"
-          style={[styles.row, !sharingEnabled && styles.rowDisabled]}
-        >
-          <View style={styles.rowText}>
-            <ThemedText type="smallBold">Ungefärlig plats</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              Visa bara ett ungefärligt område för dina vänner — cirka 300 meter — istället för
-              exakt var du står. Bra när du vill dela att du är i närheten utan att visa exakt
-              position.
-            </ThemedText>
-          </View>
-          <Switch
-            testID="approximate-toggle"
-            value={approximateEnabled}
-            onValueChange={handleApproximateToggle}
-            disabled={!sharingEnabled || approximateBusy}
-          />
-        </ThemedView>
-        <Pressable
-          accessibilityRole="link"
-          onPress={() => router.push('/privacy')}
-        >
-          <ThemedText type="small" themeColor="brand">
-            Läs epaRadars integritetspolicy
+      <SafeAreaView style={styles.container} edges={['bottom']}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
+            PLATS
           </ThemedText>
-        </Pressable>
-        {error ? <ThemedText type="error">{error}</ThemedText> : null}
+          <View style={[styles.group, { backgroundColor: theme.backgroundElement }]}>
+            <View style={styles.row}>
+              <View style={styles.rowText}>
+                <ThemedText type="headline">Dela min plats</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  När det här är på kan dina vänner se var du är på kartan. Ingen annan kan se din
+                  plats, den delas aldrig offentligt, och du kan stänga av det här när du vill.
+                </ThemedText>
+              </View>
+              <Switch
+                testID="sharing-toggle"
+                value={sharingEnabled}
+                onValueChange={handleToggle}
+                disabled={busy}
+              />
+            </View>
+            <View style={[styles.separator, { backgroundColor: theme.separator }]} />
+            <View style={[styles.row, !sharingEnabled && styles.rowDisabled]}>
+              <View style={styles.rowText}>
+                <ThemedText type="headline">Ungefärlig plats</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  Visa bara ett ungefärligt område för dina vänner — cirka 300 meter — istället för
+                  exakt var du står. Bra när du vill dela att du är i närheten utan att visa exakt
+                  position.
+                </ThemedText>
+              </View>
+              <Switch
+                testID="approximate-toggle"
+                value={approximateEnabled}
+                onValueChange={handleApproximateToggle}
+                disabled={!sharingEnabled || approximateBusy}
+              />
+            </View>
+          </View>
+          {error ? <ThemedText type="error">{error}</ThemedText> : null}
+
+          <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
+            OM EPARADAR
+          </ThemedText>
+          <View style={[styles.group, { backgroundColor: theme.backgroundElement }]}>
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => router.push('/privacy')}
+              style={({ pressed }) => [
+                styles.linkRow,
+                pressed && { backgroundColor: theme.backgroundSelected },
+              ]}
+            >
+              <Ionicons name="shield-checkmark-outline" size={22} color={theme.brandOnSurface} />
+              <ThemedText type="headline" style={styles.rowText}>
+                Integritetspolicy
+              </ThemedText>
+              <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
+            </Pressable>
+          </View>
+
+          <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
+            KONTO
+          </ThemedText>
+          <View style={[styles.group, { backgroundColor: theme.backgroundElement }]}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={handleSignOut}
+              style={({ pressed }) => [
+                styles.linkRow,
+                pressed && { backgroundColor: theme.backgroundSelected },
+              ]}
+            >
+              <Ionicons name="log-out-outline" size={22} color={theme.danger} />
+              <ThemedText type="headline" themeColor="danger" style={styles.rowText}>
+                Logga ut
+              </ThemedText>
+            </Pressable>
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </ScreenBackground>
   );
@@ -153,20 +207,23 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.three,
-    paddingTop: Spacing.three,
-    gap: Spacing.two,
-  },
+  content: { padding: Spacing.three, gap: Spacing.two, paddingBottom: Spacing.five },
+  sectionLabel: { letterSpacing: 0.6, paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
+  group: { borderRadius: Radius.lg, overflow: 'hidden' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     gap: Spacing.three,
     padding: Spacing.three,
-    borderRadius: Spacing.three,
   },
+  separator: { height: StyleSheet.hairlineWidth, marginLeft: Spacing.three },
   rowText: { flex: 1, gap: Spacing.half },
   rowDisabled: { opacity: 0.55 },
+  linkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    minHeight: 52,
+    paddingHorizontal: Spacing.three,
+  },
 });

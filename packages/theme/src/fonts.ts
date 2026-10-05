@@ -4,5 +4,6 @@ export const FontFamilies = {
     medium: 'Inter_500Medium',
     semiBold: 'Inter_600SemiBold',
     bold: 'Inter_700Bold',
+    extraBold: 'Inter_800ExtraBold',
   },
 } as const;

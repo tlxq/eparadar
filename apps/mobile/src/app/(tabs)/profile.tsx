@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
@@ -9,37 +18,155 @@ import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { CarPhoto } from '@/components/car-photo';
+import { IconButton } from '@/components/icon-button';
 import { ScreenBackground } from '@/components/screen-background';
+import { ScreenHeader } from '@/components/screen-header';
+import { Skeleton } from '@/components/skeleton';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
-import { fetchMyCars, fetchProfile, signOut, updateProfile, type Car } from '@/lib/api';
+import { Radius, Spacing } from '@/constants/theme';
+import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
+import { useTheme } from '@/hooks/use-theme';
+import {
+  fetchFriends,
+  fetchMyCars,
+  fetchPosts,
+  fetchProfile,
+  updateProfile,
+  type Car,
+  type Profile,
+} from '@/lib/api';
+import { getErrorMessage } from '@/lib/errors';
 import { uploadAvatar } from '@/lib/image-upload';
 import { queryKeys } from '@/lib/query-keys';
+import { showToast } from '@/store/toast';
 import { useAuthStore } from '@/store/auth';
-import { useTheme } from '@/hooks/use-theme';
 
-function CarRow({ car }: { car: Car }) {
+const AVATAR_SIZE = 96;
+const CAR_CARD_WIDTH = 160;
+
+function CarCard({ car }: { car: Car }) {
+  const theme = useTheme();
   return (
-    <ThemedView type="backgroundElement" style={[styles.carRow, styles.carRowContent]}>
-      <CarPhoto imageUrl={car.photo_url} size={40} />
-      <View>
-        <ThemedText type="smallBold">{car.nickname ?? `${car.make} ${car.model}`}</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          {car.make} {car.model} {car.year ?? ''}
+    <View style={[styles.carCard, { backgroundColor: theme.backgroundElement }]}>
+      <CarPhoto imageUrl={car.photo_url} size={CAR_CARD_WIDTH} radius={0} />
+      <View style={styles.carText}>
+        <ThemedText type="smallBold" numberOfLines={1}>
+          {car.nickname ?? `${car.make} ${car.model}`}
+        </ThemedText>
+        <ThemedText type="caption" themeColor="textSecondary" numberOfLines={1}>
+          {[`${car.make} ${car.model}`, car.year].filter(Boolean).join(' · ')}
         </ThemedText>
       </View>
-    </ThemedView>
+    </View>
+  );
+}
+
+function Stat({ value, label }: { value: number | undefined; label: string }) {
+  const theme = useTheme();
+  return (
+    <View style={[styles.stat, { backgroundColor: theme.backgroundElement }]}>
+      {value === undefined ? (
+        <Skeleton width={24} height={20} />
+      ) : (
+        <ThemedText type="subtitle" style={styles.statValue}>
+          {value}
+        </ThemedText>
+      )}
+      <ThemedText type="caption" themeColor="textSecondary">
+        {label}
+      </ThemedText>
+    </View>
+  );
+}
+
+type EditProfileSheetProps = {
+  profile: Profile;
+  visible: boolean;
+  onClose: () => void;
+};
+
+function EditProfileSheet({ profile, visible, onClose }: EditProfileSheetProps) {
+  const theme = useTheme();
+  const queryClient = useQueryClient();
+  const [displayName, setDisplayName] = useState(profile.display_name);
+  const [bio, setBio] = useState(profile.bio ?? '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSave() {
+    if (!displayName.trim()) {
+      setError('Skriv ett visningsnamn.');
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await updateProfile(profile.id, {
+        displayName: displayName.trim(),
+        bio: bio.trim() || null,
+        avatarUrl: profile.avatar_url ?? undefined,
+      });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.profile(profile.id) });
+      showToast({ tone: 'success', message: 'Profilen är sparad.' });
+      onClose();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
+      <KeyboardAvoidingView
+        style={[styles.sheet, { backgroundColor: theme.background }]}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={styles.sheetHeader}>
+          <Button label="Avbryt" variant="ghost" size="sm" onPress={onClose} />
+          <ThemedText type="headline">Redigera profil</ThemedText>
+          <Button label="Spara" size="sm" loading={saving} onPress={handleSave} />
+        </View>
+        <ScrollView contentContainerStyle={styles.sheetBody} keyboardShouldPersistTaps="handled">
+          <TextField
+            label="Visningsnamn"
+            value={displayName}
+            onChangeText={setDisplayName}
+            error={error}
+            autoFocus
+          />
+          <TextField
+            label="Bio"
+            value={bio}
+            onChangeText={setBio}
+            placeholder="Vad kör du, var brukar du hänga?"
+            multiline
+            maxLength={160}
+          />
+          <ThemedText type="caption" themeColor="textSecondary" style={styles.counter}>
+            {bio.length}/160
+          </ThemedText>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 }
 
 export default function ProfileScreen() {
   const theme = useTheme();
+  const tabBarInset = useTabBarInset();
   const userId = useAuthStore((state) => state.session?.user.id);
   const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: queryKeys.profile(userId),
     queryFn: () => fetchProfile(userId!),
     enabled: !!userId,
@@ -51,36 +178,27 @@ export default function ProfileScreen() {
     enabled: !!userId,
   });
 
-  const [displayName, setDisplayName] = useState('');
-  const [bio, setBio] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [avatarError, setAvatarError] = useState<string | null>(null);
-  const [loadedProfileId, setLoadedProfileId] = useState<string | null>(null);
+  const { data: friends } = useQuery({
+    queryKey: queryKeys.friends(userId),
+    queryFn: () => fetchFriends(userId!),
+    enabled: !!userId,
+  });
 
-  if (profile && profile.id !== loadedProfileId) {
-    setLoadedProfileId(profile.id);
-    setDisplayName(profile.display_name);
-    setBio(profile.bio ?? '');
-    setAvatarUrl(profile.avatar_url);
-  }
-
-  async function handleSave() {
-    if (!userId) return;
-    setSaving(true);
-    try {
-      await updateProfile(userId, { displayName, bio: bio || null, avatarUrl: avatarUrl ?? undefined });
-      queryClient.invalidateQueries({ queryKey: queryKeys.profile(userId) });
-    } finally {
-      setSaving(false);
-    }
-  }
+  const { data: posts } = useQuery({
+    queryKey: queryKeys.posts(),
+    queryFn: fetchPosts,
+  });
 
   async function handlePickAvatar() {
-    if (!userId) return;
+    if (!userId || !profile) return;
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') return;
+    if (status !== 'granted') {
+      showToast({
+        tone: 'error',
+        message: 'epaRadar behöver tillgång till dina bilder för att byta profilbild.',
+      });
+      return;
+    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
@@ -91,47 +209,66 @@ export default function ProfileScreen() {
     if (result.canceled || !result.assets[0]) return;
 
     setUploadingAvatar(true);
-    setAvatarError(null);
     try {
       const publicUrl = await uploadAvatar(userId, result.assets[0].uri);
-      setAvatarUrl(publicUrl);
-      await updateProfile(userId, { displayName, bio: bio || null, avatarUrl: publicUrl });
-      queryClient.invalidateQueries({ queryKey: queryKeys.profile(userId) });
+      await updateProfile(userId, {
+        displayName: profile.display_name,
+        bio: profile.bio,
+        avatarUrl: publicUrl,
+      });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.profile(userId) });
     } catch (error) {
-      setAvatarError(error instanceof Error ? error.message : 'Bilden kunde inte laddas upp.');
+      showToast({
+        tone: 'error',
+        message: error instanceof Error ? error.message : 'Bilden kunde inte laddas upp.',
+      });
     } finally {
       setUploadingAvatar(false);
     }
   }
 
+  const postCount = posts?.filter((post) => post.author_id === userId).length;
+
   return (
     <ScreenBackground style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <FlatList
-          data={cars ?? []}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <CarRow car={item} />}
-          contentContainerStyle={styles.list}
-          ListHeaderComponent={
-            <View style={styles.header}>
-              <View style={styles.headerRow}>
-                <ThemedText type="title">Profil</ThemedText>
-                <Pressable
-                  accessibilityRole="button"
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <ScrollView contentContainerStyle={{ paddingBottom: tabBarInset }}>
+          <View style={styles.padded}>
+            <ScreenHeader
+              title="Profil"
+              actions={
+                <IconButton
+                  icon="settings-outline"
                   accessibilityLabel="Inställningar"
                   onPress={() => router.push('/settings')}
-                  style={[styles.iconButton, { backgroundColor: theme.backgroundElement }]}
-                >
-                  <Ionicons name="settings-outline" size={20} color={theme.brandOnSurface} />
-                </Pressable>
-              </View>
+                />
+              }
+            />
+            <View style={styles.hero}>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Byt profilbild"
                 onPress={handlePickAvatar}
-                disabled={uploadingAvatar}
-                style={styles.avatarPicker}
+                disabled={uploadingAvatar || !profile}
+                style={({ pressed }) => [pressed && styles.pressed]}
               >
-                <Avatar name={displayName || '?'} imageUrl={avatarUrl} size={88} />
-                <View style={[styles.avatarBadge, { backgroundColor: theme.brand, borderColor: theme.background }]}>
+                <View style={[styles.ring, { borderColor: theme.brand }]}>
+                  {profile ? (
+                    <Avatar
+                      name={profile.display_name}
+                      imageUrl={profile.avatar_url}
+                      size={AVATAR_SIZE}
+                    />
+                  ) : (
+                    <Skeleton width={AVATAR_SIZE} height={AVATAR_SIZE} radius={AVATAR_SIZE / 2} />
+                  )}
+                </View>
+                <View
+                  style={[
+                    styles.avatarBadge,
+                    { backgroundColor: theme.brand, borderColor: theme.background },
+                  ]}
+                >
                   {uploadingAvatar ? (
                     <ActivityIndicator size="small" color={theme.brandText} />
                   ) : (
@@ -139,82 +276,157 @@ export default function ProfileScreen() {
                   )}
                 </View>
               </Pressable>
-              {avatarError ? (
-                <ThemedText themeColor="danger">{avatarError}</ThemedText>
-              ) : null}
-              <TextField
-                placeholder="Visningsnamn"
-                value={displayName}
-                onChangeText={setDisplayName}
-              />
-              <TextField placeholder="Bio" value={bio} onChangeText={setBio} multiline />
-              <Button label="Spara" onPress={handleSave} loading={saving} />
-              <View style={styles.carsHeader}>
-                <ThemedText type="subtitle">Mina bilar</ThemedText>
-                <Button
-                  label="Lägg till bil"
-                  variant="secondary"
-                  icon="add-circle-outline"
-                  onPress={() => router.push('/cars/new')}
-                />
-              </View>
+              {profileLoading || !profile ? (
+                <View style={styles.heroSkeleton}>
+                  <Skeleton width={160} height={22} />
+                  <Skeleton width={100} />
+                </View>
+              ) : (
+                <>
+                  <ThemedText type="subtitle" style={styles.center}>
+                    {profile.display_name}
+                  </ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    @{profile.username}
+                  </ThemedText>
+                  {profile.bio ? (
+                    <ThemedText style={[styles.center, styles.bio]}>{profile.bio}</ThemedText>
+                  ) : null}
+                </>
+              )}
             </View>
-          }
-          ListEmptyComponent={
-            <ThemedText themeColor="textSecondary">Inga bilar tillagda än.</ThemedText>
-          }
-          ListFooterComponent={
-            <View style={styles.footer}>
+
+            <View style={styles.stats}>
+              <Stat value={cars?.length} label="bilar" />
+              <Stat value={friends?.length} label="vänner" />
+              <Stat value={postCount} label="inlägg" />
+            </View>
+
+            <Button
+              label="Redigera profil"
+              icon="create-outline"
+              variant="secondary"
+              disabled={!profile}
+              onPress={() => setEditing(true)}
+            />
+
+            <View style={styles.sectionHeader}>
+              <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
+                MINA BILAR
+              </ThemedText>
               <Button
-                label="Logga ut"
-                variant="secondary"
-                icon="log-out-outline"
-                onPress={() => signOut()}
+                label="Lägg till"
+                icon="add"
+                size="sm"
+                variant="ghost"
+                onPress={() => router.push('/cars/new')}
               />
             </View>
-          }
-        />
+          </View>
+
+          {cars && cars.length > 0 ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.carRow}
+            >
+              {cars.map((car) => (
+                <CarCard key={car.id} car={car} />
+              ))}
+            </ScrollView>
+          ) : cars ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push('/cars/new')}
+              style={({ pressed }) => [
+                styles.addCar,
+                { borderColor: theme.border },
+                pressed && styles.pressed,
+              ]}
+            >
+              <Ionicons name="car-sport-outline" size={28} color={theme.brandOnSurface} />
+              <ThemedText type="smallBold">Lägg till din första bil</ThemedText>
+              <ThemedText type="caption" themeColor="textSecondary" style={styles.center}>
+                Bilen visas på din profil och kan taggas i inlägg.
+              </ThemedText>
+            </Pressable>
+          ) : (
+            <View style={styles.carRow}>
+              <Skeleton width={CAR_CARD_WIDTH} height={CAR_CARD_WIDTH + 52} radius={Radius.lg} />
+              <Skeleton width={CAR_CARD_WIDTH} height={CAR_CARD_WIDTH + 52} radius={Radius.lg} />
+            </View>
+          )}
+        </ScrollView>
       </SafeAreaView>
+      {profile ? (
+        <EditProfileSheet
+          key={`${profile.id}:${editing}`}
+          profile={profile}
+          visible={editing}
+          onClose={() => setEditing(false)}
+        />
+      ) : null}
     </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  safeArea: { flex: 1, paddingHorizontal: Spacing.three },
-  header: { gap: Spacing.two, paddingVertical: Spacing.three },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  padded: { paddingHorizontal: Spacing.three, gap: Spacing.three },
+  hero: { alignItems: 'center', gap: Spacing.one },
+  heroSkeleton: { alignItems: 'center', gap: Spacing.two, paddingTop: Spacing.two },
+  ring: {
+    borderWidth: 2.5,
+    borderRadius: (AVATAR_SIZE + 10) / 2,
+    padding: 2.5,
+    marginBottom: Spacing.two,
   },
-  iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarPicker: { alignSelf: 'flex-start' },
   avatarBadge: {
     position: 'absolute',
-    right: -2,
-    bottom: -2,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 2,
+    right: 2,
+    bottom: Spacing.two + 2,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  carsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  center: { textAlign: 'center' },
+  bio: { maxWidth: 320, marginTop: Spacing.one },
+  pressed: { opacity: 0.8 },
+  stats: { flexDirection: 'row', gap: Spacing.two },
+  stat: {
+    flex: 1,
     alignItems: 'center',
-    marginTop: Spacing.two,
+    gap: Spacing.half,
+    paddingVertical: Spacing.three,
+    borderRadius: Radius.lg,
   },
-  list: { gap: Spacing.two, paddingBottom: Spacing.four },
-  carRow: { padding: Spacing.three, borderRadius: Spacing.three },
-  carRowContent: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  footer: { marginTop: Spacing.three, gap: Spacing.two },
+  statValue: { fontVariant: ['tabular-nums'] },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  sectionLabel: { letterSpacing: 0.6 },
+  carRow: { flexDirection: 'row', gap: Spacing.two, paddingHorizontal: Spacing.three },
+  carCard: { width: CAR_CARD_WIDTH, borderRadius: Radius.lg, overflow: 'hidden' },
+  carText: { padding: Spacing.two + Spacing.half, gap: Spacing.half },
+  addCar: {
+    marginHorizontal: Spacing.three,
+    alignItems: 'center',
+    gap: Spacing.one,
+    paddingVertical: Spacing.four,
+    paddingHorizontal: Spacing.four,
+    borderRadius: Radius.lg,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+  },
+  sheet: { flex: 1 },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.two,
+  },
+  sheetBody: { padding: Spacing.three, gap: Spacing.three },
+  counter: { alignSelf: 'flex-end', marginTop: -Spacing.two },
 });

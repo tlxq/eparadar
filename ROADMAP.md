@@ -290,10 +290,20 @@ map, profile, settings, privacy, the post/car/meetup create and detail screens, 
 screens. Reuse the existing tokens (dark-first `#2F6FED`, Inter, WCAG AA) — this phase is about
 structure and polish, not re-deriving the palette.
 
-- [ ] Audit and fix each screen's thumb-zone placement, spacing-grid consistency, typography
+**2026-10-05**: done on the `ui-refresh` branch as a Snapchat/Messenger-inspired visual refresh
+(pitch artifact approved first, then five commits): AA fixes to the light accent/success tokens, a
+new type scale and radius tokens, shared `ScreenHeader`/`IconButton`/`ListRow`/`EmptyState`/
+`Skeleton`/`ActionSheet`/`FormScreen`/`AuthShell` components, a floating tab bar with a thumb-zone
+compose button, and every screen moved onto them. Verified on web against the local stack in
+both themes; Karta overlays and the native-only sheets/alerts still need an on-device check.
+Haptics were deferred because `expo-haptics` needs a fresh native build.
+
+- [x] Audit and fix each screen's thumb-zone placement, spacing-grid consistency, typography
       limits, and empty/loading/error/success state coverage per the design-pitch checklist.
-- [ ] Feed, friends tab, map picker, profile, and settings each get a pass; chat's visual pass is
-      covered by Phase F above (cross-referenced, not repeated here).
+- [x] Feed, friends tab, map picker, profile, and settings each get a pass; chat's list and
+      conversation screens got their visual pass here too (Phase F's DB-level depth is still open).
+- [ ] On-device check of the refresh (Karta overlay offsets above the floating tab bar, action
+      sheet → block confirm on iOS, edit-profile page sheet, keyboard behavior in the composer).
 
 ## Phase I — UX polish pass
 
@@ -302,12 +312,12 @@ implement) as one coherent visual pass rather than piecemeal.
 
 - [ ] **Onboarding**: a short (≲5 steps) flow after signup — at minimum a permission-priming step
       and profile basics — instead of dropping straight into tabs.
-- [ ] **Empty states**: real copy + a simple illustration/icon treatment for feed/chat/friends,
-      replacing today's bare Swedish text strings.
-- [ ] **Loading**: a new `Skeleton` component (`src/components/`) replacing raw
-      `ActivityIndicator` on feed/profile/meetup-detail.
-- [ ] **Toast + ErrorBoundary**: consistent failure surfacing instead of only inline form errors;
-      this is also where Phase A's Sentry `onError` hook gets wired in.
+- [x] **Empty states**: real copy + a simple illustration/icon treatment for feed/chat/friends,
+      replacing today's bare Swedish text strings (shared `EmptyState`, done in Phase H's refresh).
+- [x] **Loading**: a new `Skeleton` component (`src/components/`) replacing raw
+      `ActivityIndicator` on feed/profile/meetup-detail (also chat list and friends).
+- [ ] **Toast + ErrorBoundary**: the toast half is done (`showToast()` + `ToastHost`, used for
+      load/send/save failures and successes); the ErrorBoundary and Sentry `onError` wiring remain.
 
 ## Phase J — Store submission readiness
 

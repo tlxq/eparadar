@@ -4,6 +4,7 @@ import {
   Inter_500Medium,
   Inter_600SemiBold,
   Inter_700Bold,
+  Inter_800ExtraBold,
   useFonts,
 } from '@expo-google-fonts/inter';
 import * as Sentry from '@sentry/react-native';
@@ -14,6 +15,8 @@ import { useColorScheme } from 'react-native';
 
 import '@/lib/location-task';
 
+import { ToastHost } from '@/components/toast-host';
+import { Colors, Fonts } from '@/constants/theme';
 import { trackEvent } from '@/lib/analytics';
 import { queryClient } from '@/lib/queryClient';
 import { setupNotificationResponseListener, syncPushTokenIfGranted } from '@/lib/push-notifications';
@@ -29,6 +32,7 @@ if (sentryDsn) {
 
 function RootLayout() {
   const colorScheme = useColorScheme();
+  const palette = Colors[colorScheme === 'dark' ? 'dark' : 'light'];
   const session = useAuthStore((state) => state.session);
   const initializing = useAuthStore((state) => state.initializing);
   const [fontsLoaded] = useFonts({
@@ -36,6 +40,7 @@ function RootLayout() {
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
+    Inter_800ExtraBold,
   });
 
   useEffect(() => {
@@ -69,7 +74,16 @@ function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            headerStyle: { backgroundColor: palette.gradientTop },
+            headerShadowVisible: false,
+            headerTintColor: palette.brandOnSurface,
+            headerTitleStyle: { fontFamily: Fonts.inter.semiBold, fontSize: 17, color: palette.text },
+            headerBackButtonDisplayMode: 'minimal',
+          }}
+        >
           <Stack.Protected guard={!session}>
             <Stack.Screen name="(auth)" />
           </Stack.Protected>
@@ -87,7 +101,7 @@ function RootLayout() {
               name="chat/new"
               options={{ presentation: 'modal', headerShown: true, title: 'Ny chatt' }}
             />
-            <Stack.Screen name="chat/[id]" options={{ headerShown: true }} />
+            <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
             <Stack.Screen
               name="friends/add"
               options={{ presentation: 'modal', headerShown: true, title: 'Lägg till vän' }}
@@ -101,6 +115,7 @@ function RootLayout() {
             <Stack.Screen name="meetups/[id]" options={{ presentation: 'modal', headerShown: false }} />
           </Stack.Protected>
         </Stack>
+        <ToastHost />
       </ThemeProvider>
     </QueryClientProvider>
   );
