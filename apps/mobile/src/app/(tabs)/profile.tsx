@@ -1,15 +1,6 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
@@ -19,6 +10,7 @@ import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { CarPhoto } from '@/components/car-photo';
 import { IconButton } from '@/components/icon-button';
+import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ScreenBackground } from '@/components/screen-background';
 import { ScreenHeader } from '@/components/screen-header';
 import { Skeleton } from '@/components/skeleton';
@@ -129,10 +121,7 @@ function EditProfileSheet({ profile, visible, onClose }: EditProfileSheetProps) 
           style={[styles.sheet, { backgroundColor: theme.background }]}
           edges={['top', 'bottom']}
         >
-          <KeyboardAvoidingView
-            style={styles.sheet}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          >
+          <KeyboardAvoider style={styles.sheet}>
             <View style={styles.sheetHeader}>
               <Button label="Avbryt" variant="ghost" size="sm" onPress={onClose} />
               <ThemedText type="headline">Redigera profil</ThemedText>
@@ -161,7 +150,7 @@ function EditProfileSheet({ profile, visible, onClose }: EditProfileSheetProps) 
                 {bio.length}/160
               </ThemedText>
             </ScrollView>
-          </KeyboardAvoidingView>
+          </KeyboardAvoider>
         </SafeAreaView>
       </SafeAreaProvider>
     </Modal>

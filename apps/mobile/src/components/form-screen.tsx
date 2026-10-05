@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ScreenBackground } from '@/components/screen-background';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -17,16 +18,12 @@ export function FormScreen({ children, footer }: FormScreenProps) {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <KeyboardAvoidingView
-          style={styles.container}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-        >
+        <KeyboardAvoider style={styles.container}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
             {children}
           </ScrollView>
           <View style={[styles.footer, { borderTopColor: theme.separator }]}>{footer}</View>
-        </KeyboardAvoidingView>
+        </KeyboardAvoider>
       </SafeAreaView>
     </ScreenBackground>
   );
