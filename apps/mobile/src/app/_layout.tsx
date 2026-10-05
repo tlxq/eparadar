@@ -4,6 +4,7 @@ import {
   Inter_500Medium,
   Inter_600SemiBold,
   Inter_700Bold,
+  Inter_800ExtraBold,
   useFonts,
 } from '@expo-google-fonts/inter';
 import * as Sentry from '@sentry/react-native';
@@ -14,6 +15,7 @@ import { useColorScheme } from 'react-native';
 
 import '@/lib/location-task';
 
+import { ToastHost } from '@/components/toast-host';
 import { trackEvent } from '@/lib/analytics';
 import { queryClient } from '@/lib/queryClient';
 import { setupNotificationResponseListener, syncPushTokenIfGranted } from '@/lib/push-notifications';
@@ -36,6 +38,7 @@ function RootLayout() {
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
+    Inter_800ExtraBold,
   });
 
   useEffect(() => {
@@ -101,6 +104,7 @@ function RootLayout() {
             <Stack.Screen name="meetups/[id]" options={{ presentation: 'modal', headerShown: false }} />
           </Stack.Protected>
         </Stack>
+        <ToastHost />
       </ThemeProvider>
     </QueryClientProvider>
   );

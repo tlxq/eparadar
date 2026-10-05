@@ -7,9 +7,11 @@ export type ThemedTextProps = TextProps & {
   type?:
     | 'default'
     | 'title'
+    | 'subtitle'
+    | 'headline'
     | 'small'
     | 'smallBold'
-    | 'subtitle'
+    | 'caption'
     | 'link'
     | 'linkPrimary'
     | 'error'
@@ -35,11 +37,13 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
 }
 
 const styles = StyleSheet.create({
-  default: { fontSize: 16, lineHeight: 24, fontFamily: Fonts.inter.medium },
-  title: { fontSize: 48, lineHeight: 52, fontFamily: Fonts.inter.semiBold, letterSpacing: -0.5 },
+  default: { fontSize: 16, lineHeight: 22, fontFamily: Fonts.inter.regular },
+  title: { fontSize: 30, lineHeight: 36, fontFamily: Fonts.inter.extraBold, letterSpacing: -0.6 },
+  subtitle: { fontSize: 22, lineHeight: 28, fontFamily: Fonts.inter.bold, letterSpacing: -0.3 },
+  headline: { fontSize: 17, lineHeight: 22, fontFamily: Fonts.inter.semiBold, letterSpacing: -0.2 },
   small: { fontSize: 14, lineHeight: 20, fontFamily: Fonts.inter.medium },
-  smallBold: { fontSize: 14, lineHeight: 20, fontFamily: Fonts.inter.bold },
-  subtitle: { fontSize: 32, lineHeight: 44, fontFamily: Fonts.inter.semiBold },
+  smallBold: { fontSize: 14, lineHeight: 20, fontFamily: Fonts.inter.semiBold },
+  caption: { fontSize: 12, lineHeight: 16, fontFamily: Fonts.inter.semiBold },
   link: { fontSize: 14, lineHeight: 30, fontFamily: Fonts.inter.medium },
   linkPrimary: { fontSize: 14, lineHeight: 30, fontFamily: Fonts.inter.semiBold },
   error: { fontSize: 13, lineHeight: 18, fontFamily: Fonts.inter.medium },

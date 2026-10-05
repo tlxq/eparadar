@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Fonts, Spacing } from '@/constants/theme';
+import { Fonts, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type ButtonProps = {
@@ -10,9 +10,11 @@ type ButtonProps = {
   onPress: () => void;
   loading?: boolean;
   disabled?: boolean;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'ghost';
   tone?: 'brand' | 'success' | 'danger';
+  size?: 'md' | 'sm';
   icon?: ComponentProps<typeof Ionicons>['name'];
+  accessibilityLabel?: string;
 };
 
 export function Button({
@@ -22,26 +24,30 @@ export function Button({
   disabled,
   variant = 'primary',
   tone = 'brand',
+  size = 'md',
   icon,
+  accessibilityLabel,
 }: ButtonProps) {
   const theme = useTheme();
-  const secondary = variant === 'secondary';
   const solidColor = tone === 'success' ? theme.success : tone === 'danger' ? theme.danger : theme.brand;
   const onSurfaceColor =
     tone === 'success' ? theme.success : tone === 'danger' ? theme.danger : theme.brandOnSurface;
-  const contentColor = secondary ? onSurfaceColor : theme.brandText;
+  const contentColor = variant === 'primary' ? theme.brandText : onSurfaceColor;
+  const backgroundColor =
+    variant === 'primary' ? solidColor : variant === 'secondary' ? theme.backgroundElement : 'transparent';
+  const small = size === 'sm';
 
   return (
     <Pressable
-      style={[
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
+      hitSlop={small ? 4 : 0}
+      style={({ pressed }) => [
         styles.button,
-        secondary
-          ? {
-              backgroundColor: 'transparent',
-              borderWidth: StyleSheet.hairlineWidth,
-              borderColor: onSurfaceColor,
-            }
-          : { backgroundColor: solidColor },
+        small ? styles.small : styles.medium,
+        { backgroundColor },
+        pressed && styles.pressed,
         disabled && styles.disabled,
       ]}
       onPress={onPress}
@@ -51,8 +57,8 @@ export function Button({
         <ActivityIndicator color={contentColor} />
       ) : (
         <View style={styles.content}>
-          {icon ? <Ionicons name={icon} size={18} color={contentColor} /> : null}
-          <Text style={[styles.label, { color: contentColor }]}>{label}</Text>
+          {icon ? <Ionicons name={icon} size={small ? 16 : 18} color={contentColor} /> : null}
+          <Text style={[styles.label, small && styles.smallLabel, { color: contentColor }]}>{label}</Text>
         </View>
       )}
     </Pressable>
@@ -61,10 +67,21 @@ export function Button({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: Spacing.two,
-    paddingVertical: Spacing.three,
-    paddingHorizontal: Spacing.four,
+    borderRadius: Radius.pill,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  medium: {
+    minHeight: 48,
+    paddingHorizontal: Spacing.four,
+  },
+  small: {
+    minHeight: 36,
+    paddingHorizontal: Spacing.three,
+  },
+  pressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.97 }],
   },
   disabled: {
     opacity: 0.4,
@@ -72,10 +89,14 @@ const styles = StyleSheet.create({
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.one,
+    gap: Spacing.two,
   },
   label: {
-    fontFamily: Fonts.inter.semiBold,
+    fontFamily: Fonts.inter.bold,
     fontSize: 16,
+  },
+  smallLabel: {
+    fontFamily: Fonts.inter.semiBold,
+    fontSize: 14,
   },
 });

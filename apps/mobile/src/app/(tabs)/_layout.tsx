@@ -74,7 +74,7 @@ export default function TabsLayout() {
         options={{
           title: 'Vänner',
           tabBarBadge: pendingCount > 0 ? pendingCount : undefined,
-          tabBarBadgeStyle: { backgroundColor: theme.accent },
+          tabBarBadgeStyle: { backgroundColor: theme.accent, color: theme.onAccent },
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons name={focused ? 'people' : 'people-outline'} size={size} color={color} />
           ),
