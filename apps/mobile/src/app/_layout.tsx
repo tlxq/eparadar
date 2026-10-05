@@ -107,6 +107,7 @@ function RootLayout() {
               options={{ presentation: 'modal', headerShown: true, title: 'Lägg till vän' }}
             />
             <Stack.Screen name="friends/code" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="friends/nearby" options={{ presentation: 'modal' }} />
             <Stack.Screen name="friends/scan" options={{ presentation: 'fullScreenModal' }} />
             <Stack.Screen
               name="friends/enter-code"

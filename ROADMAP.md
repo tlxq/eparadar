@@ -25,7 +25,8 @@ new phase until the current one is checked off (keeps one front open at a time).
   everywhere), Phase H (full page-by-page UX audit), before Phase I's original UX polish items.
   See Phases E–H below; rationale lives in memory (`project_eparadar.md`), not duplicated here.
 - **Phase E progress, 2026-10-05**: PR1 (open search removed, meetup + mutual-friend suggestions,
-  blocking) and PR2 (rotating QR friend code) are done; live-nearby radar (PR3) remains.
+  blocking), PR2 (rotating QR friend code) and PR3 (live-nearby radar) are built; Phase E is
+  complete once #69 and the radar PR are merged and both migrations are pushed live.
 - **Remaining for launch (Phase J)**: Expo/EAS account and store credentials, manual store
   submission, and optional CI automation after the first successful submission.
 
@@ -221,9 +222,13 @@ check-ins and the live map, not generic social-graph guessing.
 - [x] **Meetup co-attendance candidates**: surface people who checked in at the same meetup
       as addable — `suggested_friends_from_meetups()`, deliberately check-ins only (physical
       co-presence), not `meetup_interests`/RSVP.
-- [ ] **Live-nearby candidates**: surface people currently sharing location within a small radius
-      on the map (mirrors Snapchat's "Add Nearby" — both users' apps open), reusing the existing
-      `locations`/`is_friend()` RLS pattern.
+- [x] **Live-nearby candidates**: surface people currently sharing location within a small radius
+      on the map (mirrors Snapchat's "Add Nearby" — both users' apps open). Built 2026-10-05 after
+      an approved pitch, deliberately *not* on the map's `locations` data: a separate
+      `nearby_presence` table with no read policies, `scan_nearby()` only lists people who have the
+      radar open right now (seen in the last 20 s) within 100 m and returns name/avatar/request
+      state but never coordinates or distance, `leave_nearby()` on close or background, blocked
+      users and existing friends excluded. 11 pgTAP tests; verified on the Android emulator.
 - [x] **Mutual-friend suggestions**: friend-of-friend graph traversal off the existing
       `is_friend()` helper.
 - [x] **Personal QR/friend-code**: a per-user code, shown and scanned in person, for the case

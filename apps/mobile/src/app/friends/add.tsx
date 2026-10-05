@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -12,13 +13,15 @@ import { RadarHero } from '@/features/friends/components/radar-hero';
 import { SuggestionSection } from '@/features/friends/components/suggestion-section';
 import { formatRelativeSwedish } from '@/features/friends/api';
 import { useMeetupSuggestions, useMutualSuggestions } from '@/features/friends/hooks';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { sendFriendRequest } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
 
 export default function AddFriendScreen() {
+  const theme = useTheme();
   const userId = useAuthStore((state) => state.session?.user.id);
   const queryClient = useQueryClient();
 
@@ -96,14 +99,30 @@ export default function AddFriendScreen() {
             ))}
           </SuggestionSection>
 
-          <SuggestionSection
-            title="I närheten nu"
-            isLoading={false}
-            isEmpty
-            emptyText="Kommer snart."
-          >
-            <View />
-          </SuggestionSection>
+          <View style={styles.nearbySection}>
+            <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
+              I NÄRHETEN NU
+            </ThemedText>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push('/friends/nearby')}
+              style={({ pressed }) => [
+                styles.nearbyCard,
+                { backgroundColor: pressed ? theme.backgroundSelected : theme.backgroundElement },
+              ]}
+            >
+              <View style={[styles.nearbyIcon, { backgroundColor: theme.brand }]}>
+                <Ionicons name="radio-outline" size={22} color={theme.brandText} />
+              </View>
+              <View style={styles.nearbyText}>
+                <ThemedText type="headline">Starta radarn</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  Hitta folk inom 100 m som också har radarn öppen.
+                </ThemedText>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
+            </Pressable>
+          </View>
 
           {error ? (
             <ThemedText type="error" style={styles.error}>
@@ -149,4 +168,21 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.two,
   },
   actionButton: { flex: 1 },
+  nearbySection: { gap: Spacing.two },
+  sectionLabel: { letterSpacing: 0.6 },
+  nearbyCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    padding: Spacing.three,
+    borderRadius: Radius.lg,
+  },
+  nearbyIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nearbyText: { flex: 1, gap: Spacing.half },
 });
