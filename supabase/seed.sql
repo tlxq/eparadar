@@ -4,7 +4,9 @@ with seed_users (id, email, username, display_name) as (
     ('00000000-0000-4000-a000-000000000002'::uuid, 'ella@test.se', 'ella', 'Ella Ek'),
     ('00000000-0000-4000-a000-000000000003'::uuid, 'liam@test.se', 'liam', 'Liam Berg'),
     ('00000000-0000-4000-a000-000000000004'::uuid, 'saga@test.se', 'saga', 'Saga Lind'),
-    ('00000000-0000-4000-a000-000000000005'::uuid, 'noah@test.se', 'noah', 'Noah Holm')
+    ('00000000-0000-4000-a000-000000000005'::uuid, 'noah@test.se', 'noah', 'Noah Holm'),
+    ('00000000-0000-4000-a000-000000000006'::uuid, 'tom@test.se', 'tlxq', 'Tom'),
+    ('00000000-0000-4000-a000-000000000007'::uuid, 'moa@test.se', 'moa', 'Moa')
 ),
 new_users as (
   insert into auth.users (
