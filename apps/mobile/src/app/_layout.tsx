@@ -90,7 +90,7 @@ function RootLayout() {
               name="chat/new"
               options={{ presentation: 'modal', headerShown: true, title: 'Ny chatt' }}
             />
-            <Stack.Screen name="chat/[id]" options={{ headerShown: true }} />
+            <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
             <Stack.Screen
               name="friends/add"
               options={{ presentation: 'modal', headerShown: true, title: 'Lägg till vän' }}
