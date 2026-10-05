@@ -1,18 +1,12 @@
 import { useRef, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import {
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  TextInput,
-  View,
-} from 'react-native';
+import { FlatList, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { Avatar } from '@/components/avatar';
 import { IconButton } from '@/components/icon-button';
+import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
 import { Fonts, Radius, Spacing } from '@/constants/theme';
@@ -185,10 +179,7 @@ export default function ConversationScreen() {
             ) : null}
           </View>
         </View>
-        <KeyboardAvoidingView
-          style={styles.container}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
+        <KeyboardAvoider style={styles.container}>
           <FlatList
             ref={listRef}
             data={list}
@@ -238,7 +229,7 @@ export default function ConversationScreen() {
               disabled={!canSend}
             />
           </View>
-        </KeyboardAvoidingView>
+        </KeyboardAvoider>
       </SafeAreaView>
     </ScreenBackground>
   );
