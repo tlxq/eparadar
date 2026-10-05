@@ -19,9 +19,20 @@ import {
   respondToFriendRequest,
   type Friendship,
 } from '@/lib/api';
+import { confirmDestructive } from '@/lib/confirm';
 import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
+
+const LINK_HIT_SLOP = 12;
+
+async function confirmBlock(name: string, consequence: string) {
+  return confirmDestructive({
+    title: `Blockera ${name}?`,
+    message: `${consequence} ${name} får inget besked om det.`,
+    confirmLabel: 'Blockera',
+  });
+}
 
 function RequestRow({ request, myUserId }: { request: Friendship; myUserId: string }) {
   const queryClient = useQueryClient();
@@ -63,7 +74,17 @@ function RequestRow({ request, myUserId }: { request: Friendship; myUserId: stri
           onPress={() => respond.mutate(false)}
         />
       </View>
-      <Pressable onPress={() => block.mutate(requester.id)} disabled={block.isPending}>
+      <Pressable
+        hitSlop={LINK_HIT_SLOP}
+        disabled={block.isPending}
+        onPress={async () => {
+          const ok = await confirmBlock(
+            requester.display_name,
+            `Förfrågan tas bort och ${requester.display_name} kan inte skicka nya vänförfrågningar till dig.`,
+          );
+          if (ok) block.mutate(requester.id);
+        }}
+      >
         <ThemedText type="link" themeColor="danger">
           Blockera
         </ThemedText>
@@ -92,7 +113,11 @@ function OutgoingRequestRow({ request, myUserId }: { request: Friendship; myUser
           @{addressee.username} · väntar på svar
         </ThemedText>
       </View>
-      <Pressable onPress={() => cancel.mutate()} disabled={cancel.isPending}>
+      <Pressable
+        hitSlop={LINK_HIT_SLOP}
+        onPress={() => cancel.mutate()}
+        disabled={cancel.isPending}
+      >
         <ThemedText type="link" themeColor="danger">
           Avbryt
         </ThemedText>
@@ -123,12 +148,26 @@ function FriendRow({ friendship, myUserId }: { friendship: Friendship; myUserId:
         </ThemedText>
       </View>
       <View style={styles.friendActions}>
-        <Pressable onPress={() => remove.mutate()} disabled={remove.isPending}>
+        <Pressable
+          hitSlop={LINK_HIT_SLOP}
+          onPress={() => remove.mutate()}
+          disabled={remove.isPending}
+        >
           <ThemedText type="link" themeColor="danger">
             Ta bort
           </ThemedText>
         </Pressable>
-        <Pressable onPress={() => block.mutate(friend.id)} disabled={block.isPending}>
+        <Pressable
+          hitSlop={LINK_HIT_SLOP}
+          disabled={block.isPending}
+          onPress={async () => {
+            const ok = await confirmBlock(
+              friend.display_name,
+              `${friend.display_name} försvinner från dina vänner och kan inte skicka vänförfrågningar till dig.`,
+            );
+            if (ok) block.mutate(friend.id);
+          }}
+        >
           <ThemedText type="link" themeColor="danger">
             Blockera
           </ThemedText>
