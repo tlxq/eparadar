@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -112,8 +113,17 @@ export default function AddFriendScreen() {
         </ScrollView>
 
         <View style={styles.actionBar}>
-          <Button label="Visa min kod" icon="qr-code-outline" variant="secondary" disabled onPress={() => {}} />
-          <Button label="Skanna kod" icon="scan-outline" disabled onPress={() => {}} />
+          <View style={styles.actionButton}>
+            <Button
+              label="Visa min kod"
+              icon="qr-code-outline"
+              variant="secondary"
+              onPress={() => router.push('/friends/code')}
+            />
+          </View>
+          <View style={styles.actionButton}>
+            <Button label="Skanna kod" icon="scan-outline" onPress={() => router.push('/friends/scan')} />
+          </View>
         </View>
       </SafeAreaView>
     </ScreenBackground>
@@ -136,5 +146,7 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     paddingHorizontal: Spacing.four,
     paddingTop: Spacing.three,
+    paddingBottom: Spacing.two,
   },
+  actionButton: { flex: 1 },
 });

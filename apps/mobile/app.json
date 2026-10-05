@@ -61,6 +61,14 @@
         }
       ],
       [
+        "expo-camera",
+        {
+          "cameraPermission": "epaRadar använder kameran för att skanna en väns kod när ni träffas. Inga bilder sparas.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
         "expo-notifications",
         {
           "color": "#2F6FED"
