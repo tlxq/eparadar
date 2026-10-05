@@ -479,6 +479,35 @@ export type Database = {
           },
         ]
       }
+      nearby_presence: {
+        Row: {
+          lat: number
+          lng: number
+          seen_at: string
+          user_id: string
+        }
+        Insert: {
+          lat: number
+          lng: number
+          seen_at?: string
+          user_id: string
+        }
+        Update: {
+          lat?: number
+          lng?: number
+          seen_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nearby_presence_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           author_id: string
@@ -677,6 +706,7 @@ export type Database = {
         Returns: boolean
       }
       is_friend: { Args: { a: string; b: string }; Returns: boolean }
+      leave_nearby: { Args: never; Returns: undefined }
       redeem_friend_code: {
         Args: { friend_code: string }
         Returns: {
@@ -689,6 +719,16 @@ export type Database = {
       respond_to_friend_request: {
         Args: { accept: boolean; request_id: string }
         Returns: undefined
+      }
+      scan_nearby: {
+        Args: { p_lat: number; p_lng: number }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          request_state: string
+          user_id: string
+          username: string
+        }[]
       }
       send_friend_request: {
         Args: { target_user_id: string }
