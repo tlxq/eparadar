@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'expo-router';
 import { StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AuthShell } from '@/components/auth-shell';
 import { Button } from '@/components/button';
-import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
 import { signUpWithProfile } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 
@@ -21,9 +19,18 @@ export default function SignUpScreen() {
 
   async function handleSubmit() {
     setError(null);
+    if (!displayName.trim() || !username.trim() || !email.trim() || !password) {
+      setError('Fyll i alla fält.');
+      return;
+    }
     setLoading(true);
     try {
-      await signUpWithProfile({ email, password, username, displayName });
+      await signUpWithProfile({
+        email: email.trim(),
+        password,
+        username: username.trim(),
+        displayName: displayName.trim(),
+      });
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -32,46 +39,60 @@ export default function SignUpScreen() {
   }
 
   return (
-    <ScreenBackground style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedText type="title">Skapa konto</ThemedText>
-        <TextField placeholder="Visningsnamn" value={displayName} onChangeText={setDisplayName} />
-        <TextField
-          placeholder="Användarnamn"
-          autoCapitalize="none"
-          value={username}
-          onChangeText={setUsername}
-        />
-        <TextField
-          placeholder="E-post"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextField
-          placeholder="Lösenord"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        {error ? <ThemedText type="error">{error}</ThemedText> : null}
-        <Button label="Skapa konto" onPress={handleSubmit} loading={loading} />
-        <Link href="/(auth)/login" style={styles.link}>
-          <ThemedText type="link">Har du redan ett konto? Logga in</ThemedText>
-        </Link>
-      </SafeAreaView>
-    </ScreenBackground>
+    <AuthShell
+      title="Skapa konto"
+      subtitle="Hitta gänget, visa upp bilen och ses på träffar."
+      footer={
+        <>
+          <Button label="Skapa konto" onPress={handleSubmit} loading={loading} />
+          <Link href="/(auth)/login" style={styles.link}>
+            <ThemedText type="small" themeColor="textSecondary">
+              Har du redan ett konto?{' '}
+              <ThemedText type="smallBold" themeColor="brandOnSurface">
+                Logga in
+              </ThemedText>
+            </ThemedText>
+          </Link>
+        </>
+      }
+    >
+      <TextField
+        label="Visningsnamn"
+        placeholder="Elsa Nyström"
+        autoComplete="name"
+        value={displayName}
+        onChangeText={setDisplayName}
+      />
+      <TextField
+        label="Användarnamn"
+        placeholder="elsa_epa"
+        autoCapitalize="none"
+        autoComplete="username"
+        value={username}
+        onChangeText={setUsername}
+      />
+      <TextField
+        label="E-post"
+        autoCapitalize="none"
+        autoComplete="email"
+        keyboardType="email-address"
+        textContentType="emailAddress"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextField
+        label="Lösenord"
+        secureTextEntry
+        autoComplete="new-password"
+        textContentType="newPassword"
+        value={password}
+        onChangeText={setPassword}
+        error={error}
+      />
+    </AuthShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  safeArea: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.three,
-  },
-  link: { alignSelf: 'center' },
+  link: { alignSelf: 'center', paddingVertical: 12 },
 });

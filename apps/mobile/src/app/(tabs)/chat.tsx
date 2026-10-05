@@ -16,7 +16,12 @@ import { ThemedText } from '@/components/themed-text';
 import { Fonts, Radius, Spacing } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
-import { conversationAvatarUrl, conversationTitle, fetchConversations, type Conversation } from '@/lib/api';
+import {
+  conversationAvatarUrl,
+  conversationTitle,
+  fetchConversations,
+  type Conversation,
+} from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { formatChatTimestamp } from '@/lib/relative-time';
 import { showToast } from '@/store/toast';
@@ -91,7 +96,9 @@ export default function ChatListScreen() {
               <ListRow
                 title={title}
                 subtitle={previewText(item)}
-                leading={<Avatar name={title} imageUrl={conversationAvatarUrl(item, userId!)} size={52} />}
+                leading={
+                  <Avatar name={title} imageUrl={conversationAvatarUrl(item, userId!)} size={52} />
+                }
                 trailing={
                   lastAt ? (
                     <ThemedText type="caption" themeColor="textSecondary">
@@ -159,7 +166,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     borderRadius: Radius.md,
   },
-  searchInput: { flex: 1, fontSize: 16, fontFamily: Fonts.inter.regular, paddingVertical: Spacing.two },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: Fonts.inter.regular,
+    paddingVertical: Spacing.two,
+  },
   noMatch: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
   skeleton: { paddingHorizontal: Spacing.three, gap: Spacing.four, paddingTop: Spacing.two },
   skeletonRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },

@@ -28,9 +28,17 @@ export function ToastHost() {
   if (!toast) return null;
 
   const toneColor =
-    toast.tone === 'error' ? theme.danger : toast.tone === 'success' ? theme.success : theme.brandOnSurface;
+    toast.tone === 'error'
+      ? theme.danger
+      : toast.tone === 'success'
+        ? theme.success
+        : theme.brandOnSurface;
   const icon =
-    toast.tone === 'error' ? 'alert-circle' : toast.tone === 'success' ? 'checkmark-circle' : 'information-circle';
+    toast.tone === 'error'
+      ? 'alert-circle'
+      : toast.tone === 'success'
+        ? 'checkmark-circle'
+        : 'information-circle';
 
   return (
     <View pointerEvents="box-none" style={[styles.layer, { top: insets.top + Spacing.two }]}>
@@ -42,7 +50,9 @@ export function ToastHost() {
           {
             backgroundColor: theme.backgroundSelected,
             opacity: progress,
-            transform: [{ translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [-12, 0] }) }],
+            transform: [
+              { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [-12, 0] }) },
+            ],
           },
         ]}
       >

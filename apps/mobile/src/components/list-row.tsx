@@ -14,7 +14,14 @@ type ListRowProps = {
   accessibilityLabel?: string;
 };
 
-export function ListRow({ title, subtitle, leading, trailing, onPress, accessibilityLabel }: ListRowProps) {
+export function ListRow({
+  title,
+  subtitle,
+  leading,
+  trailing,
+  onPress,
+  accessibilityLabel,
+}: ListRowProps) {
   const theme = useTheme();
 
   const content = (

@@ -1,6 +1,13 @@
 import { useRef, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, TextInput, View } from 'react-native';
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -55,8 +62,14 @@ function MessageBubble({ message, previous, next, isMine, showNames }: BubblePro
   const senderName = message.sender?.display_name ?? 'Okänd användare';
 
   const corners = isMine
-    ? { borderTopRightRadius: joinsPrevious ? TIGHT : ROUND, borderBottomRightRadius: joinsNext ? TIGHT : ROUND }
-    : { borderTopLeftRadius: joinsPrevious ? TIGHT : ROUND, borderBottomLeftRadius: joinsNext ? TIGHT : ROUND };
+    ? {
+        borderTopRightRadius: joinsPrevious ? TIGHT : ROUND,
+        borderBottomRightRadius: joinsNext ? TIGHT : ROUND,
+      }
+    : {
+        borderTopLeftRadius: joinsPrevious ? TIGHT : ROUND,
+        borderBottomLeftRadius: joinsNext ? TIGHT : ROUND,
+      };
 
   return (
     <View style={!joinsPrevious && styles.groupStart}>
@@ -85,7 +98,9 @@ function MessageBubble({ message, previous, next, isMine, showNames }: BubblePro
             { backgroundColor: isMine ? theme.brand : theme.backgroundElement },
           ]}
         >
-          <ThemedText style={isMine ? { color: theme.brandText } : undefined}>{message.body}</ThemedText>
+          <ThemedText style={isMine ? { color: theme.brandText } : undefined}>
+            {message.body}
+          </ThemedText>
         </View>
       </View>
     </View>
@@ -132,7 +147,10 @@ export default function ConversationScreen() {
       queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });
     } catch (error) {
-      showToast({ tone: 'error', message: `Meddelandet skickades inte. ${getErrorMessage(error)}` });
+      showToast({
+        tone: 'error',
+        message: `Meddelandet skickades inte. ${getErrorMessage(error)}`,
+      });
     } finally {
       setSending(false);
     }
@@ -149,7 +167,12 @@ export default function ConversationScreen() {
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <View style={[styles.nav, { borderBottomColor: theme.separator }]}>
-          <IconButton icon="chevron-back" variant="plain" accessibilityLabel="Tillbaka" onPress={() => router.back()} />
+          <IconButton
+            icon="chevron-back"
+            variant="plain"
+            accessibilityLabel="Tillbaka"
+            onPress={() => router.back()}
+          />
           <Avatar name={title} imageUrl={avatarUrl} size={36} />
           <View style={styles.navText}>
             <ThemedText type="headline" numberOfLines={1} accessibilityRole="header">
@@ -201,7 +224,10 @@ export default function ConversationScreen() {
               placeholderTextColor={theme.textSecondary}
               accessibilityLabel="Meddelande"
               multiline
-              style={[styles.input, { backgroundColor: theme.backgroundElement, color: theme.text }]}
+              style={[
+                styles.input,
+                { backgroundColor: theme.backgroundElement, color: theme.text },
+              ]}
             />
             <IconButton
               icon="arrow-up"

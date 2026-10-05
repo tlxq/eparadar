@@ -29,6 +29,7 @@ jest.mock('@/lib/api', () => ({
   setLocationSharing: (...args: unknown[]) => mockSetLocationSharing(...args),
   setLocationApproximate: (...args: unknown[]) => mockSetLocationApproximate(...args),
   upsertLocation: (...args: unknown[]) => mockUpsertLocation(...args),
+  signOut: jest.fn(),
 }));
 
 const mockRequestLocationPermissions = jest.fn();

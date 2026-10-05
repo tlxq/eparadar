@@ -9,9 +9,9 @@ export function Switch(props: SwitchProps) {
 
   return (
     <RNSwitch
-      trackColor={{ false: theme.backgroundElement, true: theme.brand }}
-      thumbColor={theme.background}
-      ios_backgroundColor={theme.backgroundElement}
+      trackColor={{ false: theme.border, true: theme.brand }}
+      thumbColor={theme.brandText}
+      ios_backgroundColor={theme.border}
       {...props}
     />
   );

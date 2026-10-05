@@ -23,7 +23,11 @@ export function IconButton({
 }: IconButtonProps) {
   const theme = useTheme();
   const backgroundColor =
-    variant === 'brand' ? theme.brand : variant === 'surface' ? theme.backgroundElement : 'transparent';
+    variant === 'brand'
+      ? theme.brand
+      : variant === 'surface'
+        ? theme.backgroundElement
+        : 'transparent';
   const color = variant === 'brand' ? theme.brandText : theme.text;
   const slop = Math.max(0, (44 - size) / 2);
 

@@ -13,10 +13,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
   return (
     <View
       accessibilityRole="tablist"
-      style={[
-        styles.bar,
-        { bottom, backgroundColor: theme.tabBar, borderColor: theme.separator },
-      ]}
+      style={[styles.bar, { bottom, backgroundColor: theme.tabBar, borderColor: theme.separator }]}
     >
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
@@ -26,7 +23,11 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
         const badge = options.tabBarBadge;
 
         function onPress() {
-          const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
           if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
         }
 
@@ -43,7 +44,12 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
             <View style={[styles.pill, focused && { backgroundColor: `${theme.brand}29` }]}>
               {options.tabBarIcon?.({ focused, color, size: 22 })}
               {badge !== undefined ? (
-                <View style={[styles.badge, { backgroundColor: theme.accent, borderColor: theme.background }]}>
+                <View
+                  style={[
+                    styles.badge,
+                    { backgroundColor: theme.accent, borderColor: theme.background },
+                  ]}
+                >
                   <ThemedText type="caption" style={[styles.badgeText, { color: theme.onAccent }]}>
                     {badge}
                   </ThemedText>
@@ -73,7 +79,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.two,
     boxShadow: '0 10px 30px rgba(0, 0, 0, 0.35)',
   },
-  item: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.half, height: '100%' },
+  item: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.half,
+    height: '100%',
+  },
   pressed: { opacity: 0.7 },
   pill: {
     width: 52,

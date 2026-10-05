@@ -4,7 +4,7 @@ import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 
 type CandidateRowProps = {
   displayName: string;
@@ -36,7 +36,7 @@ export function CandidateRow({
             {topLine}
           </ThemedText>
         ) : null}
-        <ThemedText type="default">{displayName}</ThemedText>
+        <ThemedText type="headline">{displayName}</ThemedText>
         {subLine ? (
           <ThemedText type="small" themeColor="textSecondary">
             {subLine}
@@ -48,7 +48,7 @@ export function CandidateRow({
           Skickad
         </ThemedText>
       ) : (
-        <Button label="Lägg till" variant={buttonVariant} loading={sending} onPress={onAdd} />
+        <Button label="Lägg till" size="sm" variant={buttonVariant} loading={sending} onPress={onAdd} />
       )}
     </ThemedView>
   );
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.two,
     padding: Spacing.three,
-    borderRadius: Spacing.three,
+    borderRadius: Radius.lg,
   },
   text: { flex: 1, gap: Spacing.half },
 });

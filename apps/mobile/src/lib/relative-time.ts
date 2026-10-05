@@ -1,5 +1,18 @@
 const WEEKDAYS = ['sön', 'mån', 'tis', 'ons', 'tors', 'fre', 'lör'];
-const MONTHS = ['jan', 'feb', 'mars', 'apr', 'maj', 'juni', 'juli', 'aug', 'sep', 'okt', 'nov', 'dec'];
+const MONTHS = [
+  'jan',
+  'feb',
+  'mars',
+  'apr',
+  'maj',
+  'juni',
+  'juli',
+  'aug',
+  'sep',
+  'okt',
+  'nov',
+  'dec',
+];
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function startOfDay(date: Date) {

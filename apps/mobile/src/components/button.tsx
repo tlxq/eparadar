@@ -29,12 +29,17 @@ export function Button({
   accessibilityLabel,
 }: ButtonProps) {
   const theme = useTheme();
-  const solidColor = tone === 'success' ? theme.success : tone === 'danger' ? theme.danger : theme.brand;
+  const solidColor =
+    tone === 'success' ? theme.success : tone === 'danger' ? theme.danger : theme.brand;
   const onSurfaceColor =
     tone === 'success' ? theme.success : tone === 'danger' ? theme.danger : theme.brandOnSurface;
   const contentColor = variant === 'primary' ? theme.brandText : onSurfaceColor;
   const backgroundColor =
-    variant === 'primary' ? solidColor : variant === 'secondary' ? theme.backgroundElement : 'transparent';
+    variant === 'primary'
+      ? solidColor
+      : variant === 'secondary'
+        ? theme.backgroundElement
+        : 'transparent';
   const small = size === 'sm';
 
   return (
@@ -58,7 +63,9 @@ export function Button({
       ) : (
         <View style={styles.content}>
           {icon ? <Ionicons name={icon} size={small ? 16 : 18} color={contentColor} /> : null}
-          <Text style={[styles.label, small && styles.smallLabel, { color: contentColor }]}>{label}</Text>
+          <Text style={[styles.label, small && styles.smallLabel, { color: contentColor }]}>
+            {label}
+          </Text>
         </View>
       )}
     </Pressable>

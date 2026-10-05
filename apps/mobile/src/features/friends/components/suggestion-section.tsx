@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 
 type SuggestionSectionProps = {
   title: string;
@@ -16,7 +16,9 @@ type SuggestionSectionProps = {
 export function SuggestionSection({ title, isLoading, isEmpty, emptyText, children }: SuggestionSectionProps) {
   return (
     <View style={styles.section}>
-      <ThemedText type="smallBold">{title}</ThemedText>
+      <ThemedText type="caption" themeColor="textSecondary" style={styles.title}>
+        {title.toLocaleUpperCase('sv-SE')}
+      </ThemedText>
       {isLoading ? (
         <ThemedText type="small" themeColor="textSecondary">
           Söker…
@@ -36,10 +38,11 @@ export function SuggestionSection({ title, isLoading, isEmpty, emptyText, childr
 
 const styles = StyleSheet.create({
   section: { gap: Spacing.two },
+  title: { letterSpacing: 0.6 },
   list: { gap: Spacing.two },
   emptyCard: {
     padding: Spacing.four,
-    borderRadius: Spacing.three,
+    borderRadius: Radius.lg,
     alignItems: 'center',
   },
 });

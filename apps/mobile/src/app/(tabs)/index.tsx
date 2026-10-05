@@ -1,7 +1,15 @@
 import { useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { FlatList, Image, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  FlatList,
+  Image,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 
@@ -31,7 +39,11 @@ function OnMapNow({ friends }: { friends: FriendLocation[] }) {
       <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
         PÅ KARTAN NU
       </ThemedText>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.onMapRow}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.onMapRow}
+      >
         {friends.map((friend) => (
           <Pressable
             key={friend.user_id}
@@ -164,13 +176,21 @@ export default function FeedScreen() {
                 icon="newspaper-outline"
                 title="Inga inlägg än"
                 message="Visa upp bilen, fråga om en träff eller dela en bild från helgens tur."
-                action={{ label: 'Skriv ett inlägg', icon: 'create-outline', onPress: () => router.push('/post/new') }}
+                action={{
+                  label: 'Skriv ett inlägg',
+                  icon: 'create-outline',
+                  onPress: () => router.push('/post/new'),
+                }}
               />
             )
           }
         />
       </SafeAreaView>
-      <Fab icon="create-outline" accessibilityLabel="Ny post" onPress={() => router.push('/post/new')} />
+      <Fab
+        icon="create-outline"
+        accessibilityLabel="Ny post"
+        onPress={() => router.push('/post/new')}
+      />
     </ScreenBackground>
   );
 }

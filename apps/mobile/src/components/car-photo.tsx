@@ -6,11 +6,11 @@ import { useTheme } from '@/hooks/use-theme';
 type CarPhotoProps = {
   size?: number;
   imageUrl?: string | null;
+  radius?: number;
 };
 
-export function CarPhoto({ size = 40, imageUrl }: CarPhotoProps) {
+export function CarPhoto({ size = 40, imageUrl, radius = size * 0.25 }: CarPhotoProps) {
   const theme = useTheme();
-  const radius = size * 0.25;
 
   if (imageUrl) {
     return (

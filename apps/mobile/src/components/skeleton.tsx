@@ -12,7 +12,12 @@ type SkeletonProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function Skeleton({ width = '100%', height = 12, radius = Radius.sm, style }: SkeletonProps) {
+export function Skeleton({
+  width = '100%',
+  height = 12,
+  radius = Radius.sm,
+  style,
+}: SkeletonProps) {
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
   const [opacity] = useState(() => new Animated.Value(1));
