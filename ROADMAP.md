@@ -25,7 +25,7 @@ new phase until the current one is checked off (keeps one front open at a time).
   everywhere), Phase H (full page-by-page UX audit), before Phase I's original UX polish items.
   See Phases E–H below; rationale lives in memory (`project_eparadar.md`), not duplicated here.
 - **Phase E progress, 2026-10-05**: PR1 (open search removed, meetup + mutual-friend suggestions,
-  blocking) is done; QR friend-code (PR2) and live-nearby radar (PR3) remain.
+  blocking) and PR2 (rotating QR friend code) are done; live-nearby radar (PR3) remains.
 - **Remaining for launch (Phase J)**: Expo/EAS account and store credentials, manual store
   submission, and optional CI automation after the first successful submission.
 
@@ -226,8 +226,14 @@ check-ins and the live map, not generic social-graph guessing.
       `locations`/`is_friend()` RLS pattern.
 - [x] **Mutual-friend suggestions**: friend-of-friend graph traversal off the existing
       `is_friend()` helper.
-- [ ] **Personal QR/friend-code**: a per-user code, shown and scanned in person, for the case
-      none of the above signals line up yet (e.g. traded phones at a meet).
+- [x] **Personal QR/friend-code**: a per-user code, shown and scanned in person, for the case
+      none of the above signals line up yet (e.g. traded phones at a meet). Built 2026-10-05 after
+      an approved pitch: rotating 10-minute codes (`friend_codes` + `current_friend_code()`),
+      `redeem_friend_code()` only ever creates a pending request, blocked users get the same answer
+      as an expired code, 10 guesses per 10 minutes, typed 6-character fallback, and an
+      `eparadar://add/<code>` deep link. 16 pgTAP tests; verified on the Android emulator. Needs
+      `expo-camera` + `react-native-svg`, so phones need a new dev-client build, and the
+      migration still has to be pushed to the live project.
 - [x] **`blocked` friendship state**: extend `friendships.status` (today `pending`/`accepted`
       only) so a removed friend can't immediately re-request.
 - [x] Run this through `eparadar-design-pitch` (now including the `mobile-app-ui-design`

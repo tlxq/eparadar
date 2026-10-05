@@ -141,6 +141,58 @@ export type Database = {
         }
         Relationships: []
       }
+      friend_code_attempts: {
+        Row: {
+          attempted_at: string
+          id: number
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          id?: never
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string
+          id?: never
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "friend_code_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      friend_codes: {
+        Row: {
+          code: string
+          expires_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          expires_at: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          expires_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "friend_codes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       friendships: {
         Row: {
           addressee_id: string
@@ -601,6 +653,21 @@ export type Database = {
         Args: { group_name?: string; other_user_ids: string[] }
         Returns: string
       }
+      current_friend_code: {
+        Args: { rotate?: boolean }
+        Returns: {
+          code: string
+          expires_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "friend_codes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      generate_friend_code: { Args: never; Returns: string }
       has_any_friendship_row: {
         Args: { a: string; b: string }
         Returns: boolean
@@ -610,6 +677,15 @@ export type Database = {
         Returns: boolean
       }
       is_friend: { Args: { a: string; b: string }; Returns: boolean }
+      redeem_friend_code: {
+        Args: { friend_code: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          outcome: string
+          user_id: string
+        }[]
+      }
       respond_to_friend_request: {
         Args: { accept: boolean; request_id: string }
         Returns: undefined
@@ -790,3 +866,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
