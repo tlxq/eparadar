@@ -361,23 +361,3 @@ export async function fetchFriendLocations(userId: string): Promise<FriendLocati
   if (error) throw error;
   return (data ?? []) as unknown as FriendLocation[];
 }
-
-export async function searchUsersToAdd(query: string, userId: string): Promise<Profile[]> {
-  const { data: related, error: relatedError } = await supabase
-    .from('friendships')
-    .select('requester_id, addressee_id')
-    .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
-  if (relatedError) throw relatedError;
-
-  const excludeIds = Array.from(
-    new Set([userId, ...(related ?? []).flatMap((r) => [r.requester_id, r.addressee_id])]),
-  );
-
-  let request = supabase.from('profiles').select('*').ilike('username', `%${query}%`).limit(20);
-  if (excludeIds.length) {
-    request = request.not('id', 'in', `(${excludeIds.join(',')})`);
-  }
-  const { data, error } = await request;
-  if (error) throw error;
-  return data ?? [];
-}

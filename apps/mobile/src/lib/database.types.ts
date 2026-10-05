@@ -144,6 +144,7 @@ export type Database = {
       friendships: {
         Row: {
           addressee_id: string
+          blocked_by: string | null
           created_at: string
           id: string
           requester_id: string
@@ -154,6 +155,7 @@ export type Database = {
         }
         Insert: {
           addressee_id: string
+          blocked_by?: string | null
           created_at?: string
           id?: string
           requester_id: string
@@ -164,6 +166,7 @@ export type Database = {
         }
         Update: {
           addressee_id?: string
+          blocked_by?: string | null
           created_at?: string
           id?: string
           requester_id?: string
@@ -176,6 +179,13 @@ export type Database = {
           {
             foreignKeyName: "friendships_addressee_id_fkey"
             columns: ["addressee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "friendships_blocked_by_fkey"
+            columns: ["blocked_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -563,27 +573,11 @@ export type Database = {
       }
     }
     Functions: {
-      check_in_at_meetup: {
-        Args: { p_lat: number; p_lng: number; p_meetup_id: string }
-        Returns: boolean
-      }
-      create_conversation: {
-        Args: { group_name?: string; other_user_ids: string[] }
-        Returns: string
-      }
-      is_conversation_member: {
-        Args: { conversation_id: string; user_id: string }
-        Returns: boolean
-      }
-      is_friend: { Args: { a: string; b: string }; Returns: boolean }
-      respond_to_friend_request: {
-        Args: { accept: boolean; request_id: string }
-        Returns: undefined
-      }
-      send_friend_request: {
+      block_user: {
         Args: { target_user_id: string }
         Returns: {
           addressee_id: string
+          blocked_by: string | null
           created_at: string
           id: string
           requester_id: string
@@ -599,6 +593,71 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      check_in_at_meetup: {
+        Args: { p_lat: number; p_lng: number; p_meetup_id: string }
+        Returns: boolean
+      }
+      create_conversation: {
+        Args: { group_name?: string; other_user_ids: string[] }
+        Returns: string
+      }
+      has_any_friendship_row: {
+        Args: { a: string; b: string }
+        Returns: boolean
+      }
+      is_conversation_member: {
+        Args: { conversation_id: string; user_id: string }
+        Returns: boolean
+      }
+      is_friend: { Args: { a: string; b: string }; Returns: boolean }
+      respond_to_friend_request: {
+        Args: { accept: boolean; request_id: string }
+        Returns: undefined
+      }
+      send_friend_request: {
+        Args: { target_user_id: string }
+        Returns: {
+          addressee_id: string
+          blocked_by: string | null
+          created_at: string
+          id: string
+          requester_id: string
+          responded_at: string | null
+          status: string
+          user_a: string | null
+          user_b: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "friendships"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      suggested_friends_from_meetups: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          display_name: string
+          last_checked_in_at: string
+          last_meetup_id: string
+          last_meetup_title: string
+          shared_meetup_count: number
+          user_id: string
+          username: string
+        }[]
+      }
+      suggested_friends_mutual: {
+        Args: { p_limit?: number }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          mutual_friend_count: number
+          user_id: string
+          username: string
+        }[]
+      }
+      unblock_user: { Args: { target_user_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
