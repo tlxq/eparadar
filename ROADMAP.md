@@ -243,8 +243,8 @@ button. No timestamps render, no date separators, no read state, no typing indic
 reactions, no media messages, group chats render with no avatar, and the chat list tab has no
 realtime subscription (it doesn't live-update). This phase closes that gap.
 
-- [ ] **Timestamps, date separators, consecutive-message grouping** in the conversation view
-      (`created_at` is already fetched but never rendered).
+- [x] **Timestamps, date separators, consecutive-message grouping** in the conversation view
+      (done in Phase H's `ui-refresh`).
 - [ ] **Read receipts** — needed for the message-unsend rule below, not just a checkmark.
 - [ ] **Typing indicators.**
 - [ ] **Reactions.**
@@ -302,8 +302,11 @@ Haptics were deferred because `expo-haptics` needs a fresh native build.
       limits, and empty/loading/error/success state coverage per the design-pitch checklist.
 - [x] Feed, friends tab, map picker, profile, and settings each get a pass; chat's list and
       conversation screens got their visual pass here too (Phase F's DB-level depth is still open).
-- [ ] On-device check of the refresh (Karta overlay offsets above the floating tab bar, action
-      sheet → block confirm on iOS, edit-profile page sheet, keyboard behavior in the composer).
+- [x] On-device check of the refresh on the Android emulator (2026-10-05): Karta's action bar sits
+      above the floating tab bar, action sheet → block confirm works, sending a message works; the
+      edit-profile sheet overlapped the status bar on Android and was fixed.
+- [ ] Still needs a real phone: on-screen keyboard behavior in the composer (the emulator uses
+      the host's hardware keyboard) and iOS (no Xcode on these hosts).
 
 ## Phase I — UX polish pass
 

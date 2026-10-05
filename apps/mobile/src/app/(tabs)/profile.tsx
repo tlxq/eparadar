@@ -10,7 +10,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
@@ -124,36 +124,46 @@ function EditProfileSheet({ profile, visible, onClose }: EditProfileSheetProps) 
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <KeyboardAvoidingView
-        style={[styles.sheet, { backgroundColor: theme.background }]}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <View style={styles.sheetHeader}>
-          <Button label="Avbryt" variant="ghost" size="sm" onPress={onClose} />
-          <ThemedText type="headline">Redigera profil</ThemedText>
-          <Button label="Spara" size="sm" loading={saving} onPress={handleSave} />
-        </View>
-        <ScrollView contentContainerStyle={styles.sheetBody} keyboardShouldPersistTaps="handled">
-          <TextField
-            label="Visningsnamn"
-            value={displayName}
-            onChangeText={setDisplayName}
-            error={error}
-            autoFocus
-          />
-          <TextField
-            label="Bio"
-            value={bio}
-            onChangeText={setBio}
-            placeholder="Vad kör du, var brukar du hänga?"
-            multiline
-            maxLength={160}
-          />
-          <ThemedText type="caption" themeColor="textSecondary" style={styles.counter}>
-            {bio.length}/160
-          </ThemedText>
-        </ScrollView>
-      </KeyboardAvoidingView>
+      <SafeAreaProvider>
+        <SafeAreaView
+          style={[styles.sheet, { backgroundColor: theme.background }]}
+          edges={['top', 'bottom']}
+        >
+          <KeyboardAvoidingView
+            style={styles.sheet}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          >
+            <View style={styles.sheetHeader}>
+              <Button label="Avbryt" variant="ghost" size="sm" onPress={onClose} />
+              <ThemedText type="headline">Redigera profil</ThemedText>
+              <Button label="Spara" size="sm" loading={saving} onPress={handleSave} />
+            </View>
+            <ScrollView
+              contentContainerStyle={styles.sheetBody}
+              keyboardShouldPersistTaps="handled"
+            >
+              <TextField
+                label="Visningsnamn"
+                value={displayName}
+                onChangeText={setDisplayName}
+                error={error}
+                autoFocus
+              />
+              <TextField
+                label="Bio"
+                value={bio}
+                onChangeText={setBio}
+                placeholder="Vad kör du, var brukar du hänga?"
+                multiline
+                maxLength={160}
+              />
+              <ThemedText type="caption" themeColor="textSecondary" style={styles.counter}>
+                {bio.length}/160
+              </ThemedText>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </SafeAreaProvider>
     </Modal>
   );
 }
