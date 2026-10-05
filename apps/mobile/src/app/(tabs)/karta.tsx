@@ -18,6 +18,7 @@ import { useRealtimeTable } from '@/hooks/use-realtime-table';
 import { fetchFriendLocations, type FriendLocation } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
+import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
 
 const SWEDEN_CENTER = { lat: 62.0, lng: 15.0, zoom: 4 };
@@ -254,6 +255,7 @@ const MAP_HTML = `<!DOCTYPE html>
 
 export default function MapScreen() {
   const theme = useTheme();
+  const tabBarInset = useTabBarInset();
   const userId = useAuthStore((state) => state.session?.user.id);
   const webviewRef = useRef<WebView>(null);
   const queryClient = useQueryClient();
@@ -452,7 +454,7 @@ export default function MapScreen() {
         )}
 
         {placingStep !== 'idle' && (
-          <View style={styles.placingBar}>
+          <View style={[styles.placingBar, { bottom: tabBarInset }]}>
             <Pressable
               onPress={cancelPlacing}
               style={[styles.placingBtn, { backgroundColor: theme.backgroundElement }]}
@@ -485,7 +487,7 @@ export default function MapScreen() {
           <View
             style={[
               styles.pickerPanel,
-              { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+              { bottom: tabBarInset + 76, backgroundColor: theme.backgroundElement, borderColor: theme.border },
             ]}
           >
             {picker === 'search' && (
@@ -527,7 +529,7 @@ export default function MapScreen() {
           <View
             style={[
               styles.actionBar,
-              { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+              { bottom: tabBarInset, backgroundColor: theme.backgroundElement, borderColor: theme.border },
             ]}
           >
             <Pressable
@@ -590,7 +592,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: Spacing.four,
     right: Spacing.four,
-    bottom: Spacing.five,
     flexDirection: 'row',
     justifyContent: 'space-around',
     borderRadius: 999,
@@ -607,7 +608,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: Spacing.four,
     right: Spacing.four,
-    bottom: Spacing.five + 76,
     maxHeight: 280,
     borderRadius: Spacing.three,
     borderWidth: StyleSheet.hairlineWidth,
@@ -640,7 +640,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: Spacing.four,
     right: Spacing.four,
-    bottom: Spacing.five,
     flexDirection: 'row',
     gap: Spacing.two,
   },

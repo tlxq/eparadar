@@ -9,6 +9,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { CarPhoto } from '@/components/car-photo';
+import { IconButton } from '@/components/icon-button';
+import { ScreenHeader } from '@/components/screen-header';
 import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
@@ -18,6 +20,7 @@ import { fetchMyCars, fetchProfile, signOut, updateProfile, type Car } from '@/l
 import { uploadAvatar } from '@/lib/image-upload';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
+import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
 
 function CarRow({ car }: { car: Car }) {
@@ -36,6 +39,7 @@ function CarRow({ car }: { car: Car }) {
 
 export default function ProfileScreen() {
   const theme = useTheme();
+  const tabBarInset = useTabBarInset();
   const userId = useAuthStore((state) => state.session?.user.id);
   const queryClient = useQueryClient();
 
@@ -111,20 +115,19 @@ export default function ProfileScreen() {
           data={cars ?? []}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <CarRow car={item} />}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: tabBarInset }]}
           ListHeaderComponent={
             <View style={styles.header}>
-              <View style={styles.headerRow}>
-                <ThemedText type="title">Profil</ThemedText>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Inställningar"
-                  onPress={() => router.push('/settings')}
-                  style={[styles.iconButton, { backgroundColor: theme.backgroundElement }]}
-                >
-                  <Ionicons name="settings-outline" size={20} color={theme.brandOnSurface} />
-                </Pressable>
-              </View>
+              <ScreenHeader
+                title="Profil"
+                actions={
+                  <IconButton
+                    icon="settings-outline"
+                    accessibilityLabel="Inställningar"
+                    onPress={() => router.push('/settings')}
+                  />
+                }
+              />
               <Pressable
                 onPress={handlePickAvatar}
                 disabled={uploadingAvatar}
@@ -182,19 +185,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: Spacing.three },
-  header: { gap: Spacing.two, paddingVertical: Spacing.three },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  header: { gap: Spacing.two, paddingBottom: Spacing.three },
   avatarPicker: { alignSelf: 'flex-start' },
   avatarBadge: {
     position: 'absolute',
@@ -213,7 +204,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: Spacing.two,
   },
-  list: { gap: Spacing.two, paddingBottom: Spacing.four },
+  list: { gap: Spacing.two },
   carRow: { padding: Spacing.three, borderRadius: Spacing.three },
   carRowContent: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   footer: { marginTop: Spacing.three, gap: Spacing.two },

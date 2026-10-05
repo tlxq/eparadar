@@ -4,11 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 
 import { Avatar } from '@/components/avatar';
-import { Button } from '@/components/button';
+import { Fab } from '@/components/fab';
+import { ScreenHeader } from '@/components/screen-header';
 import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { fetchPosts, type Post } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 
@@ -34,6 +36,7 @@ function PostCard({ post }: { post: Post }) {
 }
 
 export default function FeedScreen() {
+  const tabBarInset = useTabBarInset();
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: queryKeys.posts(),
     queryFn: fetchPosts,
@@ -42,21 +45,19 @@ export default function FeedScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <ThemedText type="title">Flöde</ThemedText>
-          <Button label="Ny post" icon="add-circle-outline" onPress={() => router.push('/post/new')} />
-        </View>
+        <ScreenHeader title="Flöde" />
         <FlatList
           data={data ?? []}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <PostCard post={item} />}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: tabBarInset + Spacing.six }]}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
           ListEmptyComponent={
             !isLoading ? <ThemedText themeColor="textSecondary">Inga inlägg än.</ThemedText> : null
           }
         />
       </SafeAreaView>
+      <Fab icon="create-outline" accessibilityLabel="Ny post" onPress={() => router.push('/post/new')} />
     </ScreenBackground>
   );
 }
@@ -64,13 +65,7 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: Spacing.three },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: Spacing.three,
-  },
-  list: { gap: Spacing.two, paddingBottom: Spacing.four },
+  list: { gap: Spacing.two },
   card: { padding: Spacing.three, borderRadius: Spacing.three, gap: Spacing.two },
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   cardHeaderText: { gap: Spacing.half },

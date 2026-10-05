@@ -5,10 +5,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
+import { IconButton } from '@/components/icon-button';
+import { ScreenHeader } from '@/components/screen-header';
 import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useBlockUser } from '@/features/friends/hooks';
 import {
   fetchFriends,
@@ -179,6 +182,7 @@ function FriendRow({ friendship, myUserId }: { friendship: Friendship; myUserId:
 
 export default function FriendsScreen() {
   const userId = useAuthStore((state) => state.session?.user.id);
+  const tabBarInset = useTabBarInset();
 
   const {
     data: friends,
@@ -206,19 +210,21 @@ export default function FriendsScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <ThemedText type="title">Vänner</ThemedText>
-          <Button
-            label="Lägg till vän"
-            icon="person-add-outline"
-            onPress={() => router.push('/friends/add')}
-          />
-        </View>
+        <ScreenHeader
+          title="Vänner"
+          actions={
+            <IconButton
+              icon="person-add-outline"
+              accessibilityLabel="Lägg till vän"
+              onPress={() => router.push('/friends/add')}
+            />
+          }
+        />
         <FlatList
           data={friends ?? []}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <FriendRow friendship={item} myUserId={userId!} />}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: tabBarInset }]}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
           ListHeaderComponent={
             <>
@@ -258,13 +264,7 @@ export default function FriendsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: Spacing.three },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: Spacing.three,
-  },
-  list: { gap: Spacing.two, paddingBottom: Spacing.four },
+  list: { gap: Spacing.two },
   requestsSection: { gap: Spacing.two, marginBottom: Spacing.four },
   requestActions: { gap: Spacing.two },
   friendActions: { gap: Spacing.two, alignItems: 'flex-end' },

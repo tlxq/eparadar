@@ -4,11 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 
 import { Avatar } from '@/components/avatar';
-import { Button } from '@/components/button';
+import { Fab } from '@/components/fab';
+import { ScreenHeader } from '@/components/screen-header';
 import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { conversationAvatarUrl, conversationTitle, fetchConversations, type Conversation } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
@@ -42,6 +44,7 @@ function ConversationRow({
 
 export default function ChatListScreen() {
   const userId = useAuthStore((state) => state.session?.user.id);
+  const tabBarInset = useTabBarInset();
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: queryKeys.conversations(userId),
@@ -52,21 +55,19 @@ export default function ChatListScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <ThemedText type="title">Chatt</ThemedText>
-          <Button label="Ny chatt" icon="add-circle-outline" onPress={() => router.push('/chat/new')} />
-        </View>
+        <ScreenHeader title="Chatt" />
         <FlatList
           data={data ?? []}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <ConversationRow conversation={item} myUserId={userId!} />}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: tabBarInset + Spacing.six }]}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
           ListEmptyComponent={
             !isLoading ? <ThemedText themeColor="textSecondary">Inga chattar än.</ThemedText> : null
           }
         />
       </SafeAreaView>
+      <Fab icon="add" accessibilityLabel="Ny chatt" onPress={() => router.push('/chat/new')} />
     </ScreenBackground>
   );
 }
@@ -74,13 +75,7 @@ export default function ChatListScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: Spacing.three },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: Spacing.three,
-  },
-  list: { gap: Spacing.two, paddingBottom: Spacing.four },
+  list: { gap: Spacing.two },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
