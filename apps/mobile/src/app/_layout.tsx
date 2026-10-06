@@ -15,6 +15,7 @@ import { useColorScheme } from 'react-native';
 
 import '@/lib/location-task';
 
+import { ErrorFallback } from '@/components/error-fallback';
 import { ToastHost } from '@/components/toast-host';
 import { Colors, Fonts } from '@/constants/theme';
 import { trackEvent } from '@/lib/analytics';
@@ -146,5 +147,7 @@ function RootLayout() {
     </QueryClientProvider>
   );
 }
+
+export { ErrorFallback as ErrorBoundary };
 
 export default Sentry.wrap(RootLayout);
