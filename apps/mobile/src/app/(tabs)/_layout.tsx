@@ -44,6 +44,14 @@ export default function TabsLayout() {
   useRealtimeTable({
     channelName: `chat-list:members:${userId}`,
     table: 'conversation_members',
+    event: '*',
+    enabled: !!userId,
+    onChange: invalidateConversations,
+  });
+
+  useRealtimeTable({
+    channelName: `chat-list:conversations:${userId}`,
+    table: 'conversations',
     event: 'UPDATE',
     enabled: !!userId,
     onChange: invalidateConversations,
