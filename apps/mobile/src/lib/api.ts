@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { lastActivity } from '@/lib/chat-state';
 import type { Database } from '@/lib/database.types';
 
 type DbTables = Database['public']['Tables'];
@@ -125,6 +126,7 @@ export async function updateProfile(
 
 export type ConversationMember = {
   user_id: string;
+  last_read_at: string | null;
   profiles: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
 };
 
@@ -134,7 +136,7 @@ export type Conversation = {
   name: string | null;
   created_at: string;
   conversation_members: ConversationMember[];
-  messages?: { body: string; created_at: string }[];
+  messages?: { body: string; created_at: string; sender_id: string }[];
 };
 
 export type Message = {
@@ -171,23 +173,37 @@ export async function searchUsers(query: string, excludeUserId: string): Promise
   return data ?? [];
 }
 
+export async function markConversationRead(conversationId: string): Promise<void> {
+  const { error } = await supabase.rpc('mark_conversation_read', {
+    p_conversation_id: conversationId,
+  });
+  if (error) throw error;
+}
+
+export async function unsendMessage(messageId: string): Promise<void> {
+  const { error } = await supabase.rpc('unsend_message', { p_message_id: messageId });
+  if (error) throw error;
+}
+
 export async function fetchConversations(): Promise<Conversation[]> {
   const { data, error } = await supabase
     .from('conversations')
     .select(
-      '*, conversation_members(user_id, profiles(id, username, display_name, avatar_url)), messages(body, created_at)',
+      '*, conversation_members(user_id, last_read_at, profiles(id, username, display_name, avatar_url)), messages(body, created_at, sender_id)',
     )
-    .order('created_at', { ascending: false })
     .order('created_at', { foreignTable: 'messages', ascending: false })
     .limit(1, { foreignTable: 'messages' });
   if (error) throw error;
-  return (data ?? []) as unknown as Conversation[];
+  const conversations = (data ?? []) as unknown as Conversation[];
+  return conversations.sort((a, b) => lastActivity(b) - lastActivity(a));
 }
 
 export async function fetchConversation(conversationId: string): Promise<Conversation> {
   const { data, error } = await supabase
     .from('conversations')
-    .select('*, conversation_members(user_id, profiles(id, username, display_name, avatar_url))')
+    .select(
+      '*, conversation_members(user_id, last_read_at, profiles(id, username, display_name, avatar_url))',
+    )
     .eq('id', conversationId)
     .single();
   if (error) throw error;

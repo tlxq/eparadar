@@ -4,7 +4,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { FloatingTabBar } from '@/components/floating-tab-bar';
 import { useRealtimeTable } from '@/hooks/use-realtime-table';
-import { fetchPendingRequests } from '@/lib/api';
+import { fetchConversations, fetchPendingRequests } from '@/lib/api';
+import { isUnread } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 
@@ -18,6 +19,35 @@ export default function TabsLayout() {
     enabled: !!userId,
   });
   const pendingCount = pendingRequests?.length ?? 0;
+
+  const { data: conversations } = useQuery({
+    queryKey: queryKeys.conversations(userId),
+    queryFn: fetchConversations,
+    enabled: !!userId,
+  });
+  const unreadChats = userId
+    ? (conversations ?? []).filter((conversation) => isUnread(conversation, userId)).length
+    : 0;
+
+  function invalidateConversations() {
+    queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });
+  }
+
+  useRealtimeTable({
+    channelName: `chat-list:messages:${userId}`,
+    table: 'messages',
+    event: '*',
+    enabled: !!userId,
+    onChange: invalidateConversations,
+  });
+
+  useRealtimeTable({
+    channelName: `chat-list:members:${userId}`,
+    table: 'conversation_members',
+    event: 'UPDATE',
+    enabled: !!userId,
+    onChange: invalidateConversations,
+  });
 
   function invalidateFriendships() {
     queryClient.invalidateQueries({ queryKey: queryKeys.friends(userId) });
@@ -56,8 +86,13 @@ export default function TabsLayout() {
         name="chat"
         options={{
           title: 'Chatt',
+          tabBarBadge: unreadChats > 0 ? unreadChats : undefined,
           tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons name={focused ? 'chatbubble' : 'chatbubble-outline'} size={size} color={color} />
+            <Ionicons
+              name={focused ? 'chatbubble' : 'chatbubble-outline'}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
