@@ -11,21 +11,11 @@ import { Switch } from '@/components/switch';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import {
-  fetchMyLocation,
-  setLocationApproximate,
-  setLocationSharing,
-  signOut,
-  upsertLocation,
-} from '@/lib/api';
+import { fetchMyLocation, setLocationApproximate, setLocationSharing, signOut } from '@/lib/api';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
-import {
-  requestLocationPermissions,
-  startLocationSharing,
-  stopLocationSharing,
-  stopLocationSharingQuietly,
-} from '@/lib/location-task';
+import { enableLocationSharing } from '@/lib/location-sharing';
+import { stopLocationSharing, stopLocationSharingQuietly } from '@/lib/location-task';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 
@@ -67,23 +57,11 @@ export default function SettingsScreen() {
     setBusy(true);
     try {
       if (value) {
-        const permission = await requestLocationPermissions();
-        if (!permission.granted) {
-          setError(permission.reason);
+        const result = await enableLocationSharing(userId);
+        if (!result.ok) {
+          setError(result.reason);
           return;
         }
-        const position = await Location.getLastKnownPositionAsync();
-        if (!position) {
-          setError('epaRadar kunde inte hitta en aktuell plats. Öppna kartan och försök igen.');
-          return;
-        }
-        await upsertLocation({
-          userId,
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          sharingEnabled: true,
-        });
-        await startLocationSharing();
       } else {
         await stopLocationSharing();
         await setLocationSharing(userId, false);

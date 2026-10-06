@@ -98,6 +98,10 @@ function RootLayout() {
           <Stack.Protected guard={!!session}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen
+              name="onboarding"
+              options={{ gestureEnabled: false, animation: 'fade' }}
+            />
+            <Stack.Screen
               name="post/new"
               options={{ presentation: 'modal', headerShown: true, title: 'Ny post' }}
             />
