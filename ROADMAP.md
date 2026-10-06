@@ -32,8 +32,9 @@ new phase until the current one is checked off (keeps one front open at a time).
   pushed (2026-10-06).
 - **Phase H done** (2026-10-05, `ui-refresh`), apart from a real-phone keyboard/iOS check that
   needs Tom's phone. The chat list and conversation screens got their visual pass there too.
-- **Next up: Phase I** — onboarding (design-led: taste questions → pitch → build). The
-  ErrorBoundary landed 2026-10-06; Sentry only reports once a DSN is created (Tom's).
+- **Phase I done** (2026-10-06): onboarding and the ErrorBoundary landed. Sentry only reports
+  once a DSN is created (Tom's).
+- **Next up: Phase J** (store submission), plus the on-device checks listed under Phases H and I.
 - **Remaining for launch (Phase J)**: Expo/EAS account and store credentials, manual store
   submission, and optional CI automation after the first successful submission.
 
@@ -344,8 +345,12 @@ Haptics were deferred because `expo-haptics` needs a fresh native build.
 Run through the `eparadar-design-pitch` workflow (taste questions → rendered Artifact →
 implement) as one coherent visual pass rather than piecemeal.
 
-- [ ] **Onboarding**: a short (≲5 steps) flow after signup — at minimum a permission-priming step
-      and profile basics — instead of dropping straight into tabs.
+- [x] **Onboarding** (2026-10-06, pitch approved first): four full-screen steps after sign-up —
+      Välkommen → Vem kör du med? (friend code / scan / radar) → Synas på kartan? (off by default,
+      "Dela med vänner" and "Inte nu" given equal weight) → Klart. Every step skippable, shown once
+      via `profiles.onboarded_at` (existing accounts backfilled). Location uses the same
+      `enableLocationSharing()` path as Settings. The "yes" path still needs an on-device check;
+      web can't grant background location.
 - [x] **Empty states**: real copy + a simple illustration/icon treatment for feed/chat/friends,
       replacing today's bare Swedish text strings (shared `EmptyState`, done in Phase H's refresh).
 - [x] **Loading**: a new `Skeleton` component (`src/components/`) replacing raw

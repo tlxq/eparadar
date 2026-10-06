@@ -158,6 +158,14 @@ export async function removeAvatar(userId: string, avatarUrl: string | null): Pr
   await removeStoredFile('avatars', avatarUrl);
 }
 
+export async function completeOnboarding(userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ onboarded_at: new Date().toISOString() })
+    .eq('id', userId);
+  if (error) throw error;
+}
+
 export async function updateProfile(
   userId: string,
   input: { displayName: string; bio: string | null; avatarUrl?: string },

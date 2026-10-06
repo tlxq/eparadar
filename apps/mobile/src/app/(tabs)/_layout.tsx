@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { FloatingTabBar } from '@/components/floating-tab-bar';
 import { useRealtimeTable } from '@/hooks/use-realtime-table';
-import { fetchConversations, fetchPendingRequests } from '@/lib/api';
+import { fetchConversations, fetchPendingRequests, fetchProfile } from '@/lib/api';
 import { isUnread } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
 import { subscribeTyping } from '@/lib/typing';
@@ -14,6 +14,12 @@ import { useAuthStore } from '@/store/auth';
 export default function TabsLayout() {
   const userId = useAuthStore((state) => state.session?.user.id);
   const queryClient = useQueryClient();
+
+  const { data: profile } = useQuery({
+    queryKey: queryKeys.profile(userId),
+    queryFn: () => fetchProfile(userId!),
+    enabled: !!userId,
+  });
 
   const { data: pendingRequests } = useQuery({
     queryKey: queryKeys.friendRequests(userId),
@@ -92,6 +98,10 @@ export default function TabsLayout() {
     enabled: !!userId,
     onChange: invalidateFriendships,
   });
+
+  if (profile && !profile.onboarded_at) {
+    return <Redirect href="/onboarding" />;
+  }
 
   return (
     <Tabs tabBar={(props) => <FloatingTabBar {...props} />} screenOptions={{ headerShown: false }}>
