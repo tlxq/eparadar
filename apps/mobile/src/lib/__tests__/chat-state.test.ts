@@ -11,6 +11,7 @@ function member(userId: string, lastReadAt: string | null) {
   return {
     user_id: userId,
     last_read_at: lastReadAt,
+    role: 'member' as const,
     profiles: { id: userId, username: userId, display_name: userId, avatar_url: null },
   };
 }

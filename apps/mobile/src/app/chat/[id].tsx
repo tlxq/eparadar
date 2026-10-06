@@ -173,7 +173,7 @@ export default function ConversationScreen() {
   const [sending, setSending] = useState(false);
   const [selected, setSelected] = useState<Message | null>(null);
 
-  const { data: conversation } = useQuery({
+  const { data: conversation, isError: conversationError } = useQuery({
     queryKey: queryKeys.conversation(id),
     queryFn: () => fetchConversation(id!),
     enabled: !!id,
@@ -304,18 +304,31 @@ export default function ConversationScreen() {
             accessibilityLabel="Tillbaka"
             onPress={() => router.back()}
           />
-          <Avatar name={title} imageUrl={avatarUrl} size={36} />
-          <View style={styles.navText}>
-            <ThemedText type="headline" numberOfLines={1} accessibilityRole="header">
-              {title}
-            </ThemedText>
-            {isGroup ? (
-              <ThemedText type="caption" themeColor="textSecondary">
-                {memberCount} medlemmar
+          <Pressable
+            disabled={!isGroup}
+            accessibilityRole={isGroup ? 'button' : undefined}
+            accessibilityHint={isGroup ? 'Öppnar gruppinfo' : undefined}
+            onPress={() => router.push(`/group/${id}`)}
+            style={({ pressed }) => [styles.navTitle, pressed && styles.bubblePressed]}
+          >
+            <Avatar name={title} imageUrl={avatarUrl} size={36} />
+            <View style={styles.navText}>
+              <ThemedText type="headline" numberOfLines={1} accessibilityRole="header">
+                {title}
               </ThemedText>
-            ) : null}
-          </View>
+              {isGroup ? (
+                <ThemedText type="caption" themeColor="textSecondary">
+                  {memberCount} medlemmar · tryck för info
+                </ThemedText>
+              ) : null}
+            </View>
+          </Pressable>
         </View>
+        {conversationError ? (
+          <ThemedText themeColor="textSecondary" style={styles.goneNotice}>
+            Du är inte längre med i den här chatten.
+          </ThemedText>
+        ) : null}
         <KeyboardAvoider style={styles.container}>
           <FlatList
             ref={listRef}
@@ -399,6 +412,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   navText: { flex: 1 },
+  navTitle: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  goneNotice: { textAlign: 'center', padding: Spacing.three },
   list: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, gap: 2, flexGrow: 1 },
   groupStart: { marginTop: Spacing.two },
   divider: { alignSelf: 'center', paddingVertical: Spacing.two },

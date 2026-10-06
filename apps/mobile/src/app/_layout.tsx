@@ -19,7 +19,10 @@ import { ToastHost } from '@/components/toast-host';
 import { Colors, Fonts } from '@/constants/theme';
 import { trackEvent } from '@/lib/analytics';
 import { queryClient } from '@/lib/queryClient';
-import { setupNotificationResponseListener, syncPushTokenIfGranted } from '@/lib/push-notifications';
+import {
+  setupNotificationResponseListener,
+  syncPushTokenIfGranted,
+} from '@/lib/push-notifications';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth';
 
@@ -80,7 +83,11 @@ function RootLayout() {
             headerStyle: { backgroundColor: palette.gradientTop },
             headerShadowVisible: false,
             headerTintColor: palette.brandOnSurface,
-            headerTitleStyle: { fontFamily: Fonts.inter.semiBold, fontSize: 17, color: palette.text },
+            headerTitleStyle: {
+              fontFamily: Fonts.inter.semiBold,
+              fontSize: 17,
+              color: palette.text,
+            },
             headerBackButtonDisplayMode: 'minimal',
           }}
         >
@@ -114,13 +121,20 @@ function RootLayout() {
               options={{ presentation: 'modal', headerShown: true, title: 'Skriv in kod' }}
             />
             <Stack.Screen name="add/[code]" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="group/[id]" />
             <Stack.Screen name="settings" options={{ headerShown: true, title: 'Inställningar' }} />
             <Stack.Screen
               name="privacy"
               options={{ headerShown: true, title: 'Integritetspolicy' }}
             />
-            <Stack.Screen name="meetups/create" options={{ presentation: 'modal', headerShown: false }} />
-            <Stack.Screen name="meetups/[id]" options={{ presentation: 'modal', headerShown: false }} />
+            <Stack.Screen
+              name="meetups/create"
+              options={{ presentation: 'modal', headerShown: false }}
+            />
+            <Stack.Screen
+              name="meetups/[id]"
+              options={{ presentation: 'modal', headerShown: false }}
+            />
           </Stack.Protected>
         </Stack>
         <ToastHost />

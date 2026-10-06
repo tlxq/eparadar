@@ -92,18 +92,21 @@ export type Database = {
           conversation_id: string
           joined_at: string
           last_read_at: string | null
+          role: string
           user_id: string
         }
         Insert: {
           conversation_id: string
           joined_at?: string
           last_read_at?: string | null
+          role?: string
           user_id: string
         }
         Update: {
           conversation_id?: string
           joined_at?: string
           last_read_at?: string | null
+          role?: string
           user_id?: string
         }
         Relationships: [
@@ -709,6 +712,10 @@ export type Database = {
         Returns: boolean
       }
       is_friend: { Args: { a: string; b: string }; Returns: boolean }
+      leave_conversation: {
+        Args: { p_conversation_id: string }
+        Returns: undefined
+      }
       leave_nearby: { Args: never; Returns: undefined }
       mark_conversation_read: {
         Args: { p_conversation_id: string }
@@ -722,6 +729,14 @@ export type Database = {
           outcome: string
           user_id: string
         }[]
+      }
+      remove_member: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: undefined
+      }
+      rename_conversation: {
+        Args: { p_conversation_id: string; p_name: string }
+        Returns: undefined
       }
       respond_to_friend_request: {
         Args: { accept: boolean; request_id: string }

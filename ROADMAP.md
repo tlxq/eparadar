@@ -266,11 +266,12 @@ realtime subscription (it doesn't live-update). This phase closes that gap.
 - [x] **Message delete/unsend, only while unread** — done in F1 as a definer function
       `unsend_message()` (no delete policy at all), gated server-side on the read state; long-press
       menu with Kopiera / Ta bort.
-- [ ] **Leave a group chat** — new `conversation_members` DELETE RLS + a `leaveConversation` call.
-- [ ] **Remove a group member** — needs a role/admin concept (new column on
-      `conversation_members`); currently no owner exists who could do this.
-- [ ] **Rename a group** — new `conversations` UPDATE RLS + RPC (today the name is set once at
-      creation with no way to change it).
+- [x] **Leave a group chat** — done in F2 (2026-10-06) as `leave_conversation()`; the longest-standing
+      member becomes admin if the last admin leaves, and the group is deleted when it empties.
+- [x] **Remove a group member** — done in F2: `conversation_members.role` (creator is admin; existing
+      group members were all made admin since the creator wasn't recorded) + admin-only `remove_member()`.
+- [x] **Rename a group** — done in F2 as `rename_conversation()` (any member, 1–40 characters), from the
+      new Gruppinfo screen opened by tapping a group's header.
 - [ ] **Group avatar** — new Storage bucket, same public-read/owner-write-by-folder-prefix pattern
       as `avatars`/`car-photos`/`post-images`.
 - [x] **Chat list live-update** — done in F1: the tab layout subscribes to messages and read-state

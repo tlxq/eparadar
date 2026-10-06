@@ -127,6 +127,8 @@ export async function updateProfile(
 export type ConversationMember = {
   user_id: string;
   last_read_at: string | null;
+  role: 'admin' | 'member';
+  joined_at?: string;
   profiles: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
 };
 
@@ -173,6 +175,27 @@ export async function searchUsers(query: string, excludeUserId: string): Promise
   return data ?? [];
 }
 
+export async function renameConversation(conversationId: string, name: string): Promise<void> {
+  const { error } = await supabase.rpc('rename_conversation', {
+    p_conversation_id: conversationId,
+    p_name: name,
+  });
+  if (error) throw error;
+}
+
+export async function leaveConversation(conversationId: string): Promise<void> {
+  const { error } = await supabase.rpc('leave_conversation', { p_conversation_id: conversationId });
+  if (error) throw error;
+}
+
+export async function removeMember(conversationId: string, userId: string): Promise<void> {
+  const { error } = await supabase.rpc('remove_member', {
+    p_conversation_id: conversationId,
+    p_user_id: userId,
+  });
+  if (error) throw error;
+}
+
 export async function markConversationRead(conversationId: string): Promise<void> {
   const { error } = await supabase.rpc('mark_conversation_read', {
     p_conversation_id: conversationId,
@@ -189,7 +212,7 @@ export async function fetchConversations(): Promise<Conversation[]> {
   const { data, error } = await supabase
     .from('conversations')
     .select(
-      '*, conversation_members(user_id, last_read_at, profiles(id, username, display_name, avatar_url)), messages(body, created_at, sender_id)',
+      '*, conversation_members(user_id, last_read_at, role, profiles(id, username, display_name, avatar_url)), messages(body, created_at, sender_id)',
     )
     .order('created_at', { foreignTable: 'messages', ascending: false })
     .limit(1, { foreignTable: 'messages' });
@@ -202,7 +225,7 @@ export async function fetchConversation(conversationId: string): Promise<Convers
   const { data, error } = await supabase
     .from('conversations')
     .select(
-      '*, conversation_members(user_id, last_read_at, profiles(id, username, display_name, avatar_url))',
+      '*, conversation_members(user_id, last_read_at, role, joined_at, profiles(id, username, display_name, avatar_url))',
     )
     .eq('id', conversationId)
     .single();
