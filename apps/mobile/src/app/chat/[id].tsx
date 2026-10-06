@@ -9,6 +9,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { ActionSheet, type SheetAction } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
+import { ConversationAvatar } from '@/components/conversation-avatar';
 import { IconButton } from '@/components/icon-button';
 import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ScreenBackground } from '@/components/screen-background';
@@ -19,7 +20,6 @@ import { useRealtimeTable } from '@/hooks/use-realtime-table';
 import { useTheme } from '@/hooks/use-theme';
 import {
   chatImageUrl,
-  conversationAvatarUrl,
   conversationTitle,
   fetchConversation,
   fetchMessages,
@@ -496,7 +496,6 @@ export default function ConversationScreen() {
     : [];
 
   const title = conversation && userId ? conversationTitle(conversation, userId) : 'Chatt';
-  const avatarUrl = conversation && userId ? conversationAvatarUrl(conversation, userId) : null;
   const isGroup = !!conversation?.is_group;
   const memberCount = conversation?.conversation_members.length ?? 0;
   const list = messages ?? [];
@@ -521,7 +520,11 @@ export default function ConversationScreen() {
             onPress={() => router.push(`/group/${id}`)}
             style={({ pressed }) => [styles.navTitle, pressed && styles.bubblePressed]}
           >
-            <Avatar name={title} imageUrl={avatarUrl} size={36} />
+            {conversation && userId ? (
+              <ConversationAvatar conversation={conversation} myUserId={userId} size={36} />
+            ) : (
+              <Avatar name={title} size={36} />
+            )}
             <View style={styles.navText}>
               <ThemedText type="headline" numberOfLines={1} accessibilityRole="header">
                 {title}
@@ -573,7 +576,9 @@ export default function ConversationScreen() {
             ListEmptyComponent={
               messages ? (
                 <View style={styles.emptyThread}>
-                  <Avatar name={title} imageUrl={avatarUrl} size={72} />
+                  {conversation && userId ? (
+                    <ConversationAvatar conversation={conversation} myUserId={userId} size={72} />
+                  ) : null}
                   <ThemedText type="headline">{title}</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">
                     Inga meddelanden än. Säg hej!

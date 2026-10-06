@@ -64,7 +64,11 @@ export default function TabsLayout() {
     table: 'conversations',
     event: 'UPDATE',
     enabled: !!userId,
-    onChange: invalidateConversations,
+    onChange: (payload) => {
+      invalidateConversations();
+      const id = (payload.new as { id?: string }).id;
+      if (id) queryClient.invalidateQueries({ queryKey: queryKeys.conversation(id) });
+    },
   });
 
   function invalidateFriendships() {
