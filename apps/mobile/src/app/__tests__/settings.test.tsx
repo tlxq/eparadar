@@ -40,6 +40,7 @@ jest.mock('@/lib/location-task', () => ({
   requestLocationPermissions: (...args: unknown[]) => mockRequestLocationPermissions(...args),
   startLocationSharing: (...args: unknown[]) => mockStartLocationSharing(...args),
   stopLocationSharing: (...args: unknown[]) => mockStopLocationSharing(...args),
+  stopLocationSharingQuietly: jest.fn(),
 }));
 
 jest.mock('expo-location', () => ({
@@ -205,9 +206,7 @@ describe('SettingsScreen approximate toggle', () => {
       fireEvent(toggle, 'valueChange', true);
     });
 
-    await waitFor(() =>
-      expect(mockSetLocationApproximate).toHaveBeenCalledWith('user-1', true),
-    );
+    await waitFor(() => expect(mockSetLocationApproximate).toHaveBeenCalledWith('user-1', true));
     await unmount();
     client.clear();
   });

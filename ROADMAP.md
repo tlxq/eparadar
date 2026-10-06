@@ -299,11 +299,12 @@ piece of backend work, in-app account deletion.
       already exists (un-marking interest already works, this is the missing creator-side path).
 - [x] **Remove/clear a profile photo** — revert to initials; the avatar Storage delete policy
       already exists, just no "remove" action in the UI (today avatars can only be replaced).
-- [ ] **In-app account deletion, with password re-confirmation** — replaces today's email-only
-      path (`privacy.tsx` → contact@eparadar.se). Needs a new service-role Edge Function cascading
-      through posts/cars/chats/locations/friendships before deleting the `auth.users` row itself.
-      (Leave-group and message-delete live in Phase F since they need new chat schema work
-      regardless — see there, not duplicated here.)
+- [x] **In-app account deletion, with password re-confirmation** — done 2026-10-06: Settings →
+      Radera konto → password → `delete-account` Edge Function. It re-checks the password,
+      runs `prepare_account_deletion()` (service-role only: deletes 1:1 chats and groups that would
+      end up empty, hands group admin to the longest-standing member, returns the Storage files to
+      remove), removes those files, then deletes the `auth.users` row; everything else cascades.
+      Background location is stopped first (and now also on Logga ut). Privacy policy updated.
 
 ## Phase H — Full page-by-page UX audit
 

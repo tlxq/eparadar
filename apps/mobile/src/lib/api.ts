@@ -45,6 +45,15 @@ export async function signOut() {
   if (error) throw error;
 }
 
+export async function deleteAccount(password: string): Promise<void> {
+  const { error } = await supabase.functions.invoke('delete-account', { body: { password } });
+  if (error) {
+    const body = await (error.context as Response | undefined)?.json?.().catch(() => null);
+    throw new Error(body?.error ?? 'Kontot kunde inte raderas. Försök igen.');
+  }
+  await supabase.auth.signOut({ scope: 'local' });
+}
+
 export async function fetchPosts(): Promise<Post[]> {
   const { data, error } = await supabase
     .from('posts')

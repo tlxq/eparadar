@@ -124,6 +124,10 @@ function RootLayout() {
             <Stack.Screen name="group/[id]" />
             <Stack.Screen name="settings" options={{ headerShown: true, title: 'Inställningar' }} />
             <Stack.Screen
+              name="delete-account"
+              options={{ headerShown: true, title: 'Radera konto' }}
+            />
+            <Stack.Screen
               name="privacy"
               options={{ headerShown: true, title: 'Integritetspolicy' }}
             />
