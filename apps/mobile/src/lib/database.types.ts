@@ -770,6 +770,13 @@ export type Database = {
         Args: { p_conversation_id: string }
         Returns: string
       }
+      prepare_account_deletion: {
+        Args: { p_user_id: string }
+        Returns: {
+          bucket: string
+          path: string
+        }[]
+      }
       redeem_friend_code: {
         Args: { friend_code: string }
         Returns: {
