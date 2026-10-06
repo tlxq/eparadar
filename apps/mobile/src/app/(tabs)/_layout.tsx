@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -7,6 +8,7 @@ import { useRealtimeTable } from '@/hooks/use-realtime-table';
 import { fetchConversations, fetchPendingRequests } from '@/lib/api';
 import { isUnread } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
+import { subscribeTyping } from '@/lib/typing';
 import { useAuthStore } from '@/store/auth';
 
 export default function TabsLayout() {
@@ -28,6 +30,14 @@ export default function TabsLayout() {
   const unreadChats = userId
     ? (conversations ?? []).filter((conversation) => isUnread(conversation, userId)).length
     : 0;
+
+  const conversationIds = (conversations ?? []).map((conversation) => conversation.id).join(',');
+
+  useEffect(() => {
+    if (!conversationIds) return;
+    const unsubscribers = conversationIds.split(',').map(subscribeTyping);
+    return () => unsubscribers.forEach((unsubscribe) => unsubscribe());
+  }, [conversationIds]);
 
   function invalidateConversations() {
     queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });

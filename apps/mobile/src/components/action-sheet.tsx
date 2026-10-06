@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,11 +21,12 @@ export type SheetAction = {
 type ActionSheetProps = {
   visible: boolean;
   title?: string;
+  header?: ReactNode;
   actions: SheetAction[];
   onClose: () => void;
 };
 
-export function ActionSheet({ visible, title, actions, onClose }: ActionSheetProps) {
+export function ActionSheet({ visible, title, header, actions, onClose }: ActionSheetProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -47,6 +48,7 @@ export function ActionSheet({ visible, title, actions, onClose }: ActionSheetPro
         ]}
       >
         <View style={[styles.handle, { backgroundColor: theme.backgroundSelected }]} />
+        {header}
         {title ? (
           <ThemedText type="caption" themeColor="textSecondary" style={styles.title}>
             {title}

@@ -26,18 +26,20 @@ import { isUnread, readersOf } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
 import { formatChatTimestamp } from '@/lib/relative-time';
 import { showToast } from '@/store/toast';
+import { activeTypists, typingLabel, useTypingStore } from '@/store/typing';
 import { useAuthStore } from '@/store/auth';
 
 function previewText(conversation: Conversation, myUserId: string) {
   const lastMessage = conversation.messages?.[0];
   if (!lastMessage) return conversation.is_group ? 'Gruppen är skapad' : 'Säg hej!';
-  if (lastMessage.sender_id === myUserId) return `Du: ${lastMessage.body}`;
-  if (!conversation.is_group) return lastMessage.body;
+  const text = lastMessage.body.trim() || 'skickade en bild';
+  if (lastMessage.sender_id === myUserId) return `Du: ${text}`;
+  if (!conversation.is_group) return lastMessage.body.trim() || 'Skickade en bild';
   const sender = conversation.conversation_members.find(
     (member) => member.user_id === lastMessage.sender_id,
   );
   const firstName = sender?.profiles.display_name.split(' ')[0];
-  return firstName ? `${firstName}: ${lastMessage.body}` : lastMessage.body;
+  return firstName ? `${firstName}: ${text}` : text;
 }
 
 function RowMeta({ conversation, myUserId }: { conversation: Conversation; myUserId: string }) {
@@ -95,8 +97,23 @@ function ChatListSkeleton() {
   );
 }
 
+function useTicker(active: boolean) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!active) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [active]);
+  return now;
+}
+
 export default function ChatListScreen() {
   const theme = useTheme();
+  const typingByConversation = useTypingStore((state) => state.byConversation);
+  const anyTyping = Object.values(typingByConversation).some(
+    (typists) => Object.keys(typists).length > 0,
+  );
+  const now = useTicker(anyTyping);
   const userId = useAuthStore((state) => state.session?.user.id);
   const tabBarInset = useTabBarInset();
   const [query, setQuery] = useState('');
@@ -138,10 +155,15 @@ export default function ChatListScreen() {
           renderItem={({ item }) => {
             const title = conversationTitle(item, userId!);
             const unread = isUnread(item, userId!);
+            const typing = typingLabel(
+              activeTypists(typingByConversation[item.id], userId, now),
+              item.is_group,
+            );
             return (
               <ListRow
                 title={title}
-                subtitle={previewText(item, userId!)}
+                subtitle={typing ?? previewText(item, userId!)}
+                subtitleColor={typing ? 'brandOnSurface' : undefined}
                 emphasized={unread}
                 accessibilityLabel={unread ? `${title}, oläst` : title}
                 leading={

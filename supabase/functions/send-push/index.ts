@@ -40,6 +40,7 @@ export default {
         conversation_id: string;
         sender_id: string;
         body: string;
+        image_path: string | null;
       };
       const { data: members } = await supabase
         .from("conversation_members")
@@ -54,7 +55,7 @@ export default {
 
       recipientIds = (members ?? []).map((m) => m.user_id);
       title = sender?.display_name ?? "Nytt meddelande";
-      body = message.body;
+      body = message.body.trim() || (message.image_path ? "Skickade en bild" : "");
       data = { type: "message", conversationId: message.conversation_id };
     } else if (payload.table === "friendships" && payload.type === "INSERT") {
       const friendship = payload.record as { requester_id: string; addressee_id: string; status: string };
