@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   checkInAtMeetup,
   createMeetup,
+  deleteMeetup,
   fetchMeetupDetail,
   fetchMeetups,
   setInterested,
@@ -24,8 +25,16 @@ export function useMeetups() {
   const invalidate = () => queryClient.invalidateQueries({ queryKey: queryKeys.meetups() });
 
   useRealtimeTable({ channelName: 'meetups-list', table: 'meetups', onChange: invalidate });
-  useRealtimeTable({ channelName: 'meetups-list-interests', table: 'meetup_interests', onChange: invalidate });
-  useRealtimeTable({ channelName: 'meetups-list-checkins', table: 'meetup_checkins', onChange: invalidate });
+  useRealtimeTable({
+    channelName: 'meetups-list-interests',
+    table: 'meetup_interests',
+    onChange: invalidate,
+  });
+  useRealtimeTable({
+    channelName: 'meetups-list-checkins',
+    table: 'meetup_checkins',
+    onChange: invalidate,
+  });
 
   return query;
 }
@@ -39,7 +48,8 @@ export function useMeetupDetail(meetupId: string | undefined, myUserId: string |
     enabled: !!meetupId && !!myUserId,
   });
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: queryKeys.meetupDetail(meetupId) });
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: queryKeys.meetupDetail(meetupId) });
   const filter = meetupId ? `meetup_id=eq.${meetupId}` : undefined;
 
   useRealtimeTable({
@@ -84,6 +94,17 @@ export function useCreateMeetup() {
   });
 }
 
+export function useDeleteMeetup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteMeetup,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.meetups() });
+    },
+  });
+}
+
 /** One-time foreground GPS check on mount — never touches background-location permissions. */
 export function useAutoCheckIn(meetupId: string | undefined) {
   const queryClient = useQueryClient();
@@ -102,9 +123,15 @@ export function useAutoCheckIn(meetupId: string | undefined) {
       if (!granted || cancelled) return;
 
       try {
-        const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        const position = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
         if (cancelled) return;
-        const isHere = await checkInAtMeetup(meetupId, position.coords.latitude, position.coords.longitude);
+        const isHere = await checkInAtMeetup(
+          meetupId,
+          position.coords.latitude,
+          position.coords.longitude,
+        );
         if (isHere) {
           queryClient.invalidateQueries({ queryKey: queryKeys.meetupDetail(meetupId) });
           queryClient.invalidateQueries({ queryKey: queryKeys.meetups() });

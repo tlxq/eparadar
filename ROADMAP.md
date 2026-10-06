@@ -26,9 +26,8 @@ new phase until the current one is checked off (keeps one front open at a time).
   See Phases E–H below; rationale lives in memory (`project_eparadar.md`), not duplicated here.
 - **Phase E done** (2026-10-05, #64–#70). **Phase F nearly done** (2026-10-06, #73–#76 + group
   avatars): read receipts, unsend, typing, reactions, image messages, leave/remove/rename, group
-  avatars. Only the chat visual pass is left. **The 2026-10-05/06 migrations (friend codes,
-  nearby presence, chat read state, group management, reactions/images, group avatars) are not
-  yet pushed to the live project** — `supabase db push` is Tom's to run.
+  avatars. Only the chat visual pass is left. All 2026-10-05/06 migrations are pushed to
+  the live project (2026-10-06).
 - **Remaining for launch (Phase J)**: Expo/EAS account and store credentials, manual store
   submission, and optional CI automation after the first successful submission.
 
@@ -293,11 +292,12 @@ A recurring gap across the app: most delete RLS policies already exist at the DB
 nothing in the UI calls them. This phase hooks up what's missing plus adds the one genuinely new
 piece of backend work, in-app account deletion.
 
-- [ ] **Delete a post** — UI hookup only; `"users delete their own posts"` RLS already exists.
-- [ ] **Delete a car** — UI hookup only; `"users delete their own cars"` RLS already exists.
-- [ ] **Delete a meetup you created** — UI hookup only; `"creator deletes their meetup"` RLS
+- [x] **Delete a post** — done 2026-10-06: ⋯ on your own posts in the feed, removes the image file
+      too.
+- [x] **Delete a car** — UI hookup only; `"users delete their own cars"` RLS already exists.
+- [x] **Delete a meetup you created** — UI hookup only; `"creator deletes their meetup"` RLS
       already exists (un-marking interest already works, this is the missing creator-side path).
-- [ ] **Remove/clear a profile photo** — revert to initials; the avatar Storage delete policy
+- [x] **Remove/clear a profile photo** — revert to initials; the avatar Storage delete policy
       already exists, just no "remove" action in the UI (today avatars can only be replaced).
 - [ ] **In-app account deletion, with password re-confirmation** — replaces today's email-only
       path (`privacy.tsx` → contact@eparadar.se). Needs a new service-role Edge Function cascading

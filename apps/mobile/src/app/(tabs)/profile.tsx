@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 
+import { ActionSheet, type SheetAction } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { CarPhoto } from '@/components/car-photo';
@@ -20,14 +21,17 @@ import { Radius, Spacing } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
 import {
+  deleteCar,
   fetchFriends,
   fetchMyCars,
   fetchPosts,
   fetchProfile,
+  removeAvatar,
   updateProfile,
   type Car,
   type Profile,
 } from '@/lib/api';
+import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { uploadAvatar } from '@/lib/image-upload';
 import { queryKeys } from '@/lib/query-keys';
@@ -37,11 +41,19 @@ import { useAuthStore } from '@/store/auth';
 const AVATAR_SIZE = 96;
 const CAR_CARD_WIDTH = 160;
 
-function CarCard({ car }: { car: Car }) {
+function CarCard({ car, onMore }: { car: Car; onMore: () => void }) {
   const theme = useTheme();
   return (
     <View style={[styles.carCard, { backgroundColor: theme.backgroundElement }]}>
       <CarPhoto imageUrl={car.photo_url} size={CAR_CARD_WIDTH} radius={0} />
+      <View style={styles.carMore}>
+        <IconButton
+          icon="ellipsis-horizontal"
+          size={32}
+          accessibilityLabel={`Fler val för ${car.nickname ?? `${car.make} ${car.model}`}`}
+          onPress={onMore}
+        />
+      </View>
       <View style={styles.carText}>
         <ThemedText type="smallBold" numberOfLines={1}>
           {car.nickname ?? `${car.make} ${car.model}`}
@@ -164,6 +176,8 @@ export default function ProfileScreen() {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarSheet, setAvatarSheet] = useState(false);
+  const [selectedCar, setSelectedCar] = useState<Car | null>(null);
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: queryKeys.profile(userId),
@@ -226,6 +240,52 @@ export default function ProfileScreen() {
     }
   }
 
+  async function handleRemoveAvatar() {
+    if (!userId || !profile) return;
+    const ok = await confirmDestructive({
+      title: 'Ta bort profilbilden?',
+      message: 'Din profil visas med din första bokstav i stället.',
+      confirmLabel: 'Ta bort',
+    });
+    if (!ok) return;
+    setUploadingAvatar(true);
+    try {
+      await removeAvatar(userId, profile.avatar_url);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.profile(userId) });
+    } catch (error) {
+      showToast({ tone: 'error', message: getErrorMessage(error) });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  async function handleDeleteCar(car: Car) {
+    const ok = await confirmDestructive({
+      title: `Ta bort ${car.nickname ?? `${car.make} ${car.model}`}?`,
+      message: 'Bilen och dess bild tas bort. Inlägg där den är taggad finns kvar, utan taggen.',
+      confirmLabel: 'Ta bort',
+    });
+    if (!ok) return;
+    try {
+      await deleteCar(car);
+      queryClient.invalidateQueries({ queryKey: queryKeys.cars(userId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts() });
+      showToast({ message: 'Bilen är borttagen.' });
+    } catch (error) {
+      showToast({ tone: 'error', message: getErrorMessage(error) });
+    }
+  }
+
+  const avatarActions: SheetAction[] = [
+    { label: 'Välj ny bild', icon: 'image-outline', onPress: handlePickAvatar },
+    {
+      label: 'Ta bort bild',
+      icon: 'trash-outline',
+      destructive: true,
+      onPress: handleRemoveAvatar,
+    },
+  ];
+
   const postCount = posts?.filter((post) => post.author_id === userId).length;
 
   return (
@@ -247,7 +307,7 @@ export default function ProfileScreen() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Byt profilbild"
-                onPress={handlePickAvatar}
+                onPress={() => (profile?.avatar_url ? setAvatarSheet(true) : handlePickAvatar())}
                 disabled={uploadingAvatar || !profile}
                 style={({ pressed }) => [pressed && styles.pressed]}
               >
@@ -330,7 +390,7 @@ export default function ProfileScreen() {
               contentContainerStyle={styles.carRow}
             >
               {cars.map((car) => (
-                <CarCard key={car.id} car={car} />
+                <CarCard key={car.id} car={car} onMore={() => setSelectedCar(car)} />
               ))}
             </ScrollView>
           ) : cars ? (
@@ -357,6 +417,33 @@ export default function ProfileScreen() {
           )}
         </ScrollView>
       </SafeAreaView>
+      <ActionSheet
+        visible={avatarSheet}
+        title="Profilbild"
+        onClose={() => setAvatarSheet(false)}
+        actions={avatarActions}
+      />
+      <ActionSheet
+        visible={!!selectedCar}
+        title={
+          selectedCar
+            ? (selectedCar.nickname ?? `${selectedCar.make} ${selectedCar.model}`)
+            : undefined
+        }
+        onClose={() => setSelectedCar(null)}
+        actions={
+          selectedCar
+            ? [
+                {
+                  label: 'Ta bort bil',
+                  icon: 'trash-outline',
+                  destructive: true,
+                  onPress: () => handleDeleteCar(selectedCar),
+                },
+              ]
+            : []
+        }
+      />
       {profile ? (
         <EditProfileSheet
           key={`${profile.id}:${editing}`}
@@ -408,6 +495,7 @@ const styles = StyleSheet.create({
   carRow: { flexDirection: 'row', gap: Spacing.two, paddingHorizontal: Spacing.three },
   carCard: { width: CAR_CARD_WIDTH, borderRadius: Radius.lg, overflow: 'hidden' },
   carText: { padding: Spacing.two + Spacing.half, gap: Spacing.half },
+  carMore: { position: 'absolute', top: Spacing.one, right: Spacing.one },
   addCar: {
     marginHorizontal: Spacing.three,
     alignItems: 'center',

@@ -118,9 +118,21 @@ export async function createMeetup(input: {
   return { ...data, interest_count: 0, here_now_count: 0 };
 }
 
-export async function setInterested(meetupId: string, userId: string, interested: boolean): Promise<void> {
+export async function deleteMeetup(meetupId: string): Promise<void> {
+  const { data, error } = await supabase.from('meetups').delete().eq('id', meetupId).select('id');
+  if (error) throw error;
+  if (!data?.length) throw new Error('Bara den som skapade träffen kan ta bort den.');
+}
+
+export async function setInterested(
+  meetupId: string,
+  userId: string,
+  interested: boolean,
+): Promise<void> {
   if (interested) {
-    const { error } = await supabase.from('meetup_interests').insert({ meetup_id: meetupId, user_id: userId });
+    const { error } = await supabase
+      .from('meetup_interests')
+      .insert({ meetup_id: meetupId, user_id: userId });
     if (error) throw error;
   } else {
     const { error } = await supabase
@@ -136,11 +148,18 @@ export async function setInterested(meetupId: string, userId: string, interested
 export async function markInterested(meetupId: string, userId: string): Promise<void> {
   const { error } = await supabase
     .from('meetup_interests')
-    .upsert({ meetup_id: meetupId, user_id: userId }, { onConflict: 'meetup_id,user_id', ignoreDuplicates: true });
+    .upsert(
+      { meetup_id: meetupId, user_id: userId },
+      { onConflict: 'meetup_id,user_id', ignoreDuplicates: true },
+    );
   if (error) throw error;
 }
 
-export async function checkInAtMeetup(meetupId: string, lat: number, lng: number): Promise<boolean> {
+export async function checkInAtMeetup(
+  meetupId: string,
+  lat: number,
+  lng: number,
+): Promise<boolean> {
   const { data, error } = await supabase.rpc('check_in_at_meetup', {
     p_meetup_id: meetupId,
     p_lat: lat,
