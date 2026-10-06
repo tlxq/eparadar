@@ -114,6 +114,41 @@ export async function fetchProfile(userId: string): Promise<Profile | null> {
   return data;
 }
 
+function storagePathFromPublicUrl(bucket: string, url: string | null): string | null {
+  if (!url) return null;
+  const marker = `/object/public/${bucket}/`;
+  const index = url.indexOf(marker);
+  if (index === -1) return null;
+  return decodeURIComponent(url.slice(index + marker.length).split('?')[0]);
+}
+
+async function removeStoredFile(bucket: string, url: string | null) {
+  const path = storagePathFromPublicUrl(bucket, url);
+  if (path) await supabase.storage.from(bucket).remove([path]);
+}
+
+async function deleteOwnRow(table: 'posts' | 'cars', id: string) {
+  const { data, error } = await supabase.from(table).delete().eq('id', id).select('id');
+  if (error) throw error;
+  if (!data?.length) throw new Error('Det gick inte att ta bort. Är det ditt?');
+}
+
+export async function deletePost(post: Pick<Post, 'id' | 'image_url'>): Promise<void> {
+  await deleteOwnRow('posts', post.id);
+  await removeStoredFile('post-images', post.image_url);
+}
+
+export async function deleteCar(car: Pick<Car, 'id' | 'photo_url'>): Promise<void> {
+  await deleteOwnRow('cars', car.id);
+  await removeStoredFile('car-photos', car.photo_url);
+}
+
+export async function removeAvatar(userId: string, avatarUrl: string | null): Promise<void> {
+  const { error } = await supabase.from('profiles').update({ avatar_url: null }).eq('id', userId);
+  if (error) throw error;
+  await removeStoredFile('avatars', avatarUrl);
+}
+
 export async function updateProfile(
   userId: string,
   input: { displayName: string; bio: string | null; avatarUrl?: string },

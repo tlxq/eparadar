@@ -9,10 +9,18 @@ import { ScreenBackground } from '@/components/screen-background';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
-import { useAutoCheckIn, useMeetupDetail, useToggleInterest } from '@/features/meetups/hooks';
+import {
+  useAutoCheckIn,
+  useDeleteMeetup,
+  useMeetupDetail,
+  useToggleInterest,
+} from '@/features/meetups/hooks';
 import { formatMeetupTime } from '@/features/meetups/time';
 import { useTheme } from '@/hooks/use-theme';
+import { confirmDestructive } from '@/lib/confirm';
+import { getErrorMessage } from '@/lib/errors';
 import { useAuthStore } from '@/store/auth';
+import { showToast } from '@/store/toast';
 
 export default function MeetupDetailScreen() {
   const theme = useTheme();
@@ -21,7 +29,27 @@ export default function MeetupDetailScreen() {
 
   const { data: meetup, isLoading, isError, error } = useMeetupDetail(id, userId);
   const toggleInterest = useToggleInterest(id, userId);
+  const deleteMeetup = useDeleteMeetup();
   useAutoCheckIn(id);
+
+  async function handleDelete() {
+    if (!id) return;
+    const ok = await confirmDestructive({
+      title: 'Ta bort träffen?',
+      message:
+        'Träffen försvinner från kartan för alla, tillsammans med intresseanmälningar och incheckningar.',
+      confirmLabel: 'Ta bort',
+    });
+    if (!ok) return;
+    try {
+      await deleteMeetup.mutateAsync(id);
+      showToast({ message: 'Träffen är borttagen.' });
+      if (router.canDismiss()) router.dismiss();
+      else router.replace('/karta');
+    } catch (error) {
+      showToast({ tone: 'error', message: getErrorMessage(error) });
+    }
+  }
 
   if (isError) {
     return (
@@ -34,7 +62,12 @@ export default function MeetupDetailScreen() {
           {(() => {
             if (error instanceof Error) return error.message;
             if (error && typeof error === 'object') {
-              const err = error as { message?: string; details?: string; hint?: string; code?: string };
+              const err = error as {
+                message?: string;
+                details?: string;
+                hint?: string;
+                code?: string;
+              };
               return [err.code, err.message, err.details, err.hint].filter(Boolean).join(' — ');
             }
             return String(error);
@@ -119,7 +152,12 @@ export default function MeetupDetailScreen() {
           </View>
 
           {iAmHereNow && (
-            <View style={[styles.autoStatus, { borderColor: theme.success, backgroundColor: `${theme.success}18` }]}>
+            <View
+              style={[
+                styles.autoStatus,
+                { borderColor: theme.success, backgroundColor: `${theme.success}18` },
+              ]}
+            >
               <View style={[styles.liveDot, { backgroundColor: theme.success }]} />
               <ThemedText type="smallBold" themeColor="success">
                 Du är här nu
@@ -129,6 +167,19 @@ export default function MeetupDetailScreen() {
               </ThemedText>
             </View>
           )}
+
+          {meetup.creator_id === userId ? (
+            <View style={styles.deleteButton}>
+              <Button
+                label="Ta bort träffen"
+                icon="trash-outline"
+                variant="secondary"
+                tone="danger"
+                loading={deleteMeetup.isPending}
+                onPress={handleDelete}
+              />
+            </View>
+          ) : null}
         </ScrollView>
       </SafeAreaView>
     </ScreenBackground>
@@ -162,10 +213,16 @@ const styles = StyleSheet.create({
   liveDot: { width: 7, height: 7, borderRadius: 4 },
   title: { fontSize: 28, lineHeight: 34 },
   meta: { marginTop: Spacing.one },
-  avatarStrip: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, marginTop: Spacing.three },
+  avatarStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    marginTop: Spacing.three,
+  },
   avatars: { flexDirection: 'row' },
   avatarWrap: { marginLeft: -Spacing.two },
   interestedButton: { marginTop: Spacing.four },
+  deleteButton: { marginTop: Spacing.five },
   autoStatus: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import {
@@ -11,11 +11,13 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { ActionSheet } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
 import { EmptyState } from '@/components/empty-state';
 import { Fab } from '@/components/fab';
+import { IconButton } from '@/components/icon-button';
 import { ScreenBackground } from '@/components/screen-background';
 import { ScreenHeader } from '@/components/screen-header';
 import { Skeleton } from '@/components/skeleton';
@@ -23,7 +25,15 @@ import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
-import { fetchFriendLocations, fetchPosts, type FriendLocation, type Post } from '@/lib/api';
+import {
+  deletePost,
+  fetchFriendLocations,
+  fetchPosts,
+  type FriendLocation,
+  type Post,
+} from '@/lib/api';
+import { confirmDestructive } from '@/lib/confirm';
+import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { formatPostAge } from '@/lib/relative-time';
 import { showToast } from '@/store/toast';
@@ -69,7 +79,7 @@ function OnMapNow({ friends }: { friends: FriendLocation[] }) {
   );
 }
 
-function PostItem({ post }: { post: Post }) {
+function PostItem({ post, onMore }: { post: Post; onMore?: () => void }) {
   const theme = useTheme();
   const authorName = post.author?.display_name ?? 'Okänd användare';
   const carLabel = post.car ? (post.car.nickname ?? `${post.car.make} ${post.car.model}`) : null;
@@ -94,6 +104,15 @@ function PostItem({ post }: { post: Post }) {
         <ThemedText type="caption" themeColor="textSecondary">
           {formatPostAge(post.created_at)}
         </ThemedText>
+        {onMore ? (
+          <IconButton
+            icon="ellipsis-horizontal"
+            variant="plain"
+            size={32}
+            accessibilityLabel="Fler val för inlägget"
+            onPress={onMore}
+          />
+        ) : null}
       </View>
       {post.body ? <ThemedText>{post.body}</ThemedText> : null}
       {post.image_url ? (
@@ -130,6 +149,8 @@ function FeedSkeleton() {
 export default function FeedScreen() {
   const userId = useAuthStore((state) => state.session?.user.id);
   const tabBarInset = useTabBarInset();
+  const queryClient = useQueryClient();
+  const [selected, setSelected] = useState<Post | null>(null);
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: queryKeys.posts(),
     queryFn: fetchPosts,
@@ -153,13 +174,34 @@ export default function FeedScreen() {
 
   const onMap = friendLocations ?? [];
 
+  async function handleDelete(post: Post) {
+    const ok = await confirmDestructive({
+      title: 'Ta bort inlägget?',
+      message: 'Inlägget och dess bild tas bort för alla. Det går inte att ångra.',
+      confirmLabel: 'Ta bort',
+    });
+    if (!ok) return;
+    try {
+      await deletePost(post);
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts() });
+      showToast({ message: 'Inlägget är borttaget.' });
+    } catch (error) {
+      showToast({ tone: 'error', message: getErrorMessage(error) });
+    }
+  }
+
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <FlatList
           data={data ?? []}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <PostItem post={item} />}
+          renderItem={({ item }) => (
+            <PostItem
+              post={item}
+              onMore={item.author_id === userId ? () => setSelected(item) : undefined}
+            />
+          )}
           contentContainerStyle={{ paddingBottom: tabBarInset + Spacing.six }}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
           ListHeaderComponent={
@@ -186,6 +228,23 @@ export default function FeedScreen() {
           }
         />
       </SafeAreaView>
+      <ActionSheet
+        visible={!!selected}
+        title="Ditt inlägg"
+        onClose={() => setSelected(null)}
+        actions={
+          selected
+            ? [
+                {
+                  label: 'Ta bort inlägg',
+                  icon: 'trash-outline',
+                  destructive: true,
+                  onPress: () => handleDelete(selected),
+                },
+              ]
+            : []
+        }
+      />
       <Fab
         icon="create-outline"
         accessibilityLabel="Ny post"
