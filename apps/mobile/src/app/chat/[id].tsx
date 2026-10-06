@@ -1,9 +1,12 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import * as Clipboard from 'expo-clipboard';
 import { router, useLocalSearchParams } from 'expo-router';
-import { FlatList, StyleSheet, TextInput, View } from 'react-native';
+import { useIsFocused } from 'expo-router/react-navigation';
+import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { ActionSheet, type SheetAction } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
 import { IconButton } from '@/components/icon-button';
 import { KeyboardAvoider } from '@/components/keyboard-avoider';
@@ -17,10 +20,14 @@ import {
   conversationTitle,
   fetchConversation,
   fetchMessages,
+  markConversationRead,
   sendMessage,
+  unsendMessage,
+  type Conversation,
   type Message,
 } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
+import { readersOf } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
 import { formatDayDivider } from '@/lib/relative-time';
 import { showToast } from '@/store/toast';
@@ -40,15 +47,66 @@ function continues(a: Message | undefined, b: Message | undefined) {
   return !!a && !!b && a.sender_id === b.sender_id && gapMs(a, b) < GROUP_WINDOW_MS;
 }
 
+const MAX_READER_AVATARS = 5;
+
+function clock(iso: string) {
+  return new Date(iso).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+}
+
+function ReadReceipt({
+  conversation,
+  message,
+  myUserId,
+}: {
+  conversation: Conversation;
+  message: Message;
+  myUserId: string;
+}) {
+  const readers = readersOf(conversation, message, myUserId);
+  if (readers.length === 0) return null;
+
+  if (!conversation.is_group) {
+    if (message.sender_id !== myUserId) return null;
+    return (
+      <ThemedText type="caption" themeColor="textSecondary" style={styles.seen}>
+        Sedd {clock(readers[0].last_read_at!)}
+      </ThemedText>
+    );
+  }
+
+  const extra = readers.length - MAX_READER_AVATARS;
+  return (
+    <View
+      style={styles.readers}
+      accessibilityLabel={`Läst av ${readers.map((reader) => reader.profiles.display_name).join(', ')}`}
+    >
+      {readers.slice(0, MAX_READER_AVATARS).map((reader) => (
+        <Avatar
+          key={reader.user_id}
+          name={reader.profiles.display_name}
+          imageUrl={reader.profiles.avatar_url}
+          size={16}
+        />
+      ))}
+      {extra > 0 ? (
+        <ThemedText type="caption" themeColor="textSecondary">
+          +{extra}
+        </ThemedText>
+      ) : null}
+    </View>
+  );
+}
+
 type BubbleProps = {
   message: Message;
   previous?: Message;
   next?: Message;
   isMine: boolean;
   showNames: boolean;
+  onLongPress: (message: Message) => void;
 };
 
-function MessageBubble({ message, previous, next, isMine, showNames }: BubbleProps) {
+function MessageBubble({ message, previous, next, isMine, showNames, onLongPress }: BubbleProps) {
   const theme = useTheme();
   const showDivider = !previous || gapMs(previous, message) >= DIVIDER_GAP_MS;
   const joinsPrevious = !showDivider && continues(previous, message);
@@ -85,17 +143,21 @@ function MessageBubble({ message, previous, next, isMine, showNames }: BubblePro
             <Avatar name={senderName} imageUrl={message.sender?.avatar_url} size={AVATAR_SIZE} />
           )
         ) : null}
-        <View
-          style={[
+        <Pressable
+          onLongPress={() => onLongPress(message)}
+          delayLongPress={300}
+          accessibilityHint="Håll inne för fler val"
+          style={({ pressed }) => [
             styles.bubble,
             corners,
             { backgroundColor: isMine ? theme.brand : theme.backgroundElement },
+            pressed && styles.bubblePressed,
           ]}
         >
           <ThemedText style={isMine ? { color: theme.brandText } : undefined}>
             {message.body}
           </ThemedText>
-        </View>
+        </Pressable>
       </View>
     </View>
   );
@@ -109,6 +171,7 @@ export default function ConversationScreen() {
   const listRef = useRef<FlatList<Message>>(null);
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
+  const [selected, setSelected] = useState<Message | null>(null);
 
   const { data: conversation } = useQuery({
     queryKey: queryKeys.conversation(id),
@@ -131,6 +194,56 @@ export default function ConversationScreen() {
     onChange: () => queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) }),
   });
 
+  useRealtimeTable({
+    channelName: `messages-deleted:${id}`,
+    table: 'messages',
+    event: 'DELETE',
+    enabled: !!id,
+    onChange: (payload) => {
+      const deletedId = (payload.old as { id?: string }).id;
+      const cached = queryClient.getQueryData<Message[]>(queryKeys.messages(id));
+      if (deletedId && cached?.some((message) => message.id === deletedId)) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) });
+      }
+    },
+  });
+
+  useRealtimeTable({
+    channelName: `members:${id}`,
+    table: 'conversation_members',
+    event: 'UPDATE',
+    filter: `conversation_id=eq.${id}`,
+    enabled: !!id,
+    onChange: () => queryClient.invalidateQueries({ queryKey: queryKeys.conversation(id) }),
+  });
+
+  const lastMessageId = messages?.[messages.length - 1]?.id;
+
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (!isFocused || !id || !userId || !lastMessageId) return;
+    markConversationRead(id)
+      .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) }))
+      .catch(() => undefined);
+  }, [isFocused, id, userId, lastMessageId, queryClient]);
+
+  async function handleCopy(message: Message) {
+    await Clipboard.setStringAsync(message.body);
+    showToast({ tone: 'success', message: 'Kopierat.' });
+  }
+
+  async function handleUnsend(message: Message) {
+    try {
+      await unsendMessage(message.id);
+      queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });
+    } catch (error) {
+      showToast({ tone: 'error', message: getErrorMessage(error) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversation(id) });
+    }
+  }
+
   async function handleSend() {
     const text = body.trim();
     if (!userId || !id || !text) return;
@@ -149,6 +262,30 @@ export default function ConversationScreen() {
       setSending(false);
     }
   }
+
+  const selectedIsMine = !!selected && selected.sender_id === userId;
+  const selectedIsRead =
+    !!selected &&
+    !!conversation &&
+    !!userId &&
+    readersOf(conversation, selected, userId).length > 0;
+  const selectedActions: SheetAction[] = selected
+    ? [
+        { label: 'Kopiera', icon: 'copy-outline', onPress: () => handleCopy(selected) },
+        ...(selectedIsMine
+          ? [
+              {
+                label: 'Ta bort',
+                icon: 'trash-outline' as const,
+                destructive: true,
+                disabled: selectedIsRead,
+                hint: selectedIsRead ? 'Redan läst, kan inte tas bort' : undefined,
+                onPress: () => handleUnsend(selected),
+              },
+            ]
+          : []),
+      ]
+    : [];
 
   const title = conversation && userId ? conversationTitle(conversation, userId) : 'Chatt';
   const avatarUrl = conversation && userId ? conversationAvatarUrl(conversation, userId) : null;
@@ -191,8 +328,18 @@ export default function ConversationScreen() {
                 next={list[index + 1]}
                 isMine={item.sender_id === userId}
                 showNames={isGroup}
+                onLongPress={setSelected}
               />
             )}
+            ListFooterComponent={
+              conversation && userId && list.length > 0 ? (
+                <ReadReceipt
+                  conversation={conversation}
+                  message={list[list.length - 1]}
+                  myUserId={userId}
+                />
+              ) : null
+            }
             contentContainerStyle={styles.list}
             onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
             ListEmptyComponent={
@@ -230,6 +377,12 @@ export default function ConversationScreen() {
             />
           </View>
         </KeyboardAvoider>
+        <ActionSheet
+          visible={!!selected}
+          title={selected ? selected.body.slice(0, 80) : undefined}
+          onClose={() => setSelected(null)}
+          actions={selectedActions}
+        />
       </SafeAreaView>
     </ScreenBackground>
   );
@@ -252,6 +405,15 @@ const styles = StyleSheet.create({
   senderName: { marginLeft: AVATAR_SIZE + Spacing.two + Spacing.two, marginBottom: Spacing.half },
   bubbleRow: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.two },
   bubbleRowMine: { justifyContent: 'flex-end' },
+  bubblePressed: { opacity: 0.8 },
+  seen: { alignSelf: 'flex-end', paddingTop: Spacing.one },
+  readers: {
+    flexDirection: 'row',
+    alignSelf: 'flex-end',
+    alignItems: 'center',
+    gap: Spacing.half,
+    paddingTop: Spacing.one,
+  },
   avatarSpacer: { width: AVATAR_SIZE },
   bubble: {
     maxWidth: '78%',

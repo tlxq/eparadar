@@ -256,13 +256,16 @@ realtime subscription (it doesn't live-update). This phase closes that gap.
 
 - [x] **Timestamps, date separators, consecutive-message grouping** in the conversation view
       (done in Phase H's `ui-refresh`).
-- [ ] **Read receipts** — needed for the message-unsend rule below, not just a checkmark.
+- [x] **Read receipts** — needed for the message-unsend rule below, not just a checkmark. Done in
+      F1 (2026-10-05): `conversation_members.last_read_at` + `mark_conversation_read()`, "Sedd" in
+      1:1, reader avatars in groups, unread dots and a Chatt tab badge.
 - [ ] **Typing indicators.**
 - [ ] **Reactions.**
 - [ ] **Media/image messages** — reuse `uploadImage(bucket, pathPrefix, uri)` from Phase B rather
       than inventing a new upload path.
-- [ ] **Message delete/unsend, only while unread** — new `messages` UPDATE/DELETE RLS (currently
-      absent entirely), gated server-side on the read-receipt state from above.
+- [x] **Message delete/unsend, only while unread** — done in F1 as a definer function
+      `unsend_message()` (no delete policy at all), gated server-side on the read state; long-press
+      menu with Kopiera / Ta bort.
 - [ ] **Leave a group chat** — new `conversation_members` DELETE RLS + a `leaveConversation` call.
 - [ ] **Remove a group member** — needs a role/admin concept (new column on
       `conversation_members`); currently no owner exists who could do this.
@@ -270,7 +273,8 @@ realtime subscription (it doesn't live-update). This phase closes that gap.
       creation with no way to change it).
 - [ ] **Group avatar** — new Storage bucket, same public-read/owner-write-by-folder-prefix pattern
       as `avatars`/`car-photos`/`post-images`.
-- [ ] **Chat list live-update** — `(tabs)/chat.tsx` currently has no realtime subscription at all.
+- [x] **Chat list live-update** — done in F1: the tab layout subscribes to messages and read-state
+      changes, and the list is sorted by latest activity.
 - [ ] Visual pass (bubble styling, unread badges, presence) via `eparadar-design-pitch`, including
       the `mobile-app-ui-design` structural checklist.
 

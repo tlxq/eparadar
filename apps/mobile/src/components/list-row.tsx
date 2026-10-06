@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type ListRowProps = {
@@ -12,6 +12,7 @@ type ListRowProps = {
   trailing?: ReactNode;
   onPress?: () => void;
   accessibilityLabel?: string;
+  emphasized?: boolean;
 };
 
 export function ListRow({
@@ -21,6 +22,7 @@ export function ListRow({
   trailing,
   onPress,
   accessibilityLabel,
+  emphasized,
 }: ListRowProps) {
   const theme = useTheme();
 
@@ -28,11 +30,15 @@ export function ListRow({
     <>
       {leading}
       <View style={styles.text}>
-        <ThemedText type="headline" numberOfLines={1}>
+        <ThemedText type="headline" numberOfLines={1} style={emphasized && styles.strongTitle}>
           {title}
         </ThemedText>
         {subtitle ? (
-          <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+          <ThemedText
+            type={emphasized ? 'smallBold' : 'small'}
+            themeColor={emphasized ? 'text' : 'textSecondary'}
+            numberOfLines={1}
+          >
             {subtitle}
           </ThemedText>
         ) : null}
@@ -67,4 +73,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
   },
   text: { flex: 1, gap: Spacing.half },
+  strongTitle: { fontFamily: Fonts.inter.extraBold },
 });

@@ -22,15 +22,61 @@ import {
   fetchConversations,
   type Conversation,
 } from '@/lib/api';
+import { isUnread, readersOf } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
 import { formatChatTimestamp } from '@/lib/relative-time';
 import { showToast } from '@/store/toast';
 import { useAuthStore } from '@/store/auth';
 
-function previewText(conversation: Conversation) {
+function previewText(conversation: Conversation, myUserId: string) {
   const lastMessage = conversation.messages?.[0];
   if (!lastMessage) return conversation.is_group ? 'Gruppen är skapad' : 'Säg hej!';
-  return lastMessage.body;
+  if (lastMessage.sender_id === myUserId) return `Du: ${lastMessage.body}`;
+  if (!conversation.is_group) return lastMessage.body;
+  const sender = conversation.conversation_members.find(
+    (member) => member.user_id === lastMessage.sender_id,
+  );
+  const firstName = sender?.profiles.display_name.split(' ')[0];
+  return firstName ? `${firstName}: ${lastMessage.body}` : lastMessage.body;
+}
+
+function RowMeta({ conversation, myUserId }: { conversation: Conversation; myUserId: string }) {
+  const theme = useTheme();
+  const lastMessage = conversation.messages?.[0];
+  if (!lastMessage) return null;
+  const unread = isUnread(conversation, myUserId);
+  const seenBy =
+    !conversation.is_group && lastMessage.sender_id === myUserId
+      ? readersOf(conversation, lastMessage, myUserId)[0]
+      : undefined;
+
+  return (
+    <View style={styles.meta}>
+      <ThemedText
+        type="caption"
+        themeColor={unread ? 'brandOnSurface' : 'textSecondary'}
+        style={unread && styles.metaStrong}
+      >
+        {formatChatTimestamp(lastMessage.created_at)}
+      </ThemedText>
+      {unread ? (
+        <View
+          accessibilityLabel="Oläst"
+          style={[styles.unreadDot, { backgroundColor: theme.brand }]}
+        />
+      ) : seenBy ? (
+        <View accessibilityLabel={`Sedd av ${seenBy.profiles.display_name}`}>
+          <Avatar
+            name={seenBy.profiles.display_name}
+            imageUrl={seenBy.profiles.avatar_url}
+            size={16}
+          />
+        </View>
+      ) : (
+        <View style={styles.metaSpacer} />
+      )}
+    </View>
+  );
 }
 
 function ChatListSkeleton() {
@@ -91,21 +137,17 @@ export default function ChatListScreen() {
           keyboardShouldPersistTaps="handled"
           renderItem={({ item }) => {
             const title = conversationTitle(item, userId!);
-            const lastAt = item.messages?.[0]?.created_at;
+            const unread = isUnread(item, userId!);
             return (
               <ListRow
                 title={title}
-                subtitle={previewText(item)}
+                subtitle={previewText(item, userId!)}
+                emphasized={unread}
+                accessibilityLabel={unread ? `${title}, oläst` : title}
                 leading={
                   <Avatar name={title} imageUrl={conversationAvatarUrl(item, userId!)} size={52} />
                 }
-                trailing={
-                  lastAt ? (
-                    <ThemedText type="caption" themeColor="textSecondary">
-                      {formatChatTimestamp(lastAt)}
-                    </ThemedText>
-                  ) : null
-                }
+                trailing={<RowMeta conversation={item} myUserId={userId!} />}
                 onPress={() => router.push(`/chat/${item.id}`)}
               />
             );
@@ -172,6 +214,10 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.inter.regular,
     paddingVertical: Spacing.two,
   },
+  meta: { alignItems: 'flex-end', gap: Spacing.one, minWidth: 40 },
+  metaStrong: { fontFamily: Fonts.inter.bold },
+  unreadDot: { width: 12, height: 12, borderRadius: 6 },
+  metaSpacer: { height: 16 },
   noMatch: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
   skeleton: { paddingHorizontal: Spacing.three, gap: Spacing.four, paddingTop: Spacing.two },
   skeletonRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },

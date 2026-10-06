@@ -91,16 +91,19 @@ export type Database = {
         Row: {
           conversation_id: string
           joined_at: string
+          last_read_at: string | null
           user_id: string
         }
         Insert: {
           conversation_id: string
           joined_at?: string
+          last_read_at?: string | null
           user_id: string
         }
         Update: {
           conversation_id?: string
           joined_at?: string
+          last_read_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -707,6 +710,10 @@ export type Database = {
       }
       is_friend: { Args: { a: string; b: string }; Returns: boolean }
       leave_nearby: { Args: never; Returns: undefined }
+      mark_conversation_read: {
+        Args: { p_conversation_id: string }
+        Returns: string
+      }
       redeem_friend_code: {
         Args: { friend_code: string }
         Returns: {
@@ -774,6 +781,7 @@ export type Database = {
         }[]
       }
       unblock_user: { Args: { target_user_id: string }; Returns: undefined }
+      unsend_message: { Args: { p_message_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

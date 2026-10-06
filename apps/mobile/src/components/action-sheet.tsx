@@ -13,6 +13,8 @@ export type SheetAction = {
   label: string;
   icon: ComponentProps<typeof Ionicons>['name'];
   destructive?: boolean;
+  disabled?: boolean;
+  hint?: string;
   onPress: () => void;
 };
 
@@ -51,11 +53,18 @@ export function ActionSheet({ visible, title, actions, onClose }: ActionSheetPro
           </ThemedText>
         ) : null}
         {actions.map((action) => {
-          const color = action.destructive ? theme.danger : theme.text;
+          const color = action.disabled
+            ? theme.textSecondary
+            : action.destructive
+              ? theme.danger
+              : theme.text;
           return (
             <Pressable
               key={action.label}
               accessibilityRole="button"
+              accessibilityState={{ disabled: action.disabled }}
+              accessibilityHint={action.hint}
+              disabled={action.disabled}
               onPress={() => {
                 onClose();
                 setTimeout(action.onPress, CLOSE_DELAY_MS);
@@ -66,9 +75,16 @@ export function ActionSheet({ visible, title, actions, onClose }: ActionSheetPro
               ]}
             >
               <Ionicons name={action.icon} size={22} color={color} />
-              <ThemedText type="headline" style={{ color }}>
-                {action.label}
-              </ThemedText>
+              <View style={styles.actionText}>
+                <ThemedText type="headline" style={{ color }}>
+                  {action.label}
+                </ThemedText>
+                {action.hint ? (
+                  <ThemedText type="caption" themeColor="textSecondary">
+                    {action.hint}
+                  </ThemedText>
+                ) : null}
+              </View>
             </Pressable>
           );
         })}
@@ -106,6 +122,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     borderRadius: Radius.md,
   },
+  actionText: { flex: 1, gap: Spacing.half },
   cancel: {
     minHeight: 52,
     marginTop: Spacing.two,
