@@ -259,10 +259,13 @@ realtime subscription (it doesn't live-update). This phase closes that gap.
 - [x] **Read receipts** — needed for the message-unsend rule below, not just a checkmark. Done in
       F1 (2026-10-05): `conversation_members.last_read_at` + `mark_conversation_read()`, "Sedd" in
       1:1, reader avatars in groups, unread dots and a Chatt tab badge.
-- [ ] **Typing indicators.**
-- [ ] **Reactions.**
-- [ ] **Media/image messages** — reuse `uploadImage(bucket, pathPrefix, uri)` from Phase B rather
-      than inventing a new upload path.
+- [x] **Typing indicators.** Done in F3 (2026-10-06) as Realtime broadcast per conversation (never
+      stored), shown as a bubble in the conversation and "skriver…" in the chat list.
+- [x] **Reactions.** Done in F3: `message_reactions` (one per person per message, six emojis) via
+      `toggle_reaction()`, reaction bar in the long-press sheet, chips on the bubble edge.
+- [x] **Media/image messages** — done in F3 with a *private* `chat-images` bucket (members only,
+      signed URLs), `messages.image_path`, full-screen viewer, and unsend removing the file too.
+      Reuses the Phase B upload path (`uploadFile`).
 - [x] **Message delete/unsend, only while unread** — done in F1 as a definer function
       `unsend_message()` (no delete policy at all), gated server-side on the read state; long-press
       menu with Kopiera / Ta bort.

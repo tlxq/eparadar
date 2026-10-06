@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Fonts, Spacing } from '@/constants/theme';
+import { Fonts, Spacing, type ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type ListRowProps = {
@@ -13,6 +13,7 @@ type ListRowProps = {
   onPress?: () => void;
   accessibilityLabel?: string;
   emphasized?: boolean;
+  subtitleColor?: ThemeColor;
 };
 
 export function ListRow({
@@ -23,6 +24,7 @@ export function ListRow({
   onPress,
   accessibilityLabel,
   emphasized,
+  subtitleColor,
 }: ListRowProps) {
   const theme = useTheme();
 
@@ -36,7 +38,7 @@ export function ListRow({
         {subtitle ? (
           <ThemedText
             type={emphasized ? 'smallBold' : 'small'}
-            themeColor={emphasized ? 'text' : 'textSecondary'}
+            themeColor={subtitleColor ?? (emphasized ? 'text' : 'textSecondary')}
             numberOfLines={1}
           >
             {subtitle}

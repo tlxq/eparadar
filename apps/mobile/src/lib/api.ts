@@ -138,7 +138,7 @@ export type Conversation = {
   name: string | null;
   created_at: string;
   conversation_members: ConversationMember[];
-  messages?: { body: string; created_at: string; sender_id: string }[];
+  messages?: { body: string; created_at: string; sender_id: string; image_path: string | null }[];
 };
 
 export type Message = {
@@ -146,8 +146,10 @@ export type Message = {
   conversation_id: string;
   sender_id: string;
   body: string;
+  image_path: string | null;
   created_at: string;
   sender: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'> | null;
+  reactions: { user_id: string; emoji: string }[];
 };
 
 export function conversationTitle(conversation: Conversation, myUserId: string): string {
@@ -203,16 +205,19 @@ export async function markConversationRead(conversationId: string): Promise<void
   if (error) throw error;
 }
 
-export async function unsendMessage(messageId: string): Promise<void> {
+export async function unsendMessage(messageId: string, imagePath?: string | null): Promise<void> {
   const { error } = await supabase.rpc('unsend_message', { p_message_id: messageId });
   if (error) throw error;
+  if (imagePath) {
+    await supabase.storage.from('chat-images').remove([imagePath]);
+  }
 }
 
 export async function fetchConversations(): Promise<Conversation[]> {
   const { data, error } = await supabase
     .from('conversations')
     .select(
-      '*, conversation_members(user_id, last_read_at, role, profiles(id, username, display_name, avatar_url)), messages(body, created_at, sender_id)',
+      '*, conversation_members(user_id, last_read_at, role, profiles(id, username, display_name, avatar_url)), messages(body, created_at, sender_id, image_path)',
     )
     .order('created_at', { foreignTable: 'messages', ascending: false })
     .limit(1, { foreignTable: 'messages' });
@@ -248,7 +253,9 @@ export async function createConversation(input: {
 export async function fetchMessages(conversationId: string): Promise<Message[]> {
   const { data, error } = await supabase
     .from('messages')
-    .select('*, sender:profiles(id, username, display_name, avatar_url)')
+    .select(
+      '*, sender:profiles!messages_sender_id_fkey(id, username, display_name, avatar_url), reactions:message_reactions(user_id, emoji)',
+    )
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: true });
   if (error) throw error;
@@ -259,13 +266,29 @@ export async function sendMessage(input: {
   conversationId: string;
   senderId: string;
   body: string;
+  imagePath?: string | null;
 }) {
   const { error } = await supabase.from('messages').insert({
     conversation_id: input.conversationId,
     sender_id: input.senderId,
     body: input.body,
+    image_path: input.imagePath ?? null,
   });
   if (error) throw error;
+}
+
+export async function toggleReaction(messageId: string, emoji: string): Promise<void> {
+  const { error } = await supabase.rpc('toggle_reaction', {
+    p_message_id: messageId,
+    p_emoji: emoji,
+  });
+  if (error) throw error;
+}
+
+export async function chatImageUrl(path: string): Promise<string> {
+  const { data, error } = await supabase.storage.from('chat-images').createSignedUrl(path, 60 * 60);
+  if (error) throw error;
+  return data.signedUrl;
 }
 
 export type FriendshipStatus = 'pending' | 'accepted';
