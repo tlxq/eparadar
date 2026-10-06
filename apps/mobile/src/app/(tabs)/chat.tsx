@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 
 import { Avatar } from '@/components/avatar';
+import { ConversationAvatar } from '@/components/conversation-avatar';
 import { EmptyState } from '@/components/empty-state';
 import { Fab } from '@/components/fab';
 import { ListRow } from '@/components/list-row';
@@ -16,12 +17,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Fonts, Radius, Spacing } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
-import {
-  conversationAvatarUrl,
-  conversationTitle,
-  fetchConversations,
-  type Conversation,
-} from '@/lib/api';
+import { conversationTitle, fetchConversations, type Conversation } from '@/lib/api';
 import { isUnread, readersOf } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
 import { formatChatTimestamp } from '@/lib/relative-time';
@@ -166,9 +162,7 @@ export default function ChatListScreen() {
                 subtitleColor={typing ? 'brandOnSurface' : undefined}
                 emphasized={unread}
                 accessibilityLabel={unread ? `${title}, oläst` : title}
-                leading={
-                  <Avatar name={title} imageUrl={conversationAvatarUrl(item, userId!)} size={52} />
-                }
+                leading={<ConversationAvatar conversation={item} myUserId={userId!} size={52} />}
                 trailing={<RowMeta conversation={item} myUserId={userId!} />}
                 onPress={() => router.push(`/chat/${item.id}`)}
               />

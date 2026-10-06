@@ -1,11 +1,15 @@
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { ActionSheet, type SheetAction } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
+import { ConversationAvatar } from '@/components/conversation-avatar';
 import { IconButton } from '@/components/icon-button';
 import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ListRow } from '@/components/list-row';
@@ -22,6 +26,7 @@ import {
   leaveConversation,
   removeMember,
   renameConversation,
+  setGroupAvatar,
   type ConversationMember,
 } from '@/lib/api';
 import { confirmDestructive } from '@/lib/confirm';
@@ -44,6 +49,7 @@ export default function GroupInfoScreen() {
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [photoSheet, setPhotoSheet] = useState(false);
 
   const { data: conversation, isError } = useQuery({
     queryKey: queryKeys.conversation(id),
@@ -82,6 +88,65 @@ export default function GroupInfoScreen() {
       setBusy(null);
     }
   }
+
+  async function changePhoto(uri: string | null) {
+    if (!id) return;
+    setBusy('photo');
+    try {
+      await setGroupAvatar(id, uri);
+      refresh();
+    } catch (error) {
+      showToast({ tone: 'error', message: getErrorMessage(error) });
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function pickPhoto() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      showToast({
+        tone: 'error',
+        message: 'epaRadar behöver tillgång till dina bilder för att byta gruppbild.',
+      });
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (result.canceled || !result.assets[0]) return;
+    await changePhoto(result.assets[0].uri);
+  }
+
+  async function removePhoto() {
+    const ok = await confirmDestructive({
+      title: 'Ta bort gruppbilden?',
+      message: 'Gruppen visas med sin första bokstav igen.',
+      confirmLabel: 'Ta bort',
+    });
+    if (ok) await changePhoto(null);
+  }
+
+  const photoActions: SheetAction[] = [
+    {
+      label: conversation?.avatar_path ? 'Välj ny bild' : 'Välj bild',
+      icon: 'image-outline',
+      onPress: pickPhoto,
+    },
+    ...(conversation?.avatar_path
+      ? [
+          {
+            label: 'Ta bort bild',
+            icon: 'trash-outline' as const,
+            destructive: true,
+            onPress: removePhoto,
+          },
+        ]
+      : []),
+  ];
 
   async function handleRemove(member: ConversationMember) {
     if (!id) return;
@@ -155,7 +220,27 @@ export default function GroupInfoScreen() {
             ) : (
               <>
                 <View style={styles.hero}>
-                  <Avatar name={title} size={88} />
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Byt gruppbild"
+                    onPress={() => setPhotoSheet(true)}
+                    disabled={busy === 'photo'}
+                    style={({ pressed }) => [pressed && styles.pressed]}
+                  >
+                    <ConversationAvatar conversation={conversation} myUserId={userId!} size={88} />
+                    <View
+                      style={[
+                        styles.photoBadge,
+                        { backgroundColor: theme.brand, borderColor: theme.background },
+                      ]}
+                    >
+                      {busy === 'photo' ? (
+                        <ActivityIndicator size="small" color={theme.brandText} />
+                      ) : (
+                        <Ionicons name="camera" size={14} color={theme.brandText} />
+                      )}
+                    </View>
+                  </Pressable>
                   <ThemedText type="subtitle" style={styles.center}>
                     {title}
                   </ThemedText>
@@ -272,6 +357,12 @@ export default function GroupInfoScreen() {
             />
           </View>
         ) : null}
+        <ActionSheet
+          visible={photoSheet}
+          title="Gruppbild"
+          onClose={() => setPhotoSheet(false)}
+          actions={photoActions}
+        />
       </SafeAreaView>
     </ScreenBackground>
   );
@@ -290,6 +381,18 @@ const styles = StyleSheet.create({
   navSpacer: { width: 40 },
   content: { padding: Spacing.three, gap: Spacing.four },
   hero: { alignItems: 'center', gap: Spacing.two },
+  pressed: { opacity: 0.7 },
+  photoBadge: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   center: { textAlign: 'center' },
   field: {
     flexDirection: 'row',

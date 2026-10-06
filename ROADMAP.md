@@ -3,7 +3,7 @@
 Living checklist, source of truth across hosts. Update checkboxes as work lands; don't start a
 new phase until the current one is checked off (keeps one front open at a time).
 
-## Where we are (2026-10-05)
+## Where we are (2026-10-06)
 
 - **Done & verified end-to-end**: Identity + Feed, 1:1 + group Chat, Friendships, Live map
   (background location tracking confirmed on two physical devices). "Done" here means functional,
@@ -24,9 +24,11 @@ new phase until the current one is checked off (keeps one front open at a time).
   (Friends 2.0 — proximity-gated discovery), then Phase F (Chat 2.0), Phase G (delete/remove
   everywhere), Phase H (full page-by-page UX audit), before Phase I's original UX polish items.
   See Phases E–H below; rationale lives in memory (`project_eparadar.md`), not duplicated here.
-- **Phase E progress, 2026-10-05**: PR1 (open search removed, meetup + mutual-friend suggestions,
-  blocking), PR2 (rotating QR friend code) and PR3 (live-nearby radar) are built; Phase E is
-  complete once #69 and the radar PR are merged and both migrations are pushed live.
+- **Phase E done** (2026-10-05, #64–#70). **Phase F nearly done** (2026-10-06, #73–#76 + group
+  avatars): read receipts, unsend, typing, reactions, image messages, leave/remove/rename, group
+  avatars. Only the chat visual pass is left. **The 2026-10-05/06 migrations (friend codes,
+  nearby presence, chat read state, group management, reactions/images, group avatars) are not
+  yet pushed to the live project** — `supabase db push` is Tom's to run.
 - **Remaining for launch (Phase J)**: Expo/EAS account and store credentials, manual store
   submission, and optional CI automation after the first successful submission.
 
@@ -275,8 +277,11 @@ realtime subscription (it doesn't live-update). This phase closes that gap.
       group members were all made admin since the creator wasn't recorded) + admin-only `remove_member()`.
 - [x] **Rename a group** — done in F2 as `rename_conversation()` (any member, 1–40 characters), from the
       new Gruppinfo screen opened by tapping a group's header.
-- [ ] **Group avatar** — new Storage bucket, same public-read/owner-write-by-folder-prefix pattern
-      as `avatars`/`car-photos`/`post-images`.
+- [x] **Group avatar** — done 2026-10-06 with a *private* `group-avatars` bucket (members only,
+      signed URLs) rather than the public pattern first planned, since group photos are private
+      chat content. Any member can set, replace or remove it from Gruppinfo via
+      `set_group_avatar()`; the old file is deleted on replace. Known gap: when the last member
+      leaves, the group row is deleted but its avatar file stays in Storage.
 - [x] **Chat list live-update** — done in F1: the tab layout subscribes to messages and read-state
       changes, and the list is sorted by latest activity.
 - [ ] Visual pass (bubble styling, unread badges, presence) via `eparadar-design-pitch`, including

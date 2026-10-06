@@ -9,7 +9,7 @@ function extensionFromUri(uri: string): string {
   return match ? match[1].toLowerCase() : 'jpg';
 }
 
-async function uploadFile(bucket: string, pathPrefix: string, uri: string): Promise<string> {
+export async function uploadFile(bucket: string, pathPrefix: string, uri: string): Promise<string> {
   const ext = extensionFromUri(uri);
   const path = `${pathPrefix}.${ext}`;
   const contentType = ext === 'png' ? 'image/png' : 'image/jpeg';

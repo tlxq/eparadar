@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
   public: {
     Tables: {
       analytics_events: {
@@ -128,18 +123,21 @@ export type Database = {
       }
       conversations: {
         Row: {
+          avatar_path: string | null
           created_at: string
           id: string
           is_group: boolean
           name: string | null
         }
         Insert: {
+          avatar_path?: string | null
           created_at?: string
           id?: string
           is_group?: boolean
           name?: string | null
         }
         Update: {
+          avatar_path?: string | null
           created_at?: string
           id?: string
           is_group?: boolean
@@ -751,6 +749,10 @@ export type Database = {
         Returns: boolean
       }
       is_friend: { Args: { a: string; b: string }; Returns: boolean }
+      is_group_member: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: boolean
+      }
       leave_conversation: {
         Args: { p_conversation_id: string }
         Returns: undefined
@@ -810,6 +812,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      set_group_avatar: {
+        Args: { p_conversation_id: string; p_path: string }
+        Returns: string
       }
       suggested_friends_from_meetups: {
         Args: never

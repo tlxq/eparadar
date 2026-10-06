@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { lastActivity } from '@/lib/chat-state';
+import { uploadFile } from '@/lib/image-upload';
 import type { Database } from '@/lib/database.types';
 
 type DbTables = Database['public']['Tables'];
@@ -136,6 +137,7 @@ export type Conversation = {
   id: string;
   is_group: boolean;
   name: string | null;
+  avatar_path: string | null;
   created_at: string;
   conversation_members: ConversationMember[];
   messages?: { body: string; created_at: string; sender_id: string; image_path: string | null }[];
@@ -183,6 +185,31 @@ export async function renameConversation(conversationId: string, name: string): 
     p_name: name,
   });
   if (error) throw error;
+}
+
+export async function setGroupAvatar(conversationId: string, uri: string | null): Promise<void> {
+  const path = uri
+    ? await uploadFile('group-avatars', `${conversationId}/${Date.now()}`, uri)
+    : null;
+  const { data: previous, error } = await supabase.rpc('set_group_avatar', {
+    p_conversation_id: conversationId,
+    p_path: path as string,
+  });
+  if (error) {
+    if (path) await supabase.storage.from('group-avatars').remove([path]);
+    throw error;
+  }
+  if (previous && previous !== path) {
+    await supabase.storage.from('group-avatars').remove([previous]);
+  }
+}
+
+export async function groupAvatarUrl(path: string): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from('group-avatars')
+    .createSignedUrl(path, 60 * 60);
+  if (error) throw error;
+  return data.signedUrl;
 }
 
 export async function leaveConversation(conversationId: string): Promise<void> {

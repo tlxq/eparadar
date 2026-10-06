@@ -25,6 +25,7 @@ function conversation(
     id: 'c1',
     is_group: isGroup,
     name: null,
+    avatar_path: null,
     created_at: '2026-10-01T10:00:00+00:00',
     conversation_members: members,
     messages: lastMessage ? [{ body: 'hej', image_path: null, ...lastMessage }] : [],
