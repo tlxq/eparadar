@@ -30,8 +30,10 @@ new phase until the current one is checked off (keeps one front open at a time).
   account deletion via the `delete-account` Edge Function (deployed).
 - **Live project is in sync**: every migration through `20261006130000_account_deletion` is
   pushed (2026-10-06).
-- **Next up: Phase H** (page-by-page UX audit), folding in Phase F's chat visual pass, then
-  Phase I's polish items.
+- **Phase H done** (2026-10-05, `ui-refresh`), apart from a real-phone keyboard/iOS check that
+  needs Tom's phone. The chat list and conversation screens got their visual pass there too.
+- **Next up: Phase I** — onboarding (design-led: taste questions → pitch → build). The
+  ErrorBoundary landed 2026-10-06; Sentry only reports once a DSN is created (Tom's).
 - **Remaining for launch (Phase J)**: Expo/EAS account and store credentials, manual store
   submission, and optional CI automation after the first successful submission.
 
@@ -348,8 +350,10 @@ implement) as one coherent visual pass rather than piecemeal.
       replacing today's bare Swedish text strings (shared `EmptyState`, done in Phase H's refresh).
 - [x] **Loading**: a new `Skeleton` component (`src/components/`) replacing raw
       `ActivityIndicator` on feed/profile/meetup-detail (also chat list and friends).
-- [ ] **Toast + ErrorBoundary**: the toast half is done (`showToast()` + `ToastHost`, used for
-      load/send/save failures and successes); the ErrorBoundary and Sentry `onError` wiring remain.
+- [x] **Toast + ErrorBoundary**: toasts via `showToast()` + `ToastHost`; the root layout exports
+      `ErrorFallback` as Expo Router's `ErrorBoundary` (2026-10-06) — a Swedish "Något gick snett"
+      screen with Försök igen, sending the error to `Sentry.captureException`. Still needs the
+      Sentry DSN (Phase A) before anything is actually reported.
 
 ## Phase J — Store submission readiness
 
