@@ -70,3 +70,11 @@ export async function stopLocationSharing(): Promise<void> {
   const started = await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME);
   if (started) await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
 }
+
+export async function stopLocationSharingQuietly(): Promise<void> {
+  try {
+    await stopLocationSharing();
+  } catch {
+    return;
+  }
+}

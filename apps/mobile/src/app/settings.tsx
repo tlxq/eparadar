@@ -24,6 +24,7 @@ import {
   requestLocationPermissions,
   startLocationSharing,
   stopLocationSharing,
+  stopLocationSharingQuietly,
 } from '@/lib/location-task';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
@@ -115,7 +116,9 @@ export default function SettingsScreen() {
       message: 'Du kan logga in igen när du vill.',
       confirmLabel: 'Logga ut',
     });
-    if (ok) await signOut();
+    if (!ok) return;
+    await stopLocationSharingQuietly();
+    await signOut();
   }
 
   return (
@@ -197,6 +200,21 @@ export default function SettingsScreen() {
               <ThemedText type="headline" themeColor="danger" style={styles.rowText}>
                 Logga ut
               </ThemedText>
+            </Pressable>
+            <View style={[styles.separator, { backgroundColor: theme.separator }]} />
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => router.push('/delete-account')}
+              style={({ pressed }) => [
+                styles.linkRow,
+                pressed && { backgroundColor: theme.backgroundSelected },
+              ]}
+            >
+              <Ionicons name="trash-outline" size={22} color={theme.danger} />
+              <ThemedText type="headline" themeColor="danger" style={styles.rowText}>
+                Radera konto
+              </ThemedText>
+              <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
             </Pressable>
           </View>
         </ScrollView>

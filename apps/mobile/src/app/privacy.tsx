@@ -17,9 +17,8 @@ export default function PrivacyScreen() {
             Senast uppdaterad: 17 september 2026
           </ThemedText>
           <ThemedText type="default" style={styles.paragraph}>
-            epaRadar är en community-app för ungdomar med EPA-traktorer. Här kan du skapa en
-            profil, lägga till en bil, hitta vänner, chatta, delta i meetups och dela din plats
-            med vänner.
+            epaRadar är en community-app för ungdomar med EPA-traktorer. Här kan du skapa en profil,
+            lägga till en bil, hitta vänner, chatta, delta i meetups och dela din plats med vänner.
           </ThemedText>
           <ThemedText type="subtitle" style={styles.heading}>
             Vilka uppgifter vi samlar in
@@ -27,8 +26,8 @@ export default function PrivacyScreen() {
           <ThemedText type="default" style={styles.paragraph}>
             Vi behandlar uppgifter som behövs för appens funktioner och som du själv väljer att
             lämna: e-postadress och inloggningsuppgifter, visningsnamn, profiltext, profilbild,
-            vänskaper och biluppgifter, inlägg, kommentarer, meddelanden, gruppmedlemskap,
-            meetups, intressemarkeringar och frivilliga check-ins.
+            vänskaper och biluppgifter, inlägg, kommentarer, meddelanden, gruppmedlemskap, meetups,
+            intressemarkeringar och frivilliga check-ins.
           </ThemedText>
           <ThemedText type="default" style={styles.paragraph}>
             På webbplatsens väntelista samlar vi in din e-postadress om du själv fyller i den.
@@ -37,23 +36,21 @@ export default function PrivacyScreen() {
             Varför vi behandlar uppgifterna
           </ThemedText>
           <ThemedText type="default" style={styles.paragraph}>
-            Uppgifterna används för att skapa och driva ditt konto, visa innehåll och
-            vänskaper, leverera chat och meetups, visa din bilprofil, hålla appen säker och ge
-            support.
+            Uppgifterna används för att skapa och driva ditt konto, visa innehåll och vänskaper,
+            leverera chat och meetups, visa din bilprofil, hålla appen säker och ge support.
           </ThemedText>
           <ThemedText type="subtitle" style={styles.heading}>
             Platsdelning
           </ThemedText>
           <ThemedText type="default" style={styles.paragraph}>
-            Platsdelning är avstängd från början. När du aktiverar den kan dina accepterade
-            vänner se din ungefärliga aktuella position på kartan. Platsen delas aldrig
-            offentligt och skickas inte till andra användare som du inte är vän med.
-            Bakgrundsplats används bara när du har gett telefonen den behörigheten och
-            aktiverat platsdelning i appen.
+            Platsdelning är avstängd från början. När du aktiverar den kan dina accepterade vänner
+            se din ungefärliga aktuella position på kartan. Platsen delas aldrig offentligt och
+            skickas inte till andra användare som du inte är vän med. Bakgrundsplats används bara
+            när du har gett telefonen den behörigheten och aktiverat platsdelning i appen.
           </ThemedText>
           <ThemedText type="default" style={styles.paragraph}>
-            Du kan stänga av delningen i Inställningar eller återkalla telefonens behörighet när
-            du vill. Appen visar en notis medan bakgrundsdelningen är aktiv.
+            Du kan stänga av delningen i Inställningar eller återkalla telefonens behörighet när du
+            vill. Appen visar en notis medan bakgrundsdelningen är aktiv.
           </ThemedText>
           <ThemedText type="subtitle" style={styles.heading}>
             Vem som har tillgång
@@ -61,23 +58,25 @@ export default function PrivacyScreen() {
           <ThemedText type="default" style={styles.paragraph}>
             Dina profiluppgifter, inlägg, kommentarer och meddelanden visas enligt appens
             behörighetsregler för de personer och grupper som funktionen kräver. Platsdata visas
-            bara för dina vänner när platsdelning är på. Vi säljer inte personuppgifter och
-            delar dem inte för annonsering.
+            bara för dina vänner när platsdelning är på. Vi säljer inte personuppgifter och delar
+            dem inte för annonsering.
           </ThemedText>
           <ThemedText type="subtitle" style={styles.heading}>
             Var uppgifterna lagras
           </ThemedText>
           <ThemedText type="default" style={styles.paragraph}>
-            Uppgifter lagras hos Supabase i deras EU-region (eu-west-1, Irland). Profilbilder
-            lagras i Supabase Storage. Vi använder Resend för e-post från väntelistan.
+            Uppgifter lagras hos Supabase i deras EU-region (eu-west-1, Irland). Profilbilder lagras
+            i Supabase Storage. Vi använder Resend för e-post från väntelistan.
           </ThemedText>
           <ThemedText type="subtitle" style={styles.heading}>
             Hur länge vi sparar uppgifterna
           </ThemedText>
           <ThemedText type="default" style={styles.paragraph}>
-            Vi sparar kontouppgifter medan ditt konto finns kvar och raderar eller anonymiserar
-            dem när kontot tas bort, om vi inte måste spara viss information enligt lag.
-            Kontakta oss om du vill radera ditt konto eller vissa uppgifter.
+            Vi sparar kontouppgifter medan ditt konto finns kvar och raderar eller anonymiserar dem
+            när kontot tas bort, om vi inte måste spara viss information enligt lag. Du kan radera
+            ditt konto själv under Inställningar → Radera konto. Då tas din profil, dina inlägg,
+            bilder, vänskaper, chattar och din plats bort direkt. Kontakta oss om du vill radera
+            vissa uppgifter.
           </ThemedText>
           <ThemedText type="subtitle" style={styles.heading}>
             Minderåriga
