@@ -13,9 +13,9 @@ insert into public.profiles (id, username, display_name) values
   ('c9000000-0000-0000-0000-000000000023', 'test-meetup-carol', 'Carol')
 on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
 
-insert into public.meetups (id, creator_id, title, vibe_emoji, lat, lng, starts_at) values
-  ('f2000000-0000-0000-0000-000000000001', 'd9000000-0000-0000-0000-000000000021', 'Cruising', '🚗', 59.3000, 18.1000, now() + interval '1 day'),
-  ('f2000000-0000-0000-0000-000000000002', 'd9000000-0000-0000-0000-000000000021', 'Throwaway', '🔥', 59.4000, 18.2000, now() + interval '1 day');
+insert into public.meetups (id, creator_id, title, vibe, lat, lng, starts_at) values
+  ('f2000000-0000-0000-0000-000000000001', 'd9000000-0000-0000-0000-000000000021', 'Cruising', 'cruising', 59.3000, 18.1000, now() + interval '1 day'),
+  ('f2000000-0000-0000-0000-000000000002', 'd9000000-0000-0000-0000-000000000021', 'Throwaway', 'hang', 59.4000, 18.2000, now() + interval '1 day');
 
 set local role authenticated;
 set local request.jwt.claim.sub = 'e9000000-0000-0000-0000-000000000022';
@@ -27,7 +27,7 @@ select is(
 );
 
 select throws_ok(
-  'insert into public.meetups (creator_id, title, vibe_emoji, lat, lng, starts_at) values (''d9000000-0000-0000-0000-000000000021'', ''Fake'', ''👻'', 59.0, 18.0, now())',
+  'insert into public.meetups (creator_id, title, vibe, lat, lng, starts_at) values (''d9000000-0000-0000-0000-000000000021'', ''Fake'', ''fest'', 59.0, 18.0, now())',
   'new row violates row-level security policy for table "meetups"',
   'a user cannot create a meetup claiming someone else as creator_id'
 );

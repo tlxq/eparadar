@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SvgXml } from 'react-native-svg';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { Avatar } from '@/components/avatar';
@@ -9,6 +10,7 @@ import { ScreenBackground } from '@/components/screen-background';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
+import { meetupVibe } from '@/features/map/map-icons';
 import {
   useAutoCheckIn,
   useDeleteMeetup,
@@ -114,9 +116,19 @@ export default function MeetupDetailScreen() {
             </View>
           )}
 
-          <ThemedText type="title" style={styles.title}>
-            {meetup.title} {meetup.vibe_emoji}
-          </ThemedText>
+          <View style={styles.titleRow}>
+            <View style={[styles.vibeTile, { backgroundColor: theme.backgroundElement }]}>
+              <SvgXml xml={meetupVibe(meetup.vibe).icon} width={34} height={34} />
+            </View>
+            <View style={styles.titleText}>
+              <ThemedText type="caption" themeColor="textSecondary">
+                {meetupVibe(meetup.vibe).label}
+              </ThemedText>
+              <ThemedText type="title" style={styles.title}>
+                {meetup.title}
+              </ThemedText>
+            </View>
+          </View>
 
           <ThemedText themeColor="textSecondary">
             {meetup.creator ? `${meetup.creator.display_name} skapade denna` : null}
@@ -187,6 +199,15 @@ export default function MeetupDetailScreen() {
 }
 
 const styles = StyleSheet.create({
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  vibeTile: {
+    width: 52,
+    height: 52,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleText: { flex: 1 },
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   errorClose: { position: 'absolute', top: Spacing.five, right: Spacing.three },

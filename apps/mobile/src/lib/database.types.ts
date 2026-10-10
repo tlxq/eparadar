@@ -455,7 +455,7 @@ export type Database = {
           lng: number;
           starts_at: string;
           title: string;
-          vibe_emoji: string;
+          vibe: string;
         };
         Insert: {
           created_at?: string;
@@ -465,7 +465,7 @@ export type Database = {
           lng: number;
           starts_at: string;
           title: string;
-          vibe_emoji?: string;
+          vibe?: string;
         };
         Update: {
           created_at?: string;
@@ -475,7 +475,7 @@ export type Database = {
           lng?: number;
           starts_at?: string;
           title?: string;
-          vibe_emoji?: string;
+          vibe?: string;
         };
         Relationships: [
           {
@@ -818,7 +818,7 @@ export type Database = {
           lng: number | null;
           starts_at: string | null;
           title: string | null;
-          vibe_emoji: string | null;
+          vibe: string | null;
         };
         Relationships: [
           {

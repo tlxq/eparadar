@@ -423,7 +423,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     const meetupMarkers = {};
     let longPressFired = false;
     function meetupHtml(m) {
-      return '<div class="tile' + (m.hereNowCount > 0 ? ' live' : '') + '">${ICON_MEETUP}' +
+      return '<div class="tile' + (m.hereNowCount > 0 ? ' live' : '') + '">' + (m.icon || '${ICON_MEETUP}') +
         (m.interestCount > 0 ? '<span class="count">' + m.interestCount + '</span>' : '') + '</div>';
     }
     function attachLongPress(el, onLong) {
