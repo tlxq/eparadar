@@ -16,6 +16,15 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { carColorHex } from '@/features/map/car-colors';
 import { MAP_HTML } from '@/features/map/map-html';
+import { SPOT_ICONS, spotIconKey } from '@/features/map/map-icons';
+import { SpotComposer } from '@/features/map/spot-composer';
+import {
+  countHereNow,
+  deleteSpot,
+  fetchSpots,
+  spotTitle,
+  type SpotKind,
+} from '@/features/map/spots';
 import { motionFromCoords } from '@/features/map/motion';
 import { markInterested } from '@/features/meetups/api';
 import { useMeetups } from '@/features/meetups/hooks';
@@ -28,7 +37,10 @@ import {
   type Car,
   type FriendLocation,
 } from '@/lib/api';
+import { confirmDestructive } from '@/lib/confirm';
+import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
+import { showToast } from '@/store/toast';
 import { useAuthStore } from '@/store/auth';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
@@ -68,6 +80,25 @@ export default function MapScreen() {
     heading: null,
   });
   const [meSheetOpen, setMeSheetOpen] = useState(false);
+  const [addSheetOpen, setAddSheetOpen] = useState(false);
+  const [composer, setComposer] = useState<{
+    at: { lat: number; lng: number };
+    kind: SpotKind;
+  } | null>(null);
+  const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
+  const { data: spots } = useQuery({
+    queryKey: queryKeys.spots(),
+    queryFn: fetchSpots,
+    enabled: !!userId,
+    refetchInterval: 60000,
+  });
+
+  useRealtimeTable({
+    channelName: `spots:${userId}`,
+    table: 'spots',
+    enabled: !!userId,
+    onChange: () => queryClient.invalidateQueries({ queryKey: queryKeys.spots() }),
+  });
 
   useFocusEffect(
     useCallback(() => {
@@ -208,11 +239,77 @@ export default function MapScreen() {
     [meetups],
   );
 
+  const spotsPayload = useMemo(() => {
+    const people = friendsPayload.filter((f) => !f.approximate);
+    const present =
+      mePayload && !mePayload.ghost
+        ? [...people, { lat: mePayload.lat, lng: mePayload.lng }]
+        : people;
+    return (spots ?? []).map((spot) => ({
+      id: spot.id,
+      kind: spot.kind,
+      lat: spot.lat,
+      lng: spot.lng,
+      title: spotTitle(spot),
+      icon: SPOT_ICONS[spotIconKey(spot)],
+      hereNow: spot.kind === 'ragg' ? countHereNow(spot, present) : 0,
+      expiresAt: spot.expires_at ? new Date(spot.expires_at).getTime() : null,
+    }));
+  }, [spots, friendsPayload, mePayload]);
+
   const sendAll = useCallback(() => {
     postToMap({ type: 'SET_FRIENDS', friends: friendsPayload });
     postToMap({ type: 'SET_ME', me: mePayload });
     postToMap({ type: 'SET_MEETUPS', meetups: meetupsPayload });
-  }, [postToMap, friendsPayload, mePayload, meetupsPayload]);
+    postToMap({ type: 'SET_SPOTS', spots: spotsPayload });
+  }, [postToMap, friendsPayload, mePayload, meetupsPayload, spotsPayload]);
+
+  useEffect(() => {
+    postToMap({ type: 'SET_SPOTS', spots: spotsPayload });
+  }, [postToMap, spotsPayload]);
+
+  const openComposer = useCallback(
+    (at: { lat: number; lng: number }, kind: SpotKind) => {
+      postToMap({ type: 'SHOW_DRAFT_SPOT', lat: at.lat, lng: at.lng });
+      setComposer({ at, kind });
+    },
+    [postToMap],
+  );
+
+  const closeComposer = useCallback(() => {
+    postToMap({ type: 'CLEAR_DRAFT_SPOT' });
+    setComposer(null);
+  }, [postToMap]);
+
+  const dropHere = (kind: SpotKind) => {
+    if (!devicePosition) {
+      showToast({
+        tone: 'error',
+        message: 'Hittar inte din position. Håll in på kartan där spotten ska ligga.',
+      });
+      return;
+    }
+    openComposer(devicePosition, kind);
+  };
+
+  const selectedSpot = spots?.find((spot) => spot.id === selectedSpotId) ?? null;
+  const selectedSpotHereNow = spotsPayload.find((spot) => spot.id === selectedSpotId)?.hereNow ?? 0;
+
+  async function handleDeleteSpot(spotId: string) {
+    const ok = await confirmDestructive({
+      title: 'Ta bort spotten?',
+      message: 'Den försvinner från kartan för alla.',
+      confirmLabel: 'Ta bort',
+    });
+    if (!ok) return;
+    try {
+      await deleteSpot(spotId);
+      queryClient.invalidateQueries({ queryKey: queryKeys.spots() });
+      showToast({ message: 'Spotten är borttagen.' });
+    } catch (error) {
+      showToast({ tone: 'error', message: getErrorMessage(error) });
+    }
+  }
 
   useEffect(() => {
     postToMap({ type: 'SET_FRIENDS', friends: friendsPayload });
@@ -269,6 +366,11 @@ export default function MapScreen() {
         sendAll();
       } else if (msg.type === 'ME_TAP') {
         setMeSheetOpen(true);
+      } else if (msg.type === 'SPOT_TAP') {
+        setSelectedSpotId(msg.id);
+      } else if (msg.type === 'MAP_LONG_PRESS') {
+        Vibration.vibrate(15);
+        openComposer({ lat: msg.lat, lng: msg.lng }, 'ragg');
       } else if (msg.type === 'MEETUP_TAP') {
         router.push(`/meetups/${msg.id}`);
       } else if (msg.type === 'DRAFT_PIN_SET' || msg.type === 'DRAFT_PIN_MOVED') {
@@ -451,10 +553,10 @@ export default function MapScreen() {
               />
             </Pressable>
             <Pressable
-              onPress={startPlacing}
+              onPress={() => setAddSheetOpen(true)}
               style={styles.actionBarBtn}
               hitSlop={8}
-              accessibilityLabel="Skapa träff"
+              accessibilityLabel="Släpp spot eller skapa träff"
             >
               <Ionicons name="add-circle" size={26} color={theme.brand} />
             </Pressable>
@@ -473,6 +575,75 @@ export default function MapScreen() {
             </Pressable>
           </View>
         )}
+        <ActionSheet
+          visible={addSheetOpen}
+          title="Lägg till på kartan"
+          onClose={() => setAddSheetOpen(false)}
+          actions={[
+            {
+              label: 'Raggställe där jag är',
+              icon: 'flag-outline',
+              hint: 'Eller håll in var som helst på kartan',
+              onPress: () => dropHere('ragg'),
+            },
+            {
+              label: 'Varning där jag är',
+              icon: 'warning-outline',
+              onPress: () => dropHere('varning'),
+            },
+            { label: 'Skapa träff', icon: 'calendar-outline', onPress: startPlacing },
+          ]}
+        />
+        <ActionSheet
+          visible={!!selectedSpot}
+          title={selectedSpot ? spotTitle(selectedSpot) : undefined}
+          header={
+            selectedSpot ? (
+              <View style={styles.spotHeader}>
+                <ThemedText type="small" themeColor="textSecondary">
+                  {selectedSpot.kind === 'ragg'
+                    ? selectedSpotHereNow > 0
+                      ? `${selectedSpotHereNow} här nu`
+                      : 'Ingen här just nu'
+                    : 'Varning · försvinner av sig själv efter 2 timmar'}
+                  {selectedSpot.visibility === 'all' ? ' · syns för alla' : ' · syns för vänner'}
+                </ThemedText>
+              </View>
+            ) : null
+          }
+          onClose={() => setSelectedSpotId(null)}
+          actions={
+            selectedSpot && selectedSpot.creator_id === userId
+              ? [
+                  {
+                    label: 'Ta bort spot',
+                    icon: 'trash-outline',
+                    destructive: true,
+                    onPress: () => handleDeleteSpot(selectedSpot.id),
+                  },
+                ]
+              : []
+          }
+        />
+        {composer && userId ? (
+          <SpotComposer
+            at={composer.at}
+            creatorId={userId}
+            initialKind={composer.kind}
+            onClose={closeComposer}
+            onCreated={(kind) => {
+              closeComposer();
+              queryClient.invalidateQueries({ queryKey: queryKeys.spots() });
+              showToast({
+                tone: 'success',
+                message:
+                  kind === 'ragg'
+                    ? 'Raggstället ligger på kartan.'
+                    : 'Varningen ligger ute i 2 timmar.',
+              });
+            }}
+          />
+        ) : null}
         <ActionSheet
           visible={meSheetOpen}
           onClose={() => setMeSheetOpen(false)}
@@ -580,4 +751,5 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.three,
   },
   meHeaderText: { flex: 1, gap: Spacing.one },
+  spotHeader: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
 });
