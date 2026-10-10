@@ -6,7 +6,7 @@ const sentryDsn = process.env.PUBLIC_SENTRY_DSN;
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: sentryDsn ? [sentry({ dsn: sentryDsn })] : [],
+  integrations: sentryDsn ? [sentry()] : [],
   vite: {
     server: {
       allowedHosts: true,

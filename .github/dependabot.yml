@@ -4,14 +4,27 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
-  - package-ecosystem: npm
-    directory: "/apps/mobile"
-    schedule:
-      interval: weekly
-  - package-ecosystem: npm
-    directory: "/apps/web"
-    schedule:
-      interval: weekly
+    groups:
+      expo-sdk:
+        patterns:
+          - "expo"
+          - "expo-*"
+          - "@expo/*"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "expo"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "expo-*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@expo/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-native"
+      - dependency-name: "react-native-*"
+      - dependency-name: "@react-native-async-storage/async-storage"
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
