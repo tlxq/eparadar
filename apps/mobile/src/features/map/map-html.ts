@@ -555,6 +555,33 @@ export const MAP_HTML = `<!DOCTYPE html>
     });
 
     map.on('moveend', renderFriends);
+
+    let following = false;
+    function setFollowing(value) {
+      if (following === value) return;
+      following = value;
+      sendToNative({ type: 'FOLLOW_CHANGED', following: value });
+    }
+    function followMe(first) {
+      if (!following || !me) return;
+      const opts = { center: [me.lng, me.lat], duration: first ? 1200 : 1000, easing: function (t) { return t; }, essential: true };
+      if (me.moving) {
+        opts.zoom = Math.max(map.getZoom(), 16);
+        opts.pitch = 55;
+        if (me.heading != null) opts.bearing = me.heading;
+      } else if (first) {
+        opts.zoom = Math.max(map.getZoom(), 15.5);
+        opts.pitch = 45;
+      }
+      map.easeTo(opts);
+    }
+    function stopFollowingOnGesture(e) {
+      if (e && e.originalEvent) setFollowing(false);
+    }
+    map.on('dragstart', function () { setFollowing(false); });
+    map.on('zoomstart', stopFollowingOnGesture);
+    map.on('rotatestart', stopFollowingOnGesture);
+    map.on('pitchstart', stopFollowingOnGesture);
     map.on('rotate', function () {
       if (meMarker) applyHeadings(meMarker.getElement());
       Object.keys(friendMarkers).forEach(function (id) { applyHeadings(friendMarkers[id].getElement()); });
@@ -564,13 +591,16 @@ export const MAP_HTML = `<!DOCTYPE html>
       let msg;
       try { msg = JSON.parse(event.data); } catch (e) { return; }
       if (msg.type === 'SET_FRIENDS') { friends = msg.friends; renderFriends(); }
-      if (msg.type === 'SET_ME') { me = msg.me; renderMe(); }
+      if (msg.type === 'SET_ME') { me = msg.me; renderMe(); followMe(false); }
+      if (msg.type === 'FOLLOW_ME') { setFollowing(true); followMe(true); }
+      if (msg.type === 'STOP_FOLLOW') setFollowing(false);
       if (msg.type === 'SET_MEETUPS') syncMeetups(msg.meetups);
       if (msg.type === 'SET_SPOTS') { spots = msg.spots; renderSpots(); }
       if (msg.type === 'SET_HEAT') { heatCells = msg.cells; renderHeat(); }
       if (msg.type === 'SHOW_DRAFT_SPOT') showDraftSpot(msg.lat, msg.lng);
       if (msg.type === 'CLEAR_DRAFT_SPOT') clearDraftSpot();
       if (msg.type === 'CENTER_ON') {
+        if (!msg.keepFollow) setFollowing(false);
         map.flyTo({ center: [msg.lng, msg.lat], zoom: msg.zoom || 15, pitch: msg.pitch == null ? map.getPitch() : msg.pitch, speed: 1.4 });
       }
       if (msg.type === 'START_PLACING') placing = true;
