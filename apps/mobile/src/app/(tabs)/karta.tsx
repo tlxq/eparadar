@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { FlatList, Platform, Pressable, StyleSheet, Vibration, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,11 +19,14 @@ import { carColorHex } from '@/features/map/car-colors';
 import { MAP_HTML } from '@/features/map/map-html';
 import { SPOT_ICONS, spotIconKey } from '@/features/map/map-icons';
 import { SpotComposer } from '@/features/map/spot-composer';
+import { SpotPhotoStrip } from '@/features/map/spot-photo-strip';
 import { fetchEveningHeat } from '@/features/map/status';
 import { StatusSheet } from '@/features/map/status-sheet';
 import {
+  addSpotPhoto,
   countHereNow,
   deleteSpot,
+  fetchSpotPhotoCounts,
   fetchSpots,
   spotTitle,
   type SpotKind,
@@ -100,6 +104,23 @@ export default function MapScreen() {
     queryFn: fetchSpots,
     enabled: !!userId,
     refetchInterval: 60000,
+  });
+
+  const { data: photoCounts } = useQuery({
+    queryKey: queryKeys.spotPhotoCounts(),
+    queryFn: fetchSpotPhotoCounts,
+    enabled: !!userId,
+    refetchInterval: 120000,
+  });
+
+  useRealtimeTable({
+    channelName: `spot_photos:${userId}`,
+    table: 'spot_photos',
+    enabled: !!userId,
+    onChange: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.spotPhotoCounts() });
+      queryClient.invalidateQueries({ queryKey: ['spotPhotos'] });
+    },
   });
 
   useRealtimeTable({
@@ -268,9 +289,10 @@ export default function MapScreen() {
       title: spotTitle(spot),
       icon: SPOT_ICONS[spotIconKey(spot)],
       hereNow: spot.kind === 'ragg' ? countHereNow(spot, present) : 0,
+      photoCount: photoCounts?.[spot.id] ?? 0,
       expiresAt: spot.expires_at ? new Date(spot.expires_at).getTime() : null,
     }));
-  }, [spots, friendsPayload, mePayload]);
+  }, [spots, friendsPayload, mePayload, photoCounts]);
 
   const sendAll = useCallback(() => {
     postToMap({ type: 'SET_FRIENDS', friends: friendsPayload });
@@ -314,6 +336,35 @@ export default function MapScreen() {
 
   const selectedSpot = spots?.find((spot) => spot.id === selectedSpotId) ?? null;
   const selectedSpotHereNow = spotsPayload.find((spot) => spot.id === selectedSpotId)?.hereNow ?? 0;
+
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  async function handleAddSpotPhoto(spotId: string) {
+    if (!userId) return;
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      showToast({ tone: 'error', message: 'epaRadar behöver tillgång till dina bilder.' });
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.7,
+    });
+    if (result.canceled || !result.assets[0]) return;
+    setUploadingPhoto(true);
+    try {
+      await addSpotPhoto(spotId, userId, result.assets[0].uri);
+      queryClient.invalidateQueries({ queryKey: queryKeys.spotPhotos(spotId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.spotPhotoCounts() });
+      showToast({ tone: 'success', message: 'Bilden ligger på spotten i 24 timmar.' });
+    } catch (error) {
+      showToast({ tone: 'error', message: getErrorMessage(error) });
+    } finally {
+      setUploadingPhoto(false);
+    }
+  }
 
   async function handleDeleteSpot(spotId: string) {
     const ok = await confirmDestructive({
@@ -634,19 +685,41 @@ export default function MapScreen() {
                     : 'Varning · försvinner av sig själv efter 2 timmar'}
                   {selectedSpot.visibility === 'all' ? ' · syns för alla' : ' · syns för vänner'}
                 </ThemedText>
+                {selectedSpot.kind === 'ragg' && userId ? (
+                  <SpotPhotoStrip
+                    spotId={selectedSpot.id}
+                    userId={userId}
+                    spotCreatorId={selectedSpot.creator_id}
+                  />
+                ) : null}
               </View>
             ) : null
           }
           onClose={() => setSelectedSpotId(null)}
           actions={
-            selectedSpot && selectedSpot.creator_id === userId
+            selectedSpot
               ? [
-                  {
-                    label: 'Ta bort spot',
-                    icon: 'trash-outline',
-                    destructive: true,
-                    onPress: () => handleDeleteSpot(selectedSpot.id),
-                  },
+                  ...(selectedSpot.kind === 'ragg'
+                    ? [
+                        {
+                          label: uploadingPhoto ? 'Laddar upp bild …' : 'Lägg till bild',
+                          icon: 'image-outline' as const,
+                          disabled: uploadingPhoto,
+                          hint: 'Syns i 24 timmar',
+                          onPress: () => handleAddSpotPhoto(selectedSpot.id),
+                        },
+                      ]
+                    : []),
+                  ...(selectedSpot.creator_id === userId
+                    ? [
+                        {
+                          label: 'Ta bort spot',
+                          icon: 'trash-outline' as const,
+                          destructive: true,
+                          onPress: () => handleDeleteSpot(selectedSpot.id),
+                        },
+                      ]
+                    : []),
                 ]
               : []
           }
@@ -792,5 +865,5 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.three,
   },
   meHeaderText: { flex: 1, gap: Spacing.one },
-  spotHeader: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
+  spotHeader: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two, gap: Spacing.three },
 });

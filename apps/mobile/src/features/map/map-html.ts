@@ -98,6 +98,8 @@ export const MAP_HTML = `<!DOCTYPE html>
       font-size: 10.5px; font-weight: 700; color: #F4F6F9; background: rgba(21,26,37,0.85); white-space: nowrap;
       border: 1px solid rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 999px; display: flex; gap: 5px; align-items: center;
     }
+    .chip .cam { display: inline-flex; align-items: center; gap: 2px; color: #A2AAB8; }
+    .chip .cam svg { width: 13px; height: 13px; }
     .chip .n { background: #22C55E; color: #06210F; padding: 1px 5px; border-radius: 6px; font-weight: 800; }
     .press-ring {
       width: 64px; height: 64px; border-radius: 50%; border: 2px solid #7EA6FF; display: flex; align-items: center; justify-content: center;
@@ -466,11 +468,13 @@ export const MAP_HTML = `<!DOCTYPE html>
       const rest = min % 60;
       return h + ' h' + (rest ? ' ' + rest + ' min' : '') + ' kvar';
     }
+    const CAM_MINI = '<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="3" stroke="#F4F6F9" stroke-width="2"/><path d="m9 7 1.5-2.5h3L15 7" stroke="#F4F6F9" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13.5" r="3" stroke="#7EA6FF" stroke-width="2"/></svg>';
     function spotHtml(sp) {
       const warning = sp.kind === 'varning';
       const chip = warning
         ? escapeHtml(sp.title) + ' · ' + remainingText(sp.expiresAt)
-        : escapeHtml(sp.title) + (sp.hereNow > 0 ? ' <span class="n">' + sp.hereNow + '</span>' : '');
+        : escapeHtml(sp.title) + (sp.photoCount > 0 ? ' <span class="cam">' + CAM_MINI + sp.photoCount + '</span>' : '') +
+          (sp.hereNow > 0 ? ' <span class="n">' + sp.hereNow + '</span>' : '');
       return '<div class="tile">' + sp.icon + '</div><span class="chip">' + chip + '</span>';
     }
     function renderSpots() {

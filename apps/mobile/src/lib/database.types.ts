@@ -698,6 +698,48 @@ export type Database = {
           },
         ];
       };
+      spot_photos: {
+        Row: {
+          author_id: string;
+          created_at: string;
+          expires_at: string;
+          id: string;
+          path: string;
+          spot_id: string;
+        };
+        Insert: {
+          author_id: string;
+          created_at?: string;
+          expires_at?: string;
+          id?: string;
+          path: string;
+          spot_id: string;
+        };
+        Update: {
+          author_id?: string;
+          created_at?: string;
+          expires_at?: string;
+          id?: string;
+          path?: string;
+          spot_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'spot_photos_author_id_fkey';
+            columns: ['author_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'spot_photos_spot_id_fkey';
+            columns: ['spot_id'];
+            isOneToOne: false;
+            referencedRelation: 'spots';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       spots: {
         Row: {
           created_at: string;
