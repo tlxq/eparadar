@@ -30,11 +30,11 @@ select
   'email', now(), now(), now()
 from new_users;
 
-insert into meetups (id, creator_id, title, vibe_emoji, lat, lng, starts_at)
+insert into meetups (id, creator_id, title, vibe, lat, lng, starts_at)
 values (
   '00000000-0000-4000-b000-000000000001',
   '00000000-0000-4000-a000-000000000002',
-  'Cruising Södermalm', '🚜', 59.3150, 18.0710, now() - interval '1 day'
+  'Cruising Södermalm', 'cruising', 59.3150, 18.0710, now() - interval '1 day'
 );
 
 insert into meetup_checkins (meetup_id, user_id, checked_in_at)

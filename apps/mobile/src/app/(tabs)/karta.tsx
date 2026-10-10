@@ -17,7 +17,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { carColorHex } from '@/features/map/car-colors';
 import { MAP_HTML } from '@/features/map/map-html';
-import { SPOT_ICONS, spotIconKey } from '@/features/map/map-icons';
+import { meetupVibe, SPOT_ICONS, spotIconKey } from '@/features/map/map-icons';
 import { SpotComposer } from '@/features/map/spot-composer';
 import { SpotPhotoStrip } from '@/features/map/spot-photo-strip';
 import { fetchEveningHeat } from '@/features/map/status';
@@ -274,6 +274,7 @@ export default function MapScreen() {
         id: m.id,
         lat: m.lat,
         lng: m.lng,
+        icon: meetupVibe(m.vibe).icon,
         interestCount: m.interest_count,
         hereNowCount: m.here_now_count,
       })),
@@ -521,7 +522,7 @@ export default function MapScreen() {
           <View style={[styles.hintBanner, { backgroundColor: theme.backgroundElement }]}>
             <ThemedText type="smallBold">
               {placingStep === 'placing'
-                ? 'Tryck där ni ska träffas 📍'
+                ? 'Tryck där ni ska träffas'
                 : 'Dra pinnen för att justera'}
             </ThemedText>
           </View>
@@ -547,7 +548,7 @@ export default function MapScreen() {
                 ]}
               >
                 <ThemedText type="smallBold" style={{ color: theme.brandText }}>
-                  Placera här ✅
+                  Placera här
                 </ThemedText>
               </Pressable>
             )}

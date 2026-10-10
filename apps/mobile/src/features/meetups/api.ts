@@ -11,7 +11,7 @@ export type Meetup = {
   id: string;
   creator_id: string;
   title: string;
-  vibe_emoji: string;
+  vibe: string;
   lat: number;
   lng: number;
   starts_at: string;
@@ -100,7 +100,7 @@ export async function fetchMeetupDetail(meetupId: string, myUserId: string): Pro
 export async function createMeetup(input: {
   creatorId: string;
   title: string;
-  vibeEmoji: string;
+  vibe: string;
   lat: number;
   lng: number;
   startsAt: string;
@@ -108,7 +108,7 @@ export async function createMeetup(input: {
   const payload: DbTables['meetups']['Insert'] = {
     creator_id: input.creatorId,
     title: input.title,
-    vibe_emoji: input.vibeEmoji,
+    vibe: input.vibe,
     lat: input.lat,
     lng: input.lng,
     starts_at: input.startsAt,
