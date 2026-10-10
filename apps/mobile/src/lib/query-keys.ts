@@ -16,4 +16,5 @@ export const queryKeys = {
   friendLocations: (userId: string | undefined) => ['friendLocations', userId] as const,
   friendCode: (userId: string | undefined) => ['friendCode', userId] as const,
   spots: () => ['spots'] as const,
+  eveningHeat: (userId: string | undefined) => ['eveningHeat', userId] as const,
 };

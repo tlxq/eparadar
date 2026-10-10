@@ -18,6 +18,8 @@ import { carColorHex } from '@/features/map/car-colors';
 import { MAP_HTML } from '@/features/map/map-html';
 import { SPOT_ICONS, spotIconKey } from '@/features/map/map-icons';
 import { SpotComposer } from '@/features/map/spot-composer';
+import { fetchEveningHeat } from '@/features/map/status';
+import { StatusSheet } from '@/features/map/status-sheet';
 import {
   countHereNow,
   deleteSpot,
@@ -86,6 +88,13 @@ export default function MapScreen() {
     kind: SpotKind;
   } | null>(null);
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
+  const [statusOpen, setStatusOpen] = useState(false);
+  const { data: heatCells } = useQuery({
+    queryKey: queryKeys.eveningHeat(userId),
+    queryFn: fetchEveningHeat,
+    enabled: !!userId,
+    refetchInterval: 120000,
+  });
   const { data: spots } = useQuery({
     queryKey: queryKeys.spots(),
     queryFn: fetchSpots,
@@ -205,6 +214,8 @@ export default function MapScreen() {
         heading: f.heading,
         moving: f.moving,
         updatedAt: new Date(f.updated_at).getTime(),
+        status: f.status_text,
+        statusExpiresAt: f.status_expires_at ? new Date(f.status_expires_at).getTime() : null,
       })),
     [friendLocations],
   );
@@ -224,6 +235,10 @@ export default function MapScreen() {
       approximate: !ghost && !!myLocation?.approximate_enabled,
       moving: deviceMotion.moving,
       heading: deviceMotion.heading,
+      status: ghost ? null : (myLocation?.status_text ?? null),
+      statusExpiresAt: myLocation?.status_expires_at
+        ? new Date(myLocation.status_expires_at).getTime()
+        : null,
     };
   }, [devicePosition, deviceMotion, myLocation, myProfile, myCars]);
 
@@ -262,7 +277,12 @@ export default function MapScreen() {
     postToMap({ type: 'SET_ME', me: mePayload });
     postToMap({ type: 'SET_MEETUPS', meetups: meetupsPayload });
     postToMap({ type: 'SET_SPOTS', spots: spotsPayload });
-  }, [postToMap, friendsPayload, mePayload, meetupsPayload, spotsPayload]);
+    postToMap({ type: 'SET_HEAT', cells: heatCells ?? [] });
+  }, [postToMap, friendsPayload, mePayload, meetupsPayload, spotsPayload, heatCells]);
+
+  useEffect(() => {
+    postToMap({ type: 'SET_HEAT', cells: heatCells ?? [] });
+  }, [postToMap, heatCells]);
 
   useEffect(() => {
     postToMap({ type: 'SET_SPOTS', spots: spotsPayload });
@@ -389,6 +409,12 @@ export default function MapScreen() {
   };
 
   const meActions: SheetAction[] = [
+    {
+      label: myLocation?.status_text ? 'Ändra status' : 'Sätt status',
+      icon: 'chatbubble-ellipses-outline',
+      hint: 'Syns för vänner i en timme',
+      onPress: () => setStatusOpen(true),
+    },
     {
       label: 'Ändra vad jag delar',
       icon: 'options-outline',
@@ -625,6 +651,21 @@ export default function MapScreen() {
               : []
           }
         />
+        {statusOpen && userId ? (
+          <StatusSheet
+            userId={userId}
+            current={myLocation?.status_text ?? null}
+            onClose={() => setStatusOpen(false)}
+            onSaved={(text) => {
+              setStatusOpen(false);
+              queryClient.invalidateQueries({ queryKey: queryKeys.myLocation(userId) });
+              showToast({
+                tone: 'success',
+                message: text ? 'Statusen syns i en timme.' : 'Statusen är borttagen.',
+              });
+            }}
+          />
+        ) : null}
         {composer && userId ? (
           <SpotComposer
             at={composer.at}

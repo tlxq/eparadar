@@ -257,6 +257,35 @@ export type Database = {
           },
         ];
       };
+      heat_points: {
+        Row: {
+          cell_lat: number;
+          cell_lng: number;
+          seen_at: string;
+          user_id: string;
+        };
+        Insert: {
+          cell_lat: number;
+          cell_lng: number;
+          seen_at?: string;
+          user_id: string;
+        };
+        Update: {
+          cell_lat?: number;
+          cell_lng?: number;
+          seen_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'heat_points_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       likes: {
         Row: {
           created_at: string;
@@ -298,6 +327,8 @@ export type Database = {
           lng: number;
           moving: boolean;
           sharing_enabled: boolean;
+          status_expires_at: string | null;
+          status_text: string | null;
           updated_at: string;
           user_id: string;
         };
@@ -308,6 +339,8 @@ export type Database = {
           lng: number;
           moving?: boolean;
           sharing_enabled?: boolean;
+          status_expires_at?: string | null;
+          status_text?: string | null;
           updated_at?: string;
           user_id: string;
         };
@@ -318,6 +351,8 @@ export type Database = {
           lng?: number;
           moving?: boolean;
           sharing_enabled?: boolean;
+          status_expires_at?: string | null;
+          status_text?: string | null;
           updated_at?: string;
           user_id?: string;
         };
@@ -798,6 +833,10 @@ export type Database = {
         };
       };
       generate_friend_code: { Args: never; Returns: string };
+      evening_heat: {
+        Args: never;
+        Returns: { lat: number; lng: number; people: number }[];
+      };
       has_any_friendship_row: {
         Args: { a: string; b: string };
         Returns: boolean;
