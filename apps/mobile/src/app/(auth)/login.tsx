@@ -9,9 +9,12 @@ import { ThemedText } from '@/components/themed-text';
 import { signIn } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 
+const devEmail = __DEV__ ? (process.env.EXPO_PUBLIC_DEV_LOGIN_EMAIL ?? 'test@test.se') : '';
+const devPassword = __DEV__ ? (process.env.EXPO_PUBLIC_DEV_LOGIN_PASSWORD ?? 'testtest') : '';
+
 export default function LoginScreen() {
-  const [email, setEmail] = useState(__DEV__ ? 'test@test.se' : '');
-  const [password, setPassword] = useState(__DEV__ ? 'testtest' : '');
+  const [email, setEmail] = useState(devEmail);
+  const [password, setPassword] = useState(devPassword);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
