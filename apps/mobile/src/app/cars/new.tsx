@@ -10,6 +10,7 @@ import { FormScreen } from '@/components/form-screen';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
+import { CarColorPicker } from '@/features/map/car-color-picker';
 import { useTheme } from '@/hooks/use-theme';
 import { createCar } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
@@ -27,6 +28,7 @@ export default function NewCarScreen() {
   const [year, setYear] = useState('');
   const [nickname, setNickname] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [color, setColor] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function handlePickPhoto() {
@@ -56,10 +58,12 @@ export default function NewCarScreen() {
         year: year ? Number(year) : null,
         nickname: nickname.trim() || null,
         photoUrl,
+        color,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.cars(userId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friendLocations(userId) });
       showToast({ tone: 'success', message: 'Bilen är tillagd.' });
       router.back();
     },
@@ -128,6 +132,7 @@ export default function NewCarScreen() {
         value={nickname}
         onChangeText={setNickname}
       />
+      <CarColorPicker value={color} onChange={setColor} />
     </FormScreen>
   );
 }
