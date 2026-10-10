@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { Button } from '@/components/button';
 import { IconButton } from '@/components/icon-button';
+import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
@@ -49,72 +50,79 @@ export default function CreateMeetupScreen() {
 
   return (
     <ScreenBackground style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <IconButton icon="close" accessibilityLabel="Avbryt" onPress={() => router.back()} />
-        </View>
+      <SafeAreaView style={styles.container}>
+        <KeyboardAvoider style={styles.container}>
+          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+            <View style={styles.header}>
+              <IconButton icon="close" accessibilityLabel="Avbryt" onPress={() => router.back()} />
+            </View>
 
-        <ThemedText type="subtitle" style={styles.heading}>
-          Vad kör vi? 🔥
-        </ThemedText>
+            <ThemedText type="subtitle" style={styles.heading}>
+              Vad kör vi? 🔥
+            </ThemedText>
 
-        <View style={styles.vibeRow}>
-          {VIBES.map((emoji) => (
-            <Pressable
-              key={emoji}
-              accessibilityRole="button"
-              accessibilityState={{ selected: vibe === emoji }}
-              onPress={() => setVibe(emoji)}
-              style={[
-                styles.vibeCircle,
-                { backgroundColor: vibe === emoji ? theme.accent : theme.backgroundElement },
-              ]}
-            >
-              <ThemedText style={styles.vibeEmoji}>{emoji}</ThemedText>
-            </Pressable>
-          ))}
-        </View>
+            <View style={styles.vibeRow}>
+              {VIBES.map((emoji) => (
+                <Pressable
+                  key={emoji}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: vibe === emoji }}
+                  onPress={() => setVibe(emoji)}
+                  style={[
+                    styles.vibeCircle,
+                    { backgroundColor: vibe === emoji ? theme.accent : theme.backgroundElement },
+                  ]}
+                >
+                  <ThemedText style={styles.vibeEmoji}>{emoji}</ThemedText>
+                </Pressable>
+              ))}
+            </View>
 
-        <TextField
-          label="Namn på träffen"
-          value={title}
-          onChangeText={setTitle}
-          placeholder='T.ex. "Cruising vid torget"'
-          maxLength={60}
-          autoFocus
-        />
+            <TextField
+              label="Namn på träffen"
+              value={title}
+              onChangeText={setTitle}
+              placeholder='T.ex. "Cruising vid torget"'
+              maxLength={60}
+              autoFocus
+            />
 
-        <View style={styles.timeRow}>
-          {TIME_OPTIONS.map((option) => (
-            <Pressable
-              key={option.value}
-              accessibilityRole="button"
-              accessibilityState={{ selected: time === option.value }}
-              onPress={() => setTime(option.value)}
-              style={[
-                styles.timeChip,
-                { backgroundColor: time === option.value ? theme.brand : theme.backgroundElement },
-              ]}
-            >
-              <ThemedText
-                type="smallBold"
-                style={{ color: time === option.value ? theme.brandText : theme.textSecondary }}
-              >
-                {option.label}
-              </ThemedText>
-            </Pressable>
-          ))}
-        </View>
+            <View style={styles.timeRow}>
+              {TIME_OPTIONS.map((option) => (
+                <Pressable
+                  key={option.value}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: time === option.value }}
+                  onPress={() => setTime(option.value)}
+                  style={[
+                    styles.timeChip,
+                    {
+                      backgroundColor:
+                        time === option.value ? theme.brand : theme.backgroundElement,
+                    },
+                  ]}
+                >
+                  <ThemedText
+                    type="smallBold"
+                    style={{ color: time === option.value ? theme.brandText : theme.textSecondary }}
+                  >
+                    {option.label}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </View>
+          </ScrollView>
 
-        <View style={styles.submitRow}>
-          <Button
-            label="Släpp pinnen"
-            icon="location"
-            onPress={handleSubmit}
-            disabled={!title.trim()}
-            loading={createMeetup.isPending}
-          />
-        </View>
+          <View style={[styles.submitRow, { borderTopColor: theme.separator }]}>
+            <Button
+              label="Släpp pinnen"
+              icon="location"
+              onPress={handleSubmit}
+              disabled={!title.trim()}
+              loading={createMeetup.isPending}
+            />
+          </View>
+        </KeyboardAvoider>
       </SafeAreaView>
     </ScreenBackground>
   );
@@ -122,7 +130,7 @@ export default function CreateMeetupScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  safeArea: { flex: 1, paddingHorizontal: Spacing.four, gap: Spacing.three },
+  content: { paddingHorizontal: Spacing.four, gap: Spacing.three, paddingBottom: Spacing.three },
   header: { flexDirection: 'row', justifyContent: 'flex-end', paddingTop: Spacing.two },
   heading: { marginTop: Spacing.two },
   vibeRow: { flexDirection: 'row', gap: Spacing.two },
@@ -141,5 +149,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     borderRadius: Radius.pill,
   },
-  submitRow: { marginTop: 'auto', paddingBottom: Spacing.four },
+  submitRow: {
+    paddingHorizontal: Spacing.four,
+    paddingTop: Spacing.two,
+    paddingBottom: Spacing.two,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
 });
