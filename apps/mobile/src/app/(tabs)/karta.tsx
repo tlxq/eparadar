@@ -4,255 +4,34 @@ import { FlatList, Platform, Pressable, StyleSheet, Vibration, View } from 'reac
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
+import { ActionSheet, type SheetAction } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
 import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
 import { EmptyState } from '@/components/empty-state';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
+import { carColorHex } from '@/features/map/car-colors';
+import { MAP_HTML } from '@/features/map/map-html';
+import { motionFromCoords } from '@/features/map/motion';
 import { markInterested } from '@/features/meetups/api';
 import { useMeetups } from '@/features/meetups/hooks';
 import { useRealtimeTable } from '@/hooks/use-realtime-table';
-import { fetchFriendLocations, type FriendLocation } from '@/lib/api';
+import {
+  fetchFriendLocations,
+  fetchMyCars,
+  fetchMyLocation,
+  fetchProfile,
+  type Car,
+  type FriendLocation,
+} from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
-
-const SWEDEN_CENTER = { lat: 62.0, lng: 15.0, zoom: 4 };
-const LONG_PRESS_MS = 500;
-
-const MAP_HTML = `<!DOCTYPE html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <style>
-    html, body, #map { height: 100%; margin: 0; padding: 0; background: #0B0E14; }
-    /* Plain OSM tiles are the only truly-free-forever option (no key, no signup, no
-       billing risk) — CARTO's "free" Voyager style turned out to require an account.
-       Push the color treatment hard in CSS instead of relying on a paid vector basemap. */
-    .leaflet-tile-pane { filter: saturate(2.1) contrast(1.12) brightness(1.05) hue-rotate(-6deg); }
-    .map-tint {
-      position: absolute; inset: 0; z-index: 450; pointer-events: none;
-      background: linear-gradient(155deg, rgba(47,111,237,0.16), rgba(255,138,61,0.10) 60%);
-      mix-blend-mode: overlay;
-    }
-    .leaflet-control-attribution { font-size: 8px !important; }
-    .friend-marker {
-      width: 48px; height: 48px; border-radius: 50%; background: #2F6FED;
-      display: flex; align-items: center; justify-content: center;
-      border: 3px solid #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.4);
-      position: relative; overflow: visible;
-    }
-    .friend-marker::after {
-      content: ''; position: absolute; inset: -7px; border: 2px solid rgba(47,111,237,0.75);
-      border-radius: 50%; animation: friendPulse 2.2s ease-out infinite;
-    }
-    .friend-marker.is-approximate::before {
-      content: ''; position: absolute; inset: -26px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(47,111,237,0.68) 0%, rgba(47,111,237,0.12) 55%, rgba(47,111,237,0) 75%);
-    }
-    .friend-marker.is-approximate::after { display: none; }
-    .friend-avatar {
-      width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
-      display: block; position: relative; z-index: 1;
-    }
-    .friend-initials {
-      color: #fff; font: 800 16px sans-serif; text-transform: uppercase;
-      position: relative; z-index: 1;
-    }
-    .friend-status {
-      position: absolute; right: -2px; bottom: -2px; width: 13px; height: 13px;
-      background: #22C55E; border: 2px solid #fff; border-radius: 50%; z-index: 2;
-    }
-    @keyframes friendPulse {
-      0% { transform: scale(0.9); opacity: 0.8; }
-      100% { transform: scale(1.2); opacity: 0; }
-    }
-    .meetup-badge {
-      width: 42px; height: 42px; border-radius: 50%; background: #FF8A3D;
-      display: flex; align-items: center; justify-content: center; font-size: 19px;
-      border: 3px solid #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.35); position: relative;
-    }
-    .meetup-badge.live { animation: meetupPulse 1.8s ease-out infinite; }
-    .meetup-count {
-      position: absolute; top: -6px; right: -6px; background: #22C55E; color: #06210F;
-      font-size: 9px; font-weight: 800; padding: 1px 4px; border-radius: 7px;
-      border: 2px solid #fff; font-family: sans-serif;
-    }
-    .meetup-here {
-      position: absolute; bottom: -6px; right: -6px; background: #22C55E; color: #06210F;
-      font-size: 9px; font-weight: 800; padding: 1px 4px; border-radius: 7px;
-      border: 2px solid #fff; font-family: sans-serif; display: flex; align-items: center; gap: 1px;
-    }
-    @keyframes meetupPulse {
-      0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.55); }
-      100% { box-shadow: 0 0 0 9px rgba(34,197,94,0); }
-    }
-    .draft-pin {
-      width: 44px; height: 44px; border-radius: 50%; background: #2F6FED;
-      display: flex; align-items: center; justify-content: center; font-size: 20px;
-      border: 3px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    }
-  </style>
-</head>
-<body>
-  <div id="map"></div>
-  <div class="map-tint"></div>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-    const map = L.map('map', { zoomControl: false })
-      .setView([${SWEDEN_CENTER.lat}, ${SWEDEN_CENTER.lng}], ${SWEDEN_CENTER.zoom});
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap-bidragsgivare',
-      maxZoom: 19,
-    }).addTo(map);
-
-    // NOTE: never name this "postMessage" — that shadows window.postMessage, which is
-    // literally how react-native-webview delivers RN -> WebView messages on Android,
-    // and silently breaks every message the app tries to send into this page.
-    function sendToNative(msg) {
-      window.ReactNativeWebView.postMessage(JSON.stringify(msg));
-    }
-
-    const friendMarkers = {};
-    function escapeHtml(value) {
-      return String(value || '').replace(/[&<>"']/g, function (char) {
-        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char];
-      });
-    }
-    function friendInitials(label) {
-      return escapeHtml(String(label || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(function (part) {
-        return part[0];
-      }).join('') || '?');
-    }
-    function friendIcon(friend) {
-      const avatar = friend.avatarUrl
-        ? '<img class="friend-avatar" src="' + escapeHtml(friend.avatarUrl) + '" />'
-        : '<span class="friend-initials">' + friendInitials(friend.label) + '</span>';
-      const markerClass = friend.approximate ? 'friend-marker is-approximate' : 'friend-marker';
-      return L.divIcon({
-        className: '',
-        html: '<div class="' + markerClass + '">' + avatar + '<span class="friend-status"></span></div>',
-        iconSize: [48, 48],
-        iconAnchor: [24, 24],
-      });
-    }
-    function syncFriends(friends) {
-      const ids = friends.map((f) => f.id);
-      Object.keys(friendMarkers).forEach((id) => {
-        if (!ids.includes(id)) { map.removeLayer(friendMarkers[id]); delete friendMarkers[id]; }
-      });
-      friends.forEach((f) => {
-        if (friendMarkers[f.id]) {
-          friendMarkers[f.id].setLatLng([f.lat, f.lng]);
-          friendMarkers[f.id].setIcon(friendIcon(f));
-        } else {
-          friendMarkers[f.id] = L.marker([f.lat, f.lng], { icon: friendIcon(f) }).addTo(map);
-        }
-        friendMarkers[f.id].bindPopup(f.label);
-      });
-    }
-
-    const meetupMarkers = {};
-    function meetupIcon(m) {
-      return L.divIcon({
-        className: '',
-        html: '<div class="meetup-badge' + (m.hereNowCount > 0 ? ' live' : '') + '" data-meetup-id="' + m.id + '">' + m.emoji +
-          (m.interestCount > 0 ? '<span class="meetup-count">' + m.interestCount + '</span>' : '') +
-          (m.hereNowCount > 0 ? '<span class="meetup-here">📍' + m.hereNowCount + '</span>' : '') +
-          '</div>',
-        iconSize: [42, 42],
-        iconAnchor: [21, 21],
-      });
-    }
-    function syncMeetups(meetups) {
-      const ids = meetups.map((m) => m.id);
-      Object.keys(meetupMarkers).forEach((id) => {
-        if (!ids.includes(id)) { map.removeLayer(meetupMarkers[id]); delete meetupMarkers[id]; }
-      });
-      meetups.forEach((m) => {
-        if (meetupMarkers[m.id]) {
-          meetupMarkers[m.id].setLatLng([m.lat, m.lng]);
-          meetupMarkers[m.id].setIcon(meetupIcon(m));
-        } else {
-          const marker = L.marker([m.lat, m.lng], { icon: meetupIcon(m) }).addTo(map);
-          marker.on('click', function () {
-            // a long-press that just fired also completes as a click on release —
-            // swallow that one so it doesn't also navigate to the detail screen.
-            if (longPressFired) { longPressFired = false; return; }
-            sendToNative({ type: 'MEETUP_TAP', id: m.id });
-          });
-          meetupMarkers[m.id] = marker;
-        }
-      });
-    }
-
-    // Creating a meetup now goes through the side menu: pick "Skapa träff", tap the map
-    // once to drop a draggable pin, drag to fine-tune, then confirm from the native UI.
-    let placing = false;
-    let draftMarker = null;
-
-    function draftIcon() {
-      return L.divIcon({ className: '', html: '<div class="draft-pin">📍</div>', iconSize: [44, 44], iconAnchor: [22, 40] });
-    }
-
-    map.on('click', function (e) {
-      if (!placing || draftMarker) return;
-      draftMarker = L.marker(e.latlng, { icon: draftIcon(), draggable: true }).addTo(map);
-      draftMarker.on('dragend', function () {
-        const ll = draftMarker.getLatLng();
-        sendToNative({ type: 'DRAFT_PIN_MOVED', lat: ll.lat, lng: ll.lng });
-      });
-      sendToNative({ type: 'DRAFT_PIN_SET', lat: e.latlng.lat, lng: e.latlng.lng });
-    });
-
-    function handleMessage(event) {
-      const msg = JSON.parse(event.data);
-      if (msg.type === 'SET_FRIENDS') syncFriends(msg.friends);
-      if (msg.type === 'SET_MEETUPS') syncMeetups(msg.meetups);
-      if (msg.type === 'CENTER_ON') {
-        map.setView([msg.lat, msg.lng], msg.zoom || 14);
-      }
-      if (msg.type === 'START_PLACING') {
-        placing = true;
-      }
-      if (msg.type === 'CANCEL_PLACING') {
-        placing = false;
-        if (draftMarker) { map.removeLayer(draftMarker); draftMarker = null; }
-      }
-    }
-    document.addEventListener('message', handleMessage);
-    window.addEventListener('message', handleMessage);
-
-    // Holding on an existing pin = quick-mark yourself interested, no navigation.
-    let pressTimer = null;
-    let pressMeetupId = null;
-    let longPressFired = false;
-
-    map.on('mousedown touchstart', function (e) {
-      longPressFired = false;
-      const targetEl = e.originalEvent && e.originalEvent.target;
-      const badge = targetEl && targetEl.closest ? targetEl.closest('[data-meetup-id]') : null;
-      pressMeetupId = badge ? badge.getAttribute('data-meetup-id') : null;
-      if (!pressMeetupId) return;
-      pressTimer = setTimeout(function () {
-        longPressFired = true;
-        sendToNative({ type: 'MEETUP_LONG_PRESS', id: pressMeetupId });
-        pressTimer = null;
-      }, ${LONG_PRESS_MS});
-    });
-    function cancelPress() {
-      if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
-    }
-    map.on('mouseup touchend movestart dragstart', cancelPress);
-  </script>
-</body>
-</html>`;
 
 export default function MapScreen() {
   const theme = useTheme();
@@ -267,7 +46,56 @@ export default function MapScreen() {
     enabled: !!userId,
   });
   const { data: meetups } = useMeetups();
+  const { data: myLocation } = useQuery({
+    queryKey: queryKeys.myLocation(userId),
+    queryFn: () => fetchMyLocation(userId!),
+    enabled: !!userId,
+  });
+  const { data: myProfile } = useQuery({
+    queryKey: queryKeys.profile(userId),
+    queryFn: () => fetchProfile(userId!),
+    enabled: !!userId,
+  });
+  const { data: myCars } = useQuery({
+    queryKey: queryKeys.cars(userId),
+    queryFn: () => fetchMyCars(userId!),
+    enabled: !!userId,
+  });
   const hasCentered = useRef(false);
+  const [devicePosition, setDevicePosition] = useState<{ lat: number; lng: number } | null>(null);
+  const [deviceMotion, setDeviceMotion] = useState<{ moving: boolean; heading: number | null }>({
+    moving: false,
+    heading: null,
+  });
+  const [meSheetOpen, setMeSheetOpen] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      let subscription: Location.LocationSubscription | null = null;
+      let cancelled = false;
+      Location.getForegroundPermissionsAsync()
+        .then(({ status }) => {
+          if (status !== 'granted' || cancelled) return null;
+          return Location.watchPositionAsync(
+            { accuracy: Location.Accuracy.High, distanceInterval: 10, timeInterval: 3000 },
+            (position) => {
+              setDevicePosition({ lat: position.coords.latitude, lng: position.coords.longitude });
+              setDeviceMotion(motionFromCoords(position.coords));
+            },
+          );
+        })
+        .then((sub) => {
+          if (!sub) return;
+          if (cancelled) sub.remove();
+          else subscription = sub;
+        })
+        .catch(() => undefined);
+      return () => {
+        cancelled = true;
+        subscription?.remove();
+      };
+    }, []),
+  );
 
   const [picker, setPicker] = useState<'none' | 'search' | 'friends'>('none');
   const [pickerQuery, setPickerQuery] = useState('');
@@ -292,19 +120,13 @@ export default function MapScreen() {
     if (!granted) return;
 
     const centerOn = (lat: number, lng: number) => {
-      webviewRef.current?.postMessage(JSON.stringify({ type: 'CENTER_ON', lat, lng, zoom: 14 }));
+      webviewRef.current?.postMessage(
+        JSON.stringify({ type: 'CENTER_ON', lat, lng, zoom: 15.5, pitch: 45 }),
+      );
     };
 
-    // A fresh GPS fix can take several seconds (longer on a cold chip/indoors), which
-    // left the map sitting on the zoomed-out Sweden default the whole time. Center on
-    // whatever cached fix the OS already has first — instant if one exists — then
-    // silently refine once the precise fix comes in.
-    try {
-      const lastKnown = await Location.getLastKnownPositionAsync();
-      if (lastKnown) centerOn(lastKnown.coords.latitude, lastKnown.coords.longitude);
-    } catch {
-      // no cached fix available — fall through to the fresh one below
-    }
+    const lastKnown = await Location.getLastKnownPositionAsync().catch(() => null);
+    if (lastKnown) centerOn(lastKnown.coords.latitude, lastKnown.coords.longitude);
 
     setLocating(true);
     try {
@@ -313,7 +135,7 @@ export default function MapScreen() {
       });
       centerOn(position.coords.latitude, position.coords.longitude);
     } catch {
-      // keep whatever we already centered on (or the Sweden default) if GPS is unavailable
+      return;
     } finally {
       setLocating(false);
     }
@@ -329,42 +151,80 @@ export default function MapScreen() {
     channelName: `locations:${userId}`,
     table: 'locations',
     enabled: !!userId,
-    onChange: () => queryClient.invalidateQueries({ queryKey: queryKeys.friendLocations(userId) }),
+    onChange: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.friendLocations(userId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.myLocation(userId) });
+    },
   });
 
-  useEffect(() => {
-    if (!friendLocations) return;
-    webviewRef.current?.postMessage(
-      JSON.stringify({
-        type: 'SET_FRIENDS',
-        friends: friendLocations.map((f) => ({
-          id: f.user_id,
-          lat: f.lat,
-          lng: f.lng,
-          label: f.profile.display_name,
-          avatarUrl: f.profile.avatar_url,
-          approximate: f.approximate_enabled,
-        })),
-      }),
-    );
-  }, [friendLocations]);
+  const postToMap = useCallback((message: object) => {
+    webviewRef.current?.postMessage(JSON.stringify(message));
+  }, []);
+
+  const friendsPayload = useMemo(
+    () =>
+      (friendLocations ?? []).map((f) => ({
+        id: f.user_id,
+        lat: f.lat,
+        lng: f.lng,
+        label: f.profile.display_name,
+        avatarUrl: f.profile.avatar_url,
+        approximate: f.approximate_enabled,
+        ring: carColorHex(latestCarColor(f.profile.cars)),
+        heading: f.heading,
+        moving: f.moving,
+        updatedAt: new Date(f.updated_at).getTime(),
+      })),
+    [friendLocations],
+  );
+
+  const mePayload = useMemo(() => {
+    const position =
+      devicePosition ?? (myLocation ? { lat: myLocation.lat, lng: myLocation.lng } : null);
+    if (!position || !myProfile) return null;
+    const ghost = !myLocation?.sharing_enabled;
+    return {
+      lat: position.lat,
+      lng: position.lng,
+      label: myProfile.display_name,
+      avatarUrl: myProfile.avatar_url,
+      ring: carColorHex(latestCarColor(myCars)),
+      ghost,
+      approximate: !ghost && !!myLocation?.approximate_enabled,
+      moving: deviceMotion.moving,
+      heading: deviceMotion.heading,
+    };
+  }, [devicePosition, deviceMotion, myLocation, myProfile, myCars]);
+
+  const meetupsPayload = useMemo(
+    () =>
+      (meetups ?? []).map((m) => ({
+        id: m.id,
+        lat: m.lat,
+        lng: m.lng,
+        interestCount: m.interest_count,
+        hereNowCount: m.here_now_count,
+      })),
+    [meetups],
+  );
+
+  const sendAll = useCallback(() => {
+    postToMap({ type: 'SET_FRIENDS', friends: friendsPayload });
+    postToMap({ type: 'SET_ME', me: mePayload });
+    postToMap({ type: 'SET_MEETUPS', meetups: meetupsPayload });
+  }, [postToMap, friendsPayload, mePayload, meetupsPayload]);
 
   useEffect(() => {
-    if (!meetups) return;
-    webviewRef.current?.postMessage(
-      JSON.stringify({
-        type: 'SET_MEETUPS',
-        meetups: meetups.map((m) => ({
-          id: m.id,
-          lat: m.lat,
-          lng: m.lng,
-          emoji: m.vibe_emoji,
-          interestCount: m.interest_count,
-          hereNowCount: m.here_now_count,
-        })),
-      }),
-    );
-  }, [meetups]);
+    postToMap({ type: 'SET_FRIENDS', friends: friendsPayload });
+  }, [postToMap, friendsPayload]);
+
+  useEffect(() => {
+    postToMap({ type: 'SET_ME', me: mePayload });
+  }, [postToMap, mePayload]);
+
+  useEffect(() => {
+    postToMap({ type: 'SET_MEETUPS', meetups: meetupsPayload });
+  }, [postToMap, meetupsPayload]);
 
   const closePicker = () => {
     setPicker('none');
@@ -405,8 +265,11 @@ export default function MapScreen() {
   const handleWebViewMessage = (event: WebViewMessageEvent) => {
     try {
       const msg = JSON.parse(event.nativeEvent.data);
-      console.log('[karta] webview message', msg.type, msg);
-      if (msg.type === 'MEETUP_TAP') {
+      if (msg.type === 'MAP_READY') {
+        sendAll();
+      } else if (msg.type === 'ME_TAP') {
+        setMeSheetOpen(true);
+      } else if (msg.type === 'MEETUP_TAP') {
         router.push(`/meetups/${msg.id}`);
       } else if (msg.type === 'DRAFT_PIN_SET' || msg.type === 'DRAFT_PIN_MOVED') {
         setDraftPin({ lat: msg.lat, lng: msg.lng });
@@ -419,9 +282,27 @@ export default function MapScreen() {
         });
       }
     } catch {
-      // ignore malformed messages from the map webview
+      return;
     }
   };
+
+  const meActions: SheetAction[] = [
+    {
+      label: 'Ändra vad jag delar',
+      icon: 'options-outline',
+      onPress: () => router.push('/settings'),
+    },
+    {
+      label: 'Min profil',
+      icon: 'person-circle-outline',
+      onPress: () => router.push('/(tabs)/profile'),
+    },
+  ];
+  const meSharingText = !myLocation?.sharing_enabled
+    ? 'Spökläge är på. Ingen av dina vänner ser dig på kartan.'
+    : myLocation.approximate_enabled
+      ? 'Dina vänner ser ungefär var du är, inte exakt punkt.'
+      : 'Dina vänner ser din exakta plats och när du kör.';
 
   if (Platform.OS === 'web') {
     return (
@@ -492,7 +373,11 @@ export default function MapScreen() {
           <View
             style={[
               styles.pickerPanel,
-              { bottom: tabBarInset + 76, backgroundColor: theme.backgroundElement, borderColor: theme.border },
+              {
+                bottom: tabBarInset + 76,
+                backgroundColor: theme.backgroundElement,
+                borderColor: theme.border,
+              },
             ]}
           >
             {picker === 'search' && (
@@ -534,7 +419,11 @@ export default function MapScreen() {
           <View
             style={[
               styles.actionBar,
-              { bottom: tabBarInset, backgroundColor: theme.backgroundElement, borderColor: theme.border },
+              {
+                bottom: tabBarInset,
+                backgroundColor: theme.backgroundElement,
+                borderColor: theme.border,
+              },
             ]}
           >
             <Pressable
@@ -584,8 +473,36 @@ export default function MapScreen() {
             </Pressable>
           </View>
         )}
+        <ActionSheet
+          visible={meSheetOpen}
+          onClose={() => setMeSheetOpen(false)}
+          header={
+            <View style={styles.meHeader}>
+              <Avatar
+                name={myProfile?.display_name ?? ''}
+                imageUrl={myProfile?.avatar_url}
+                size={56}
+              />
+              <View style={styles.meHeaderText}>
+                <ThemedText type="smallBold">Så ser vännerna dig</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  {meSharingText}
+                </ThemedText>
+              </View>
+            </View>
+          }
+          actions={meActions}
+        />
       </SafeAreaView>
     </ScreenBackground>
+  );
+}
+
+function latestCarColor(cars: Pick<Car, 'color' | 'created_at'>[] | undefined): string | null {
+  return (
+    [...(cars ?? [])]
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+      .find((car) => car.color)?.color ?? null
   );
 }
 
@@ -655,4 +572,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   placingBtnPrimary: { flex: 2 },
+  meHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    paddingHorizontal: Spacing.three,
+    paddingBottom: Spacing.three,
+  },
+  meHeaderText: { flex: 1, gap: Spacing.one },
 });

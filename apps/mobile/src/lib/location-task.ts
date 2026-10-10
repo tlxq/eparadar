@@ -2,6 +2,7 @@ import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 
 import { Colors } from '@/constants/theme';
+import { motionFromCoords } from '@/features/map/motion';
 import { upsertLocation } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
@@ -21,7 +22,12 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
   if (!userId) return;
 
   try {
-    await upsertLocation({ userId, lat: latest.coords.latitude, lng: latest.coords.longitude });
+    await upsertLocation({
+      userId,
+      lat: latest.coords.latitude,
+      lng: latest.coords.longitude,
+      ...motionFromCoords(latest.coords),
+    });
   } catch (err) {
     console.error('[location-task] upsert failed', err);
   }

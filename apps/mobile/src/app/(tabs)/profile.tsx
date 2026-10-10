@@ -27,10 +27,12 @@ import {
   fetchPosts,
   fetchProfile,
   removeAvatar,
+  setCarColor,
   updateProfile,
   type Car,
   type Profile,
 } from '@/lib/api';
+import { CarColorPicker } from '@/features/map/car-color-picker';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { uploadAvatar } from '@/lib/image-upload';
@@ -259,6 +261,18 @@ export default function ProfileScreen() {
     }
   }
 
+  async function handleCarColor(car: Car, color: string) {
+    setSelectedCar({ ...car, color });
+    try {
+      await setCarColor(car.id, color);
+      queryClient.invalidateQueries({ queryKey: queryKeys.cars(userId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friendLocations(userId) });
+    } catch (error) {
+      setSelectedCar(car);
+      showToast({ tone: 'error', message: getErrorMessage(error) });
+    }
+  }
+
   async function handleDeleteCar(car: Car) {
     const ok = await confirmDestructive({
       title: `Ta bort ${car.nickname ?? `${car.make} ${car.model}`}?`,
@@ -431,6 +445,16 @@ export default function ProfileScreen() {
             : undefined
         }
         onClose={() => setSelectedCar(null)}
+        header={
+          selectedCar ? (
+            <View style={styles.carColorSheet}>
+              <CarColorPicker
+                value={selectedCar.color}
+                onChange={(color) => handleCarColor(selectedCar, color)}
+              />
+            </View>
+          ) : null
+        }
         actions={
           selectedCar
             ? [
@@ -458,6 +482,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  carColorSheet: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.three },
   padded: { paddingHorizontal: Spacing.three, gap: Spacing.three },
   hero: { alignItems: 'center', gap: Spacing.one },
   heroSkeleton: { alignItems: 'center', gap: Spacing.two, paddingTop: Spacing.two },

@@ -101,6 +101,7 @@ export async function createCar(input: {
   year: number | null;
   nickname: string | null;
   photoUrl?: string | null;
+  color?: string | null;
 }) {
   const { error } = await supabase.from('cars').insert({
     owner_id: input.ownerId,
@@ -109,7 +110,13 @@ export async function createCar(input: {
     year: input.year,
     nickname: input.nickname,
     photo_url: input.photoUrl ?? null,
+    color: input.color ?? null,
   });
+  if (error) throw error;
+}
+
+export async function setCarColor(carId: string, color: string | null): Promise<void> {
+  const { error } = await supabase.from('cars').update({ color }).eq('id', carId);
   if (error) throw error;
 }
 
@@ -445,7 +452,9 @@ export async function removeFriend(friendshipId: string): Promise<void> {
 export type LocationRow = DbTables['locations']['Row'];
 
 export type FriendLocation = LocationRow & {
-  profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
+  profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'> & {
+    cars: Pick<Car, 'color' | 'created_at'>[];
+  };
 };
 
 export async function fetchMyLocation(userId: string): Promise<LocationRow | null> {
@@ -462,12 +471,16 @@ export async function upsertLocation(input: {
   userId: string;
   lat: number;
   lng: number;
+  heading?: number | null;
+  moving?: boolean;
   sharingEnabled?: boolean;
 }): Promise<void> {
   const payload: DbTables['locations']['Insert'] = {
     user_id: input.userId,
     lat: input.lat,
     lng: input.lng,
+    heading: input.heading ?? null,
+    moving: input.moving ?? false,
     updated_at: new Date().toISOString(),
   };
   if (input.sharingEnabled !== undefined) {
@@ -496,7 +509,7 @@ export async function setLocationApproximate(userId: string, enabled: boolean): 
 export async function fetchFriendLocations(userId: string): Promise<FriendLocation[]> {
   const { data, error } = await supabase
     .from('locations')
-    .select('*, profile:profiles(id, username, display_name, avatar_url)')
+    .select('*, profile:profiles(id, username, display_name, avatar_url, cars(color, created_at))')
     .eq('sharing_enabled', true)
     .neq('user_id', userId);
   if (error) throw error;
