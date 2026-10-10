@@ -34,7 +34,10 @@ new phase until the current one is checked off (keeps one front open at a time).
   needs Tom's phone. The chat list and conversation screens got their visual pass there too.
 - **Phase I done** (2026-10-06): onboarding and the ErrorBoundary landed. Sentry only reports
   once a DSN is created (Tom's).
-- **Next up: Phase J** (store submission), plus the on-device checks listed under Phases H and I.
+- **Karta 2.0 done** (2026-10-11, #97–#100): night map, own avatar, Raggställen/Varningar, status,
+  evening heat and spot photos, all live. Still needs an on-device check.
+- **Next up: Phase J** (store submission), plus the on-device checks listed under Phases H, I and
+  Karta 2.0.
 - **Remaining for launch (Phase J)**: Expo/EAS account and store credentials, manual store
   submission, and optional CI automation after the first successful submission.
 
@@ -359,6 +362,24 @@ implement) as one coherent visual pass rather than piecemeal.
       `ErrorFallback` as Expo Router's `ErrorBoundary` (2026-10-06) — a Swedish "Något gick snett"
       screen with Försök igen, sending the error to `Sentry.captureException`. Still needs the
       Sentry DSN (Phase A) before anything is actually reported.
+
+## Karta 2.0 — Snapchat-style night map
+
+Pitched as a rendered artifact (night neon, photo + car-colour ring, duotone icons) and voted on by
+Tom before building. Location-privacy constraint still applies: everything person-related is
+friends-only and opt-in; heat is aggregated (≥2 friends per ~300 m cell, 12 h retention).
+
+- [x] MapLibre + OpenFreeMap dark style tuned to night neon, road glow, 3D buildings (#97)
+- [x] Own avatar as friends see it: glow, car-colour ring (`cars.color`), top-down car while
+      driving (`locations.heading`/`moving`, no speed stored), approximate halo, ghost marker (#97)
+- [x] Friend clusters and duotone meetup icon (#97)
+- [x] Raggställen (name, here-now within 100 m) and Varningar (4 types, 2 h expiry), creator picks
+      friends/all visibility, long-press or + to drop (#98)
+- [x] Status bubble (1 h, capped server-side), evening heat, dusk/night palette by sun altitude (#99)
+- [x] Photos on Raggställen, 24 h, private bucket (#100)
+- [ ] On-device check of all of the above on Tom's phone
+- [ ] Maybe later (voted "Kanske"): honk at a friend, cruising routes
+- [ ] In-app camera for spot photos (needs new iOS camera permission text + native build)
 
 ## Phase J — Store submission readiness
 
