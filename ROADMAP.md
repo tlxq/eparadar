@@ -377,6 +377,9 @@ friends-only and opt-in; heat is aggregated (≥2 friends per ~300 m cell, 12 h 
       friends/all visibility, long-press or + to drop (#98)
 - [x] Status bubble (1 h, capped server-side), evening heat, dusk/night palette by sun altitude (#99)
 - [x] Photos on Raggställen, 24 h, private bucket (#100)
+- [x] Follow me while driving, like Google Maps: the map keeps you centred, turns heading-up and
+      tilts while you drive; panning or zooming by hand stops following, the locate button turns
+      it back on. Missing until 2026-10-11, you had to re-centre by hand.
 - [ ] On-device check of all of the above on Tom's phone
 - [ ] Maybe later (voted "Kanske"): honk at a friend, cruising routes
 - [ ] In-app camera for spot photos (needs new iOS camera permission text + native build)

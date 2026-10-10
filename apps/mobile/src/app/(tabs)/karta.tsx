@@ -138,7 +138,7 @@ export default function MapScreen() {
         .then(({ status }) => {
           if (status !== 'granted' || cancelled) return null;
           return Location.watchPositionAsync(
-            { accuracy: Location.Accuracy.High, distanceInterval: 10, timeInterval: 3000 },
+            { accuracy: Location.Accuracy.High, distanceInterval: 5, timeInterval: 1000 },
             (position) => {
               setDevicePosition({ lat: position.coords.latitude, lng: position.coords.longitude });
               setDeviceMotion(motionFromCoords(position.coords));
@@ -163,6 +163,8 @@ export default function MapScreen() {
   const [placingStep, setPlacingStep] = useState<'idle' | 'placing' | 'confirming'>('idle');
   const [draftPin, setDraftPin] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const wantFollowRef = useRef(false);
 
   const pickerResults = useMemo(() => {
     const friends = friendLocations ?? [];
@@ -180,9 +182,12 @@ export default function MapScreen() {
     }
     if (!granted) return;
 
+    wantFollowRef.current = true;
+    webviewRef.current?.postMessage(JSON.stringify({ type: 'FOLLOW_ME' }));
+
     const centerOn = (lat: number, lng: number) => {
       webviewRef.current?.postMessage(
-        JSON.stringify({ type: 'CENTER_ON', lat, lng, zoom: 15.5, pitch: 45 }),
+        JSON.stringify({ type: 'CENTER_ON', lat, lng, zoom: 15.5, pitch: 45, keepFollow: true }),
       );
     };
 
@@ -435,6 +440,10 @@ export default function MapScreen() {
       const msg = JSON.parse(event.nativeEvent.data);
       if (msg.type === 'MAP_READY') {
         sendAll();
+        if (wantFollowRef.current) postToMap({ type: 'FOLLOW_ME' });
+      } else if (msg.type === 'FOLLOW_CHANGED') {
+        wantFollowRef.current = !!msg.following;
+        setFollowing(!!msg.following);
       } else if (msg.type === 'ME_TAP') {
         setMeSheetOpen(true);
       } else if (msg.type === 'SPOT_TAP') {
@@ -639,15 +648,21 @@ export default function MapScreen() {
             </Pressable>
             <Pressable
               onPress={centerOnMe}
-              disabled={locating}
               style={styles.actionBarBtn}
               hitSlop={8}
-              accessibilityLabel="Min position"
+              accessibilityLabel={following ? 'Följer dig' : 'Följ mig på kartan'}
+              accessibilityState={{ selected: following }}
             >
               <Ionicons
-                name={locating ? 'ellipsis-horizontal' : 'locate'}
+                name={
+                  locating && !following
+                    ? 'ellipsis-horizontal'
+                    : following
+                      ? 'navigate'
+                      : 'locate-outline'
+                }
                 size={22}
-                color={theme.text}
+                color={following ? theme.brand : theme.text}
               />
             </Pressable>
           </View>
