@@ -15,4 +15,5 @@ export const queryKeys = {
   myLocation: (userId: string | undefined) => ['myLocation', userId] as const,
   friendLocations: (userId: string | undefined) => ['friendLocations', userId] as const,
   friendCode: (userId: string | undefined) => ['friendCode', userId] as const,
+  spots: () => ['spots'] as const,
 };

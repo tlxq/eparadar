@@ -663,6 +663,53 @@ export type Database = {
           },
         ];
       };
+      spots: {
+        Row: {
+          created_at: string;
+          creator_id: string;
+          expires_at: string | null;
+          id: string;
+          kind: string;
+          lat: number;
+          lng: number;
+          name: string | null;
+          visibility: string;
+          warning_type: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          creator_id: string;
+          expires_at?: string | null;
+          id?: string;
+          kind: string;
+          lat: number;
+          lng: number;
+          name?: string | null;
+          visibility?: string;
+          warning_type?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          creator_id?: string;
+          expires_at?: string | null;
+          id?: string;
+          kind?: string;
+          lat?: number;
+          lng?: number;
+          name?: string | null;
+          visibility?: string;
+          warning_type?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'spots_creator_id_fkey';
+            columns: ['creator_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       waitlist: {
         Row: {
           created_at: string;
@@ -759,6 +806,7 @@ export type Database = {
         Args: { conversation_id: string; user_id: string };
         Returns: boolean;
       };
+      is_blocked_between: { Args: { a: string; b: string }; Returns: boolean };
       is_friend: { Args: { a: string; b: string }; Returns: boolean };
       is_group_member: {
         Args: { p_conversation_id: string; p_user_id: string };

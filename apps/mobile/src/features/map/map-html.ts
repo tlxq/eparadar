@@ -77,6 +77,25 @@ export const MAP_HTML = `<!DOCTYPE html>
       background: #22C55E; color: #06210F; font-size: 10px; font-weight: 800; text-align: center; border: 2px solid #0E1320;
     }
     .pin svg { width: 46px; height: 46px; filter: drop-shadow(0 0 10px rgba(47,111,237,0.8)); }
+    .spot { display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; }
+    .spot .tile { box-shadow: 0 0 22px rgba(255,138,61,0.55), 0 6px 14px rgba(0,0,0,0.5); }
+    .spot.is-warning .tile::after { content: ''; position: absolute; inset: -6px; border-radius: 18px; border: 2px dashed rgba(255,138,61,0.6); }
+    .spot.is-hot::before {
+      content: ''; position: absolute; left: 50%; top: 22px; width: 160px; height: 160px; transform: translate(-50%,-50%);
+      border-radius: 50%; background: radial-gradient(circle, rgba(255,138,61,0.32), rgba(255,138,61,0.08) 45%, rgba(255,138,61,0) 70%);
+      pointer-events: none; z-index: -1;
+    }
+    .chip {
+      font-size: 10.5px; font-weight: 700; color: #F4F6F9; background: rgba(21,26,37,0.85); white-space: nowrap;
+      border: 1px solid rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 999px; display: flex; gap: 5px; align-items: center;
+    }
+    .chip .n { background: #22C55E; color: #06210F; padding: 1px 5px; border-radius: 6px; font-weight: 800; }
+    .press-ring {
+      width: 64px; height: 64px; border-radius: 50%; border: 2px solid #7EA6FF; display: flex; align-items: center; justify-content: center;
+      animation: pressGrow ${LONG_PRESS_MS}ms ease-out forwards;
+    }
+    .press-ring::after { content: ''; width: 14px; height: 14px; border-radius: 50%; background: #7EA6FF; }
+    @keyframes pressGrow { from { transform: scale(0.4); opacity: 0.3; } to { transform: scale(1); opacity: 1; } }
     @media (prefers-reduced-motion: reduce) { .me .bubble::after, .tile.live { animation: none; } }
   </style>
 </head>
@@ -342,6 +361,87 @@ export const MAP_HTML = `<!DOCTYPE html>
       });
     }
 
+    const spotMarkers = {};
+    let spots = [];
+    function remainingText(expiresAt) {
+      const ms = expiresAt - Date.now();
+      const min = Math.max(1, Math.round(ms / 60000));
+      if (min < 60) return min + ' min kvar';
+      const h = Math.floor(min / 60);
+      const rest = min % 60;
+      return h + ' h' + (rest ? ' ' + rest + ' min' : '') + ' kvar';
+    }
+    function spotHtml(sp) {
+      const warning = sp.kind === 'varning';
+      const chip = warning
+        ? escapeHtml(sp.title) + ' · ' + remainingText(sp.expiresAt)
+        : escapeHtml(sp.title) + (sp.hereNow > 0 ? ' <span class="n">' + sp.hereNow + '</span>' : '');
+      return '<div class="tile">' + sp.icon + '</div><span class="chip">' + chip + '</span>';
+    }
+    function renderSpots() {
+      const now = Date.now();
+      const live = spots.filter(function (sp) { return !sp.expiresAt || sp.expiresAt > now; });
+      const ids = live.map(function (sp) { return sp.id; });
+      Object.keys(spotMarkers).forEach(function (id) {
+        if (ids.indexOf(id) === -1) { spotMarkers[id].remove(); delete spotMarkers[id]; }
+      });
+      live.forEach(function (sp) {
+        const cls = 'mk spot' + (sp.kind === 'varning' ? ' is-warning' : '') + (sp.hereNow > 0 ? ' is-hot' : '');
+        if (spotMarkers[sp.id]) {
+          const el = spotMarkers[sp.id].getElement();
+          el.className = cls;
+          el.innerHTML = spotHtml(sp);
+          spotMarkers[sp.id].setLngLat([sp.lng, sp.lat]);
+          return;
+        }
+        const el = makeEl(cls, spotHtml(sp));
+        el.addEventListener('click', function (e) { e.stopPropagation(); sendToNative({ type: 'SPOT_TAP', id: sp.id }); });
+        spotMarkers[sp.id] = new maplibregl.Marker({ element: el, anchor: 'top', offset: [0, -22] }).setLngLat([sp.lng, sp.lat]).addTo(map);
+      });
+    }
+    setInterval(renderSpots, 30000);
+
+    let draftSpot = null;
+    function showDraftSpot(lat, lng) {
+      if (draftSpot) draftSpot.remove();
+      draftSpot = new maplibregl.Marker({ element: makeEl('mk pin', '${ICON_PIN}'), anchor: 'bottom' }).setLngLat([lng, lat]).addTo(map);
+    }
+    function clearDraftSpot() {
+      if (draftSpot) { draftSpot.remove(); draftSpot = null; }
+    }
+
+    let mapPressTimer = null;
+    let mapPressStart = null;
+    let pressRing = null;
+    function cancelMapPress() {
+      if (mapPressTimer) { clearTimeout(mapPressTimer); mapPressTimer = null; }
+      if (pressRing) { pressRing.remove(); pressRing = null; }
+    }
+    map.on('touchstart', function (e) {
+      cancelMapPress();
+      if (placing) return;
+      const touches = e.originalEvent && e.originalEvent.touches;
+      if (!touches || touches.length !== 1) return;
+      const target = e.originalEvent.target;
+      if (target && target.closest && target.closest('.mk')) return;
+      mapPressStart = e.point;
+      const at = e.lngLat;
+      pressRing = new maplibregl.Marker({ element: makeEl('', '<div class="press-ring"></div>') }).setLngLat(at).addTo(map);
+      mapPressTimer = setTimeout(function () {
+        mapPressTimer = null;
+        if (pressRing) { pressRing.remove(); pressRing = null; }
+        sendToNative({ type: 'MAP_LONG_PRESS', lat: at.lat, lng: at.lng });
+      }, ${LONG_PRESS_MS});
+    });
+    map.on('touchmove', function (e) {
+      if (!mapPressStart) return;
+      if (Math.hypot(e.point.x - mapPressStart.x, e.point.y - mapPressStart.y) > 8) cancelMapPress();
+    });
+    map.on('touchend', cancelMapPress);
+    map.on('touchcancel', cancelMapPress);
+    map.on('dragstart', cancelMapPress);
+    map.on('zoomstart', cancelMapPress);
+
     let placing = false;
     let draftMarker = null;
     map.on('click', function (e) {
@@ -367,6 +467,9 @@ export const MAP_HTML = `<!DOCTYPE html>
       if (msg.type === 'SET_FRIENDS') { friends = msg.friends; renderFriends(); }
       if (msg.type === 'SET_ME') { me = msg.me; renderMe(); }
       if (msg.type === 'SET_MEETUPS') syncMeetups(msg.meetups);
+      if (msg.type === 'SET_SPOTS') { spots = msg.spots; renderSpots(); }
+      if (msg.type === 'SHOW_DRAFT_SPOT') showDraftSpot(msg.lat, msg.lng);
+      if (msg.type === 'CLEAR_DRAFT_SPOT') clearDraftSpot();
       if (msg.type === 'CENTER_ON') {
         map.flyTo({ center: [msg.lng, msg.lat], zoom: msg.zoom || 15, pitch: msg.pitch == null ? map.getPitch() : msg.pitch, speed: 1.4 });
       }
