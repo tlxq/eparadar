@@ -22,7 +22,16 @@ export const MAP_HTML = `<!DOCTYPE html>
     .maplibregl-ctrl-attrib { background: rgba(14,19,32,0.7) !important; }
     .maplibregl-ctrl-attrib a, .maplibregl-ctrl-attrib-inner { color: #A2AAB8 !important; font-size: 9px; }
     .maplibregl-ctrl-attrib-button { filter: invert(1); }
-    .mk { display: flex; flex-direction: column; align-items: center; pointer-events: auto; }
+    .mk { display: flex; flex-direction: column; align-items: center; pointer-events: auto; position: relative; }
+    .status-bubble {
+      position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -8px); max-width: 160px;
+      background: #F4F6F9; color: #0B0E14; font-size: 11px; font-weight: 700; padding: 5px 9px; border-radius: 12px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+    }
+    .status-bubble::after {
+      content: ''; position: absolute; left: 50%; top: 100%; transform: translateX(-50%);
+      border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #F4F6F9;
+    }
     .bubble { position: relative; width: 48px; height: 48px; }
     .ring {
       position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--ring);
@@ -117,7 +126,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     });
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'top-left');
 
-    const PAINT = {
+    const NIGHT_PAINT = {
       background: { 'background-color': '#0E1320' },
       water: { 'fill-color': '#0A1626' },
       waterway: { 'line-color': '#0A1626' },
@@ -138,6 +147,72 @@ export const MAP_HTML = `<!DOCTYPE html>
       railway_minor: { 'line-color': '#1F2636' },
       railway_transit: { 'line-color': '#1F2636' },
     };
+    const DUSK_PAINT = {
+      background: { 'background-color': '#161D2E' },
+      water: { 'fill-color': '#102238' },
+      waterway: { 'line-color': '#102238' },
+      landcover_wood: { 'fill-color': '#15271F', 'fill-opacity': 0.8 },
+      landuse_park: { 'fill-color': '#15271F' },
+      landuse_residential: { 'fill-color': '#1A2234', 'fill-opacity': 0.6 },
+      building: { 'fill-color': '#202940' },
+      highway_path: { 'line-color': '#222C40' },
+      highway_minor: { 'line-color': '#28334A' },
+      highway_major_casing: { 'line-color': '#161D2E' },
+      highway_major_inner: { 'line-color': '#3A4766' },
+      highway_major_subtle: { 'line-color': '#3A4766' },
+      highway_motorway_casing: { 'line-color': '#161D2E' },
+      highway_motorway_inner: { 'line-color': '#6E4A30' },
+      highway_motorway_subtle: { 'line-color': '#6E4A30' },
+      railway: { 'line-color': '#2A3347' },
+      railway_dashline: { 'line-color': '#161D2E' },
+      railway_minor: { 'line-color': '#2A3347' },
+      railway_transit: { 'line-color': '#2A3347' },
+      'road-glow': { 'line-opacity': 0.12 },
+      'building-3d': { 'fill-extrusion-color': ['interpolate', ['linear'], ['coalesce', ['get', 'render_height'], 6], 0, '#1F283C', 40, '#2B3654'] },
+    };
+    NIGHT_PAINT['road-glow'] = { 'line-opacity': 0.3 };
+    NIGHT_PAINT['building-3d'] = { 'fill-extrusion-color': ['interpolate', ['linear'], ['coalesce', ['get', 'render_height'], 6], 0, '#151B29', 30, '#22283A', 60, '#3A2E2A'] };
+
+    function sunAltitude(ms, lat, lng) {
+      const rad = Math.PI / 180;
+      const d = (ms - 946728000000) / 86400000;
+      const M = rad * (357.5291 + 0.98560028 * d);
+      const C = rad * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M));
+      const L = M + C + rad * 102.9372 + Math.PI;
+      const e = rad * 23.4397;
+      const dec = Math.asin(Math.sin(e) * Math.sin(L));
+      const ra = Math.atan2(Math.sin(L) * Math.cos(e), Math.cos(L));
+      const H = rad * (280.16 + 360.9856235 * d) + rad * lng - ra;
+      const phi = rad * lat;
+      return Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H)) / rad;
+    }
+    let mood = null;
+    function applyMood() {
+      if (!map.isStyleLoaded()) return;
+      const c = map.getCenter();
+      const next = sunAltitude(Date.now(), c.lat, c.lng) < -0.83 ? 'night' : 'dusk';
+      if (next === mood) return;
+      mood = next;
+      const paint = next === 'night' ? NIGHT_PAINT : DUSK_PAINT;
+      Object.keys(paint).forEach(function (id) { setPaint(id, paint[id]); });
+    }
+    setInterval(applyMood, 5 * 60 * 1000);
+    map.on('moveend', function () { if (map.getZoom() < 9) return; applyMood(); });
+
+    let heatCells = [];
+    function heatGeoJson() {
+      return {
+        type: 'FeatureCollection',
+        features: heatCells.map(function (cell) {
+          return { type: 'Feature', properties: { people: cell.people }, geometry: { type: 'Point', coordinates: [cell.lng, cell.lat] } };
+        }),
+      };
+    }
+    function renderHeat() {
+      const source = map.getSource('evening-heat');
+      if (source) source.setData(heatGeoJson());
+    }
+
     const TEXT_LAYERS = ['water_name', 'highway_name_other', 'highway_name_motorway', 'place_other', 'place_suburb', 'place_village', 'place_town', 'place_city', 'place_city_large', 'place_state', 'place_country_other', 'place_country_minor', 'place_country_major'];
 
     function setPaint(id, props) {
@@ -148,7 +223,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     }
 
     map.on('style.load', function () {
-      Object.keys(PAINT).forEach(function (id) { setPaint(id, PAINT[id]); });
+      Object.keys(NIGHT_PAINT).forEach(function (id) { setPaint(id, NIGHT_PAINT[id]); });
       TEXT_LAYERS.forEach(function (id) {
         setPaint(id, { 'text-color': '#A2AAB8', 'text-halo-color': '#0B0E14', 'text-halo-width': 1.4 });
       });
@@ -184,6 +259,22 @@ export const MAP_HTML = `<!DOCTYPE html>
           },
         });
       }
+      map.addSource('evening-heat', { type: 'geojson', data: heatGeoJson() });
+      map.addLayer({
+        id: 'evening-heat',
+        type: 'heatmap',
+        source: 'evening-heat',
+        maxzoom: 17,
+        paint: {
+          'heatmap-weight': ['interpolate', ['linear'], ['get', 'people'], 2, 0.5, 6, 1],
+          'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 9, 0.6, 15, 1.4],
+          'heatmap-radius': ['interpolate', ['exponential', 1.6], ['zoom'], 9, 12, 13, 40, 16, 110],
+          'heatmap-color': ['interpolate', ['linear'], ['heatmap-density'], 0, 'rgba(255,138,61,0)', 0.3, 'rgba(255,138,61,0.25)', 0.7, 'rgba(255,138,61,0.5)', 1, 'rgba(255,190,120,0.7)'],
+          'heatmap-opacity': ['interpolate', ['linear'], ['zoom'], 15, 0.85, 17, 0],
+        },
+      }, map.getLayer('highway_name_other') ? 'highway_name_other' : undefined);
+      mood = null;
+      applyMood();
     });
 
     function escapeHtml(value) {
@@ -208,10 +299,14 @@ export const MAP_HTML = `<!DOCTYPE html>
       const fresh = !p.updatedAt || Date.now() - p.updatedAt < ${MOVING_FRESH_MS};
       return !!p.moving && fresh && !p.approximate && !p.ghost;
     }
+    function statusHtml(p) {
+      if (!p.status || !p.statusExpiresAt || p.statusExpiresAt <= Date.now()) return '';
+      return '<span class="status-bubble">' + escapeHtml(p.status) + '</span>';
+    }
     function personHtml(p, extraLabel) {
-      const body = isDriving(p)
+      const body = statusHtml(p) + (isDriving(p)
         ? '<div class="car"><span data-heading="' + (p.heading == null ? '' : p.heading) + '">' + carTop(p.ring) + '</span></div>'
-        : bubbleHtml(p);
+        : bubbleHtml(p));
       return body + (extraLabel || '');
     }
     function applyHeadings(el) {
@@ -468,6 +563,7 @@ export const MAP_HTML = `<!DOCTYPE html>
       if (msg.type === 'SET_ME') { me = msg.me; renderMe(); }
       if (msg.type === 'SET_MEETUPS') syncMeetups(msg.meetups);
       if (msg.type === 'SET_SPOTS') { spots = msg.spots; renderSpots(); }
+      if (msg.type === 'SET_HEAT') { heatCells = msg.cells; renderHeat(); }
       if (msg.type === 'SHOW_DRAFT_SPOT') showDraftSpot(msg.lat, msg.lng);
       if (msg.type === 'CLEAR_DRAFT_SPOT') clearDraftSpot();
       if (msg.type === 'CENTER_ON') {
