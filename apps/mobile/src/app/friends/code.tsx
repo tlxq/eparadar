@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
@@ -9,7 +8,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
-import { IconButton } from '@/components/icon-button';
 import { ScreenBackground } from '@/components/screen-background';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
@@ -24,6 +22,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { queryKeys } from '@/lib/query-keys';
 import { useProfile } from '@/features/profile/hooks';
 import { useUserId } from '@/hooks/use-user-id';
+import { ModalHeader } from '@/components/modal-header';
 
 const QR_SIZE = 200;
 const AVATAR_SIZE = 56;
@@ -118,13 +117,7 @@ export default function MyFriendCodeScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <View style={styles.nav}>
-          <IconButton icon="close" accessibilityLabel="Stäng" onPress={() => router.back()} />
-          <ThemedText type="headline" accessibilityRole="header">
-            Min kod
-          </ThemedText>
-          <View style={styles.navSpacer} />
-        </View>
+        <ModalHeader title="Min kod" />
 
         <View style={styles.body}>
           <View style={[styles.card, { backgroundColor: CARD_TOP }]}>
@@ -209,14 +202,6 @@ export default function MyFriendCodeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  nav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-  },
-  navSpacer: { width: 40 },
   body: { flex: 1, paddingHorizontal: Spacing.three, gap: Spacing.three, paddingTop: Spacing.two },
   card: {
     alignItems: 'center',

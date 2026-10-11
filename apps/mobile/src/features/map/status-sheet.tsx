@@ -1,15 +1,14 @@
 import { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/button';
-import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { setMapStatus, STATUS_MAX_LENGTH, STATUS_PRESETS } from '@/features/map/status';
-import { useTheme } from '@/hooks/use-theme';
 import { getErrorMessage } from '@/lib/errors';
+import { FormSheet } from '@/components/form-sheet';
+import { Chip } from '@/components/chip';
 
 type StatusSheetProps = {
   userId: string;
@@ -19,7 +18,6 @@ type StatusSheetProps = {
 };
 
 export function StatusSheet({ userId, current, onClose, onSaved }: StatusSheetProps) {
-  const theme = useTheme();
   const [text, setText] = useState(current ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,86 +36,49 @@ export function StatusSheet({ userId, current, onClose, onSaved }: StatusSheetPr
   }
 
   return (
-    <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <SafeAreaProvider>
-        <SafeAreaView
-          style={[styles.sheet, { backgroundColor: theme.background }]}
-          edges={['top', 'bottom']}
-        >
-          <KeyboardAvoider style={styles.sheet}>
-            <View style={styles.header}>
-              <Button label="Avbryt" variant="ghost" size="sm" onPress={onClose} />
-              <ThemedText type="headline">Din status</ThemedText>
-              <Button
-                label="Spara"
-                size="sm"
-                loading={saving}
-                disabled={!text.trim()}
-                onPress={() => save(text)}
-              />
-            </View>
-            <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-              <View style={styles.chips}>
-                {STATUS_PRESETS.map((preset) => {
-                  const selected = preset === text.trim();
-                  return (
-                    <Pressable
-                      key={preset}
-                      accessibilityRole="button"
-                      onPress={() => setText(preset)}
-                      style={[
-                        styles.chip,
-                        { backgroundColor: selected ? theme.brand : theme.backgroundElement },
-                      ]}
-                    >
-                      <ThemedText
-                        type="smallBold"
-                        style={selected ? { color: theme.brandText } : undefined}
-                      >
-                        {preset}
-                      </ThemedText>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              <TextField
-                label="Eller skriv själv"
-                placeholder="Kör till sjön"
-                value={text}
-                onChangeText={setText}
-                maxLength={STATUS_MAX_LENGTH}
-                error={error}
-              />
-              <ThemedText type="caption" themeColor="textSecondary">
-                Syns i en bubbla vid din avatar för vänner som ser dig på kartan. Försvinner efter
-                en timme.
-              </ThemedText>
-              {current ? (
-                <Button
-                  label="Ta bort status"
-                  variant="ghost"
-                  disabled={saving}
-                  onPress={() => save(null)}
-                />
-              ) : null}
-            </ScrollView>
-          </KeyboardAvoider>
-        </SafeAreaView>
-      </SafeAreaProvider>
-    </Modal>
+    <FormSheet
+      title="Din status"
+      onClose={onClose}
+      action={{
+        label: 'Spara',
+        onPress: () => save(text),
+        loading: saving,
+        disabled: !text.trim(),
+      }}
+    >
+      <View style={styles.chips}>
+        {STATUS_PRESETS.map((preset) => (
+          <Chip
+            key={preset}
+            label={preset}
+            selected={preset === text.trim()}
+            onPress={() => setText(preset)}
+          />
+        ))}
+      </View>
+      <TextField
+        label="Eller skriv själv"
+        placeholder="Kör till sjön"
+        value={text}
+        onChangeText={setText}
+        maxLength={STATUS_MAX_LENGTH}
+        error={error}
+      />
+      <ThemedText type="caption" themeColor="textSecondary">
+        Syns i en bubbla vid din avatar för vänner som ser dig på kartan. Försvinner efter en timme.
+      </ThemedText>
+      {current ? (
+        <Button
+          label="Ta bort status"
+          variant="ghost"
+          disabled={saving}
+          onPress={() => save(null)}
+        />
+      ) : null}
+    </FormSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  sheet: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-  },
-  body: { padding: Spacing.three, gap: Spacing.three },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
-  chip: { paddingVertical: Spacing.two, paddingHorizontal: Spacing.three, borderRadius: 999 },
 });

@@ -13,7 +13,7 @@ import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
 import { EmptyState } from '@/components/empty-state';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { carColorHex } from '@/features/map/car-colors';
 import { MAP_HTML } from '@/features/map/map-html';
 import { meetupVibe, SPOT_ICONS, spotIconKey } from '@/features/map/map-icons';
@@ -786,7 +786,7 @@ const styles = StyleSheet.create({
     right: Spacing.four,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    borderRadius: 999,
+    borderRadius: Radius.pill,
     borderWidth: StyleSheet.hairlineWidth,
     paddingVertical: Spacing.three,
     shadowColor: '#000',
@@ -824,7 +824,7 @@ const styles = StyleSheet.create({
     top: Spacing.three,
     left: Spacing.four,
     right: Spacing.four,
-    borderRadius: 999,
+    borderRadius: Radius.pill,
     paddingVertical: Spacing.two,
     alignItems: 'center',
   },
@@ -837,7 +837,7 @@ const styles = StyleSheet.create({
   },
   placingBtn: {
     flex: 1,
-    borderRadius: 999,
+    borderRadius: Radius.pill,
     paddingVertical: Spacing.three,
     alignItems: 'center',
   },

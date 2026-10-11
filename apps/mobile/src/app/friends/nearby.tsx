@@ -7,7 +7,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { EmptyState } from '@/components/empty-state';
-import { IconButton } from '@/components/icon-button';
 import { ListRow } from '@/components/list-row';
 import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
@@ -21,6 +20,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
 import { useUserId } from '@/hooks/use-user-id';
+import { ModalHeader } from '@/components/modal-header';
 
 const RADAR_SIZE = 220;
 const BLIP_SIZE = 44;
@@ -138,13 +138,7 @@ export default function NearbyRadarScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <View style={styles.nav}>
-          <IconButton icon="close" accessibilityLabel="Stäng" onPress={() => router.back()} />
-          <ThemedText type="headline" accessibilityRole="header">
-            I närheten
-          </ThemedText>
-          <View style={styles.navSpacer} />
-        </View>
+        <ModalHeader title="I närheten" />
 
         {needsPermission ? (
           <PermissionPrompt blocked={permission === 'blocked'} onAllow={requestPermission} />
@@ -203,14 +197,6 @@ export default function NearbyRadarScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  nav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-  },
-  navSpacer: { width: 40 },
   content: {
     alignItems: 'stretch',
     gap: Spacing.three,

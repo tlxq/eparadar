@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/hooks/use-theme';
+import { Radius } from '@/constants/theme';
 
 const BLIP_POSITIONS = [
   { top: '28%', left: '62%' },
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
     right: -14,
     bottom: -14,
     borderWidth: 2,
-    borderRadius: 999,
+    borderRadius: Radius.pill,
   },
   blip: {
     position: 'absolute',

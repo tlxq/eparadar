@@ -9,7 +9,6 @@ import { ActionSheet, type SheetAction } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { ConversationAvatar } from '@/components/conversation-avatar';
-import { IconButton } from '@/components/icon-button';
 import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ListRow } from '@/components/list-row';
 import { ScreenBackground } from '@/components/screen-background';
@@ -34,6 +33,7 @@ import { showToast } from '@/store/toast';
 import { useConversation } from '@/features/chat/hooks';
 import { useUserId } from '@/hooks/use-user-id';
 import { pickImage } from '@/lib/pick-image';
+import { ModalHeader } from '@/components/modal-header';
 
 function byRoleThenName(a: ConversationMember, b: ConversationMember) {
   if (a.role !== b.role) return a.role === 'admin' ? -1 : 1;
@@ -176,18 +176,7 @@ export default function GroupInfoScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <View style={styles.nav}>
-          <IconButton
-            icon="chevron-back"
-            variant="plain"
-            accessibilityLabel="Tillbaka"
-            onPress={() => router.back()}
-          />
-          <ThemedText type="headline" accessibilityRole="header">
-            Gruppinfo
-          </ThemedText>
-          <View style={styles.navSpacer} />
-        </View>
+        <ModalHeader title="Gruppinfo" variant="back" />
 
         <KeyboardAvoider style={styles.container}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -354,14 +343,6 @@ export default function GroupInfoScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   flex: { flex: 1 },
-  nav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.two,
-  },
-  navSpacer: { width: 40 },
   content: { padding: Spacing.three, gap: Spacing.four },
   hero: { alignItems: 'center', gap: Spacing.two },
   pressed: { opacity: 0.7 },
