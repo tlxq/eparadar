@@ -17,9 +17,9 @@ export const WARNING_TYPES: { key: WarningType; label: string }[] = [
   { key: 'avstangt', label: 'Avstängt' },
 ];
 
-export const HERE_NOW_RADIUS_M = 100;
+const HERE_NOW_RADIUS_M = 100;
 
-export function warningLabel(type: string | null): string {
+function warningLabel(type: string | null): string {
   return WARNING_TYPES.find((warning) => warning.key === type)?.label ?? 'Varning';
 }
 

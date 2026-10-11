@@ -1,4 +1,4 @@
-export const MOVING_SPEED_MPS = 2.5;
+const MOVING_SPEED_MPS = 2.5;
 
 export function motionFromCoords(coords: { speed: number | null; heading: number | null }) {
   const moving = coords.speed !== null && coords.speed >= MOVING_SPEED_MPS;
