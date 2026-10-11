@@ -20,6 +20,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { sendFriendRequest } from '@/lib/api';
 import { useUserId } from '@/hooks/use-user-id';
+import { successHaptic } from '@/lib/haptics';
 
 export default function AddFriendScreen() {
   const theme = useTheme();
@@ -37,6 +38,7 @@ export default function AddFriendScreen() {
     mutationFn: (targetUserId: string) => sendFriendRequest(targetUserId),
     onMutate: (targetUserId) => setSendingId(targetUserId),
     onSuccess: (_data, targetUserId) => {
+      successHaptic();
       setSentIds((current) => new Set(current).add(targetUserId));
       setError(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.meetupSuggestions(userId) });

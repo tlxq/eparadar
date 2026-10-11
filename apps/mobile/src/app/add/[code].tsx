@@ -21,6 +21,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { useUserId } from '@/hooks/use-user-id';
+import { successHaptic } from '@/lib/haptics';
 
 type Copy = {
   title: string;
@@ -87,6 +88,7 @@ export default function RedeemFriendCodeScreen() {
     mutationFn: (code: string) => redeemFriendCode(code),
     onSuccess: (result: RedeemResult) => {
       if (result.outcome === 'sent' || result.outcome === 'accepted') {
+        successHaptic();
         queryClient.invalidateQueries({ queryKey: queryKeys.friends(userId) });
         queryClient.invalidateQueries({ queryKey: queryKeys.friendRequests(userId) });
         queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(userId) });

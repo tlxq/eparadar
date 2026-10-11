@@ -20,6 +20,7 @@ import { useMyCars, useProfile } from '@/features/profile/hooks';
 import { useUserId } from '@/hooks/use-user-id';
 import { pickImage } from '@/lib/pick-image';
 import { Chip } from '@/components/chip';
+import { successHaptic } from '@/lib/haptics';
 
 const MAX_LENGTH = 500;
 
@@ -48,6 +49,7 @@ export default function NewPostScreen() {
       return createPost({ body: body.trim(), carId, imageUrl });
     },
     onSuccess: () => {
+      successHaptic();
       queryClient.invalidateQueries({ queryKey: queryKeys.posts() });
       showToast({ tone: 'success', message: 'Inlägget är publicerat.' });
       router.back();

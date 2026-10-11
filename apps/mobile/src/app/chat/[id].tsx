@@ -30,6 +30,7 @@ import { readersOf } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
 import { sendStoppedTyping, sendTyping } from '@/lib/typing';
 import { openPerson } from '@/store/person-sheet';
+import { pressHaptic, tapHaptic } from '@/lib/haptics';
 import { randomId } from '@/lib/random-id';
 import { showToast } from '@/store/toast';
 import { activeTypists, TYPING_TTL_MS, typingLabel, useTypingStore } from '@/store/typing';
@@ -55,7 +56,6 @@ export default function ConversationScreen() {
   const [selected, setSelected] = useState<Message | null>(null);
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
-
   const { data: myProfile } = useProfile();
   const myName = myProfile?.display_name ?? '';
 
@@ -156,6 +156,7 @@ export default function ConversationScreen() {
 
   async function handleReact(message: Message, emoji: string) {
     setSelected(null);
+    tapHaptic();
     try {
       await toggleReaction(message.id, emoji);
       queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) });
@@ -206,6 +207,7 @@ export default function ConversationScreen() {
       pending: true,
     };
     setBody('');
+    tapHaptic();
     sendStoppedTyping(id, userId, myName);
     await queryClient.cancelQueries({ queryKey: key });
     queryClient.setQueryData<Message[]>(key, (current) => [...(current ?? []), draft]);
@@ -327,7 +329,11 @@ export default function ConversationScreen() {
                 isMine={item.sender_id === userId}
                 showNames={isGroup}
                 myUserId={userId}
-                onLongPress={(message) => !message.pending && setSelected(message)}
+                onLongPress={(message) => {
+                  if (message.pending) return;
+                  pressHaptic();
+                  setSelected(message);
+                }}
                 onOpenImage={setViewerUrl}
               />
             )}
