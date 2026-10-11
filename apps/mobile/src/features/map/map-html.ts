@@ -417,6 +417,7 @@ export const MAP_HTML = `<!DOCTYPE html>
             e.stopPropagation();
             const current = friends.find(function (x) { return x.id === id; });
             if (current) map.easeTo({ center: [current.lng, current.lat], zoom: Math.max(map.getZoom(), 15) });
+            sendToNative({ type: 'FRIEND_TAP', id: id });
           });
           friendMarkers[id] = new maplibregl.Marker({ element: el, anchor: 'top', offset: [0, -24] }).setLngLat([f.lng, f.lat]).addTo(map);
         }

@@ -30,6 +30,7 @@ import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { formatPostAge } from '@/lib/relative-time';
+import { openPerson } from '@/store/person-sheet';
 import { showToast } from '@/store/toast';
 import { useFriendLocations } from '@/features/map/hooks';
 import { useUserId } from '@/hooks/use-user-id';
@@ -56,7 +57,9 @@ function OnMapNow({ friends }: { friends: FriendLocation[] }) {
             key={friend.user_id}
             accessibilityRole="button"
             accessibilityLabel={`${friend.profile.display_name} är på kartan`}
-            onPress={() => router.push('/karta')}
+            onPress={() =>
+              router.navigate({ pathname: '/karta', params: { focus: friend.user_id } })
+            }
             style={({ pressed }) => [styles.onMapItem, pressed && styles.pressed]}
           >
             <View style={[styles.ring, { borderColor: theme.brand }]}>
@@ -84,20 +87,28 @@ function PostItem({ post, onMore }: { post: Post; onMore?: () => void }) {
   return (
     <View style={[styles.post, { borderBottomColor: theme.separator }]}>
       <View style={styles.postHeader}>
-        <Avatar name={authorName} imageUrl={post.author?.avatar_url} size={40} />
-        <View style={styles.postHeaderText}>
-          <ThemedText type="headline" numberOfLines={1}>
-            {authorName}
-          </ThemedText>
-          {carLabel ? (
-            <View style={[styles.carChip, { backgroundColor: theme.backgroundElement }]}>
-              <Ionicons name="car-sport" size={12} color={theme.textSecondary} />
-              <ThemedText type="caption" themeColor="textSecondary" numberOfLines={1}>
-                {carLabel}
-              </ThemedText>
-            </View>
-          ) : null}
-        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Visa ${authorName}`}
+          disabled={!post.author}
+          onPress={() => post.author && openPerson(post.author.id)}
+          style={({ pressed }) => [styles.postAuthor, pressed && styles.pressed]}
+        >
+          <Avatar name={authorName} imageUrl={post.author?.avatar_url} size={40} />
+          <View style={styles.postHeaderText}>
+            <ThemedText type="headline" numberOfLines={1}>
+              {authorName}
+            </ThemedText>
+            {carLabel ? (
+              <View style={[styles.carChip, { backgroundColor: theme.backgroundElement }]}>
+                <Ionicons name="car-sport" size={12} color={theme.textSecondary} />
+                <ThemedText type="caption" themeColor="textSecondary" numberOfLines={1}>
+                  {carLabel}
+                </ThemedText>
+              </View>
+            ) : null}
+          </View>
+        </Pressable>
         <ThemedText type="caption" themeColor="textSecondary">
           {formatPostAge(post.created_at)}
         </ThemedText>
@@ -266,6 +277,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   postHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  postAuthor: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   postHeaderText: { flex: 1, gap: Spacing.half, alignItems: 'flex-start' },
   carChip: {
     flexDirection: 'row',
