@@ -81,6 +81,31 @@ permission, native dependency, SDK version, app configuration, or development-cl
 Use an EAS preview APK for a stable shareable test snapshot that does not need Metro. Reserve the
 EAS production AAB for Play Console distribution.
 
+### Phone without a cable
+
+`npm run phone` connects to the phone over USB or Wi-Fi and checks whether native code has changed
+since the last install, using an Expo fingerprint. It builds and installs only when something did
+change, then starts Metro and opens the app connected to it.
+
+One-time setup on the phone: turn on Developer options → Wireless debugging, turn on Tailscale →
+Settings → Local Network Access, then pair once from the computer:
+
+```sh
+mise exec -- adb pair <ip>:<pairing-port>
+```
+
+Everyday use, from the repository root:
+
+```sh
+mise exec -- npm run phone
+mise exec -- npm run phone -- --build
+mise exec -- npm run phone -- <port>
+```
+
+The second form forces a rebuild. The third form connects through Tailscale when the phone is not
+discovered on the local network; the port is shown on the phone's Wireless debugging screen. The
+phone's Tailscale name defaults to `phone` and can be changed with `PHONE_HOST`.
+
 ## Two-computer workflow
 
 Git is the sole source of truth for code:

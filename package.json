@@ -19,6 +19,7 @@
   },
   "scripts": {
     "mobile": "npm run start --workspace apps/mobile",
+    "phone": "npm run phone --workspace apps/mobile --",
     "web": "npm run dev --workspace apps/web",
     "lint": "npm run lint --workspaces --if-present",
     "format": "prettier --write .",
