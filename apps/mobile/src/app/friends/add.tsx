@@ -9,6 +9,7 @@ import { Button } from '@/components/button';
 import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
 import { CandidateRow } from '@/features/friends/components/candidate-row';
+import { CodeEntry } from '@/features/friends/components/code-entry';
 import { RadarHero } from '@/features/friends/components/radar-hero';
 import { SuggestionSection } from '@/features/friends/components/suggestion-section';
 import { formatRelativeSwedish } from '@/features/friends/api';
@@ -61,6 +62,8 @@ export default function AddFriendScreen() {
               Vi vill att du bara lägger till folk du faktiskt träffat.
             </ThemedText>
           </View>
+
+          <CodeEntry />
 
           <SuggestionSection
             title="Möttes vid en träff"
