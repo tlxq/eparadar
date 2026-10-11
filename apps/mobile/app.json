@@ -57,13 +57,14 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "epaRadar behöver tillgång till dina bilder för att du ska kunna välja en profilbild."
+          "photosPermission": "epaRadar behöver tillgång till dina bilder så att du kan dela dem i inlägg, chatt och på din profil.",
+          "cameraPermission": "epaRadar använder kameran för att skanna en väns kod och för bilder du själv tar och delar."
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "epaRadar använder kameran för att skanna en väns kod när ni träffas. Inga bilder sparas.",
+          "cameraPermission": "epaRadar använder kameran för att skanna en väns kod och för bilder du själv tar och delar.",
           "microphonePermission": false,
           "recordAudioAndroid": false
         }

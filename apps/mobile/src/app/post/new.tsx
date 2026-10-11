@@ -18,7 +18,7 @@ import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
 import { useMyCars, useProfile } from '@/features/profile/hooks';
 import { useUserId } from '@/hooks/use-user-id';
-import { pickImage } from '@/lib/pick-image';
+import { pickImage, type ImageSource } from '@/lib/pick-image';
 import { Chip } from '@/components/chip';
 import { successHaptic } from '@/lib/haptics';
 
@@ -37,8 +37,8 @@ export default function NewPostScreen() {
 
   const { data: cars } = useMyCars();
 
-  async function handlePickImage() {
-    const uri = await pickImage({ aspect: [4, 3] });
+  async function handlePickImage(source: ImageSource) {
+    const uri = await pickImage({ aspect: [4, 3], source });
     if (!uri) return;
     setImageUri(uri);
   }
@@ -66,9 +66,14 @@ export default function NewPostScreen() {
           {error ? <ThemedText type="error">{error}</ThemedText> : null}
           <View style={styles.footerRow}>
             <IconButton
+              icon="camera-outline"
+              accessibilityLabel="Ta bild"
+              onPress={() => handlePickImage('camera')}
+            />
+            <IconButton
               icon="image-outline"
               accessibilityLabel="Lägg till bild"
-              onPress={handlePickImage}
+              onPress={() => handlePickImage('library')}
             />
             <ThemedText type="caption" themeColor="textSecondary" style={styles.counter}>
               {body.length}/{MAX_LENGTH}

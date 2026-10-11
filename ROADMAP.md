@@ -37,7 +37,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [x] Ghost mode toggle on Karta (tap yourself on the map)
    - [x] Code entry directly on Lägg till vän
    - [x] Own posts on Profil (with delete)
-   - [ ] Camera option when posting
+   - [x] Camera option when posting (also chat and spot photos)
    - [x] Notification opens the right screen from a closed app
    - [x] Messages appear instantly when sent
    - [x] Haptics on key actions
