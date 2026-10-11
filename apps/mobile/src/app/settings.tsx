@@ -14,18 +14,18 @@ import { useTheme } from '@/hooks/use-theme';
 import { setLocationApproximate, setLocationSharing, signOut } from '@/lib/api';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
-import { enableLocationSharing } from '@/lib/location-sharing';
 import { stopLocationSharing, stopLocationSharingQuietly } from '@/lib/location-task';
 import { queryKeys } from '@/lib/query-keys';
 import { useMyLocation } from '@/features/map/hooks';
 import { BlockedSection } from '@/features/friends/components/blocked-section';
+import { useSharingToggle } from '@/features/map/use-sharing-toggle';
 import { useUserId } from '@/hooks/use-user-id';
 
 export default function SettingsScreen() {
   const theme = useTheme();
   const userId = useUserId();
   const queryClient = useQueryClient();
-  const [busy, setBusy] = useState(false);
+  const { setSharing, busy } = useSharingToggle();
   const [error, setError] = useState<string | null>(null);
 
   const { data: location, refetch } = useMyLocation();
@@ -50,26 +50,8 @@ export default function SettingsScreen() {
   );
 
   async function handleToggle(value: boolean) {
-    if (!userId) return;
     setError(null);
-    setBusy(true);
-    try {
-      if (value) {
-        const result = await enableLocationSharing(userId);
-        if (!result.ok) {
-          setError(result.reason);
-          return;
-        }
-      } else {
-        await stopLocationSharing();
-        await setLocationSharing(userId, false);
-      }
-      queryClient.invalidateQueries({ queryKey: queryKeys.myLocation(userId) });
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setBusy(false);
-    }
+    setError(await setSharing(value));
   }
 
   async function handleApproximateToggle(value: boolean) {

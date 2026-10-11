@@ -34,7 +34,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [x] Common Swedish words in one place
 4. **Fewer taps**
    - [x] Person sheet from map, feed, friends and chat (Chatta, Visa på kartan)
-   - [ ] Ghost mode toggle on Karta
+   - [x] Ghost mode toggle on Karta (tap yourself on the map)
    - [x] Code entry directly on Lägg till vän
    - [x] Own posts on Profil (with delete)
    - [ ] Camera option when posting
@@ -48,6 +48,14 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [ ] Likes, comments and photo zoom in the feed
    - [ ] Realtime feed
    - [ ] Add members to a group, edit car details
+
+6. **Design round (pitch in an artifact first)**
+   - [ ] Map markers scale with zoom (people, spots, meetups get smaller zoomed out)
+   - [ ] Marker look: avatar vs icon, drop the small car badge on each marker
+   - [ ] Full profile page for other users (their cars and posts), opened from the person sheet
+   - [ ] Feed: something unique for epaRadar (ideas to pitch: car tags, meetup recaps, spot check-ins)
+   - [ ] Everything added to the map expires on its own (spots, meetups, statuses)
+   - [ ] UX pass on delete buttons and overall polish (design skills)
 
 ## Later
 
