@@ -25,7 +25,12 @@ export function CarPhoto({ size = 40, imageUrl, radius = size * 0.25 }: CarPhoto
     <View
       style={[
         styles.box,
-        { width: size, height: size, borderRadius: radius, backgroundColor: theme.backgroundSelected },
+        {
+          width: size,
+          height: size,
+          borderRadius: radius,
+          backgroundColor: theme.backgroundSelected,
+        },
       ]}
     >
       <Ionicons name="car-sport-outline" size={size * 0.55} color={theme.textSecondary} />

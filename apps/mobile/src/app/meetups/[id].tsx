@@ -21,13 +21,13 @@ import { formatMeetupTime } from '@/features/meetups/time';
 import { useTheme } from '@/hooks/use-theme';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
-import { useAuthStore } from '@/store/auth';
 import { showToast } from '@/store/toast';
+import { useUserId } from '@/hooks/use-user-id';
 
 export default function MeetupDetailScreen() {
   const theme = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
 
   const { data: meetup, isLoading, isError, error } = useMeetupDetail(id, userId);
   const toggleInterest = useToggleInterest(id, userId);

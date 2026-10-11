@@ -21,9 +21,9 @@ import {
   type FriendCode,
 } from '@/features/friends/friend-code';
 import { useTheme } from '@/hooks/use-theme';
-import { fetchProfile } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
-import { useAuthStore } from '@/store/auth';
+import { useProfile } from '@/features/profile/hooks';
+import { useUserId } from '@/hooks/use-user-id';
 
 const QR_SIZE = 200;
 const AVATAR_SIZE = 56;
@@ -81,15 +81,11 @@ function CountdownRing({ fraction }: { fraction: number }) {
 
 export default function MyFriendCodeScreen() {
   const theme = useTheme();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const queryClient = useQueryClient();
   const now = useNow();
 
-  const { data: profile } = useQuery({
-    queryKey: queryKeys.profile(userId),
-    queryFn: () => fetchProfile(userId!),
-    enabled: !!userId,
-  });
+  const { data: profile } = useProfile();
 
   const {
     data: friendCode,

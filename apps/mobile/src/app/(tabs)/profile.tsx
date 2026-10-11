@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { router } from 'expo-router';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import * as ImagePicker from 'expo-image-picker';
+import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ActionSheet, type SheetAction } from '@/components/action-sheet';
@@ -22,10 +21,6 @@ import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
 import {
   deleteCar,
-  fetchFriends,
-  fetchMyCars,
-  countMyPosts,
-  fetchProfile,
   removeAvatar,
   setCarColor,
   updateProfile,
@@ -38,7 +33,10 @@ import { getErrorMessage } from '@/lib/errors';
 import { uploadAvatar } from '@/lib/image-upload';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
-import { useAuthStore } from '@/store/auth';
+import { useMyCars, useMyPostCount, useProfile } from '@/features/profile/hooks';
+import { useFriends } from '@/features/friends/hooks';
+import { useUserId } from '@/hooks/use-user-id';
+import { pickImage } from '@/lib/pick-image';
 
 const AVATAR_SIZE = 96;
 const CAR_CARD_WIDTH = 160;
@@ -174,59 +172,29 @@ function EditProfileSheet({ profile, visible, onClose }: EditProfileSheetProps) 
 export default function ProfileScreen() {
   const theme = useTheme();
   const tabBarInset = useTabBarInset();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarSheet, setAvatarSheet] = useState(false);
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
 
-  const { data: profile, isLoading: profileLoading } = useQuery({
-    queryKey: queryKeys.profile(userId),
-    queryFn: () => fetchProfile(userId!),
-    enabled: !!userId,
-  });
+  const { data: profile, isLoading: profileLoading } = useProfile();
 
-  const { data: cars } = useQuery({
-    queryKey: queryKeys.cars(userId),
-    queryFn: () => fetchMyCars(userId!),
-    enabled: !!userId,
-  });
+  const { data: cars } = useMyCars();
 
-  const { data: friends } = useQuery({
-    queryKey: queryKeys.friends(userId),
-    queryFn: () => fetchFriends(userId!),
-    enabled: !!userId,
-  });
+  const { data: friends } = useFriends();
 
-  const { data: postCount } = useQuery({
-    queryKey: queryKeys.myPostCount(userId),
-    queryFn: () => countMyPosts(userId!),
-    enabled: !!userId,
-  });
+  const { data: postCount } = useMyPostCount();
 
   async function handlePickAvatar() {
     if (!userId || !profile) return;
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      showToast({
-        tone: 'error',
-        message: 'epaRadar behöver tillgång till dina bilder för att byta profilbild.',
-      });
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (result.canceled || !result.assets[0]) return;
+    const uri = await pickImage({ aspect: [1, 1] });
+    if (!uri) return;
 
     setUploadingAvatar(true);
     try {
-      const publicUrl = await uploadAvatar(userId, result.assets[0].uri);
+      const publicUrl = await uploadAvatar(userId, uri);
       await updateProfile(userId, {
         displayName: profile.display_name,
         bio: profile.bio,
@@ -300,7 +268,6 @@ export default function ProfileScreen() {
       onPress: handleRemoveAvatar,
     },
   ];
-
 
   return (
     <ScreenBackground style={styles.container}>

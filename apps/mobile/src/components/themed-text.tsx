@@ -28,12 +28,7 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
   };
   const resolvedColor = themeColor ?? colorOverride[type] ?? 'text';
 
-  return (
-    <Text
-      style={[{ color: theme[resolvedColor] }, styles[type], style]}
-      {...rest}
-    />
-  );
+  return <Text style={[{ color: theme[resolvedColor] }, styles[type], style]} {...rest} />;
 }
 
 const styles = StyleSheet.create({

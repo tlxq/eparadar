@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { router } from 'expo-router';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { ActionSheet } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
@@ -15,22 +15,20 @@ import { ScreenHeader } from '@/components/screen-header';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
-import { useBlockUser } from '@/features/friends/hooks';
-import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import {
-  fetchFriends,
-  fetchOutgoingRequests,
-  fetchPendingRequests,
-  friendProfile,
-  removeFriend,
-  respondToFriendRequest,
-  type Friendship,
-} from '@/lib/api';
+  useBlockUser,
+  useFriendRequests,
+  useFriends,
+  useOutgoingRequests,
+} from '@/features/friends/hooks';
+import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
+import { friendProfile, removeFriend, respondToFriendRequest, type Friendship } from '@/lib/api';
 import { confirmDestructive } from '@/lib/confirm';
 import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
-import { useAuthStore } from '@/store/auth';
+import { useUserId } from '@/hooks/use-user-id';
+import { useQueryErrorToast } from '@/hooks/use-query-error-toast';
 
 async function confirmBlock(name: string, consequence: string) {
   return confirmDestructive({
@@ -51,7 +49,7 @@ function SectionLabel({ children }: { children: string }) {
 function RequestRow({ request, myUserId }: { request: Friendship; myUserId: string }) {
   const queryClient = useQueryClient();
   const requester = request.requester;
-  const block = useBlockUser(myUserId);
+  const block = useBlockUser();
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const respond = useMutation({
@@ -155,7 +153,7 @@ function OutgoingRequestRow({ request, myUserId }: { request: Friendship; myUser
 function FriendRow({ friendship, myUserId }: { friendship: Friendship; myUserId: string }) {
   const queryClient = useQueryClient();
   const friend = friendProfile(friendship, myUserId);
-  const block = useBlockUser(myUserId);
+  const block = useBlockUser();
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const remove = useMutation({
@@ -229,42 +227,16 @@ function FriendsSkeleton() {
 }
 
 export default function FriendsScreen() {
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const tabBarInset = useTabBarInset();
 
-  const {
-    data: friends,
-    isLoading: friendsLoading,
-    isError,
-    refetch,
-    isRefetching,
-  } = useQuery({
-    queryKey: queryKeys.friends(userId),
-    queryFn: () => fetchFriends(userId!),
-    enabled: !!userId,
-  });
+  const { data: friends, isLoading: friendsLoading, isError, refetch, isRefetching } = useFriends();
 
-  const { data: requests } = useQuery({
-    queryKey: queryKeys.friendRequests(userId),
-    queryFn: () => fetchPendingRequests(userId!),
-    enabled: !!userId,
-  });
+  const { data: requests } = useFriendRequests();
 
-  const { data: outgoingRequests } = useQuery({
-    queryKey: queryKeys.outgoingRequests(userId),
-    queryFn: () => fetchOutgoingRequests(userId!),
-    enabled: !!userId,
-  });
+  const { data: outgoingRequests } = useOutgoingRequests();
 
-  useEffect(() => {
-    if (isError) {
-      showToast({
-        tone: 'error',
-        message: 'Kunde inte ladda dina vänner.',
-        action: { label: 'Försök igen', onPress: () => refetch() },
-      });
-    }
-  }, [isError, refetch]);
+  useQueryErrorToast(isError, 'Kunde inte ladda dina vänner.', refetch);
 
   const friendCount = friends?.length ?? 0;
 

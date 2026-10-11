@@ -3,7 +3,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import * as ImagePicker from 'expo-image-picker';
 
 import { Button } from '@/components/button';
 import { FormScreen } from '@/components/form-screen';
@@ -17,11 +16,12 @@ import { getErrorMessage } from '@/lib/errors';
 import { uploadCarPhoto } from '@/lib/image-upload';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
-import { useAuthStore } from '@/store/auth';
+import { useUserId } from '@/hooks/use-user-id';
+import { pickImage } from '@/lib/pick-image';
 
 export default function NewCarScreen() {
   const theme = useTheme();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const queryClient = useQueryClient();
   const [make, setMake] = useState('');
   const [model, setModel] = useState('');
@@ -32,20 +32,9 @@ export default function NewCarScreen() {
   const [error, setError] = useState<string | null>(null);
 
   async function handlePickPhoto() {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      showToast({ tone: 'error', message: 'epaRadar behöver tillgång till dina bilder.' });
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-    });
-    if (result.canceled || !result.assets[0]) return;
-    setPhotoUri(result.assets[0].uri);
+    const uri = await pickImage({ aspect: [4, 3] });
+    if (!uri) return;
+    setPhotoUri(uri);
   }
 
   const mutation = useMutation({

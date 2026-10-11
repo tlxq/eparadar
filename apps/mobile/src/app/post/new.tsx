@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Image, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import * as ImagePicker from 'expo-image-picker';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
@@ -12,51 +11,34 @@ import { IconButton } from '@/components/icon-button';
 import { ThemedText } from '@/components/themed-text';
 import { Fonts, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { createPost, fetchMyCars, fetchProfile } from '@/lib/api';
+import { createPost } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import { uploadPostImage } from '@/lib/image-upload';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
-import { useAuthStore } from '@/store/auth';
+import { useMyCars, useProfile } from '@/features/profile/hooks';
+import { useUserId } from '@/hooks/use-user-id';
+import { pickImage } from '@/lib/pick-image';
 
 const MAX_LENGTH = 500;
 
 export default function NewPostScreen() {
   const theme = useTheme();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const queryClient = useQueryClient();
   const [body, setBody] = useState('');
   const [carId, setCarId] = useState<string | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: profile } = useQuery({
-    queryKey: queryKeys.profile(userId),
-    queryFn: () => fetchProfile(userId!),
-    enabled: !!userId,
-  });
+  const { data: profile } = useProfile();
 
-  const { data: cars } = useQuery({
-    queryKey: queryKeys.cars(userId),
-    queryFn: () => fetchMyCars(userId!),
-    enabled: !!userId,
-  });
+  const { data: cars } = useMyCars();
 
   async function handlePickImage() {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      showToast({ tone: 'error', message: 'epaRadar behöver tillgång till dina bilder.' });
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-    });
-    if (result.canceled || !result.assets[0]) return;
-    setImageUri(result.assets[0].uri);
+    const uri = await pickImage({ aspect: [4, 3] });
+    if (!uri) return;
+    setImageUri(uri);
   }
 
   const mutation = useMutation({

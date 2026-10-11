@@ -3,19 +3,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/button';
 import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { completeOnboarding, fetchProfile } from '@/lib/api';
+import { completeOnboarding } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import { enableLocationSharing } from '@/lib/location-sharing';
 import { queryKeys } from '@/lib/query-keys';
-import { useAuthStore } from '@/store/auth';
 import { showToast } from '@/store/toast';
+import { useProfile } from '@/features/profile/hooks';
+import { useUserId } from '@/hooks/use-user-id';
 
 type Step = 'welcome' | 'friends' | 'location' | 'done';
 
@@ -111,18 +112,14 @@ function Badge({
 
 export default function OnboardingScreen() {
   const theme = useTheme();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>('welcome');
   const [locationBusy, setLocationBusy] = useState(false);
   const [locationNote, setLocationNote] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
 
-  const { data: profile } = useQuery({
-    queryKey: queryKeys.profile(userId),
-    queryFn: () => fetchProfile(userId!),
-    enabled: !!userId,
-  });
+  const { data: profile } = useProfile();
   const firstName = profile?.display_name.trim().split(' ')[0];
 
   async function finish(next?: '/cars/new') {

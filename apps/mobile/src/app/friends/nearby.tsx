@@ -20,7 +20,7 @@ import { sendFriendRequest } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
-import { useAuthStore } from '@/store/auth';
+import { useUserId } from '@/hooks/use-user-id';
 
 const RADAR_SIZE = 220;
 const BLIP_SIZE = 44;
@@ -63,7 +63,7 @@ function PersonRow({ person, myUserId }: { person: NearbyPerson; myUserId: strin
   const add = useMutation({
     mutationFn: () => sendFriendRequest(person.user_id),
     onSuccess: (row) => {
-      queryClient.invalidateQueries({ queryKey: ['nearby', myUserId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.allNearby(myUserId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(myUserId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.friends(myUserId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.friendRequests(myUserId) });
@@ -130,7 +130,7 @@ function PermissionPrompt({ blocked, onAllow }: { blocked: boolean; onAllow: () 
 
 export default function NearbyRadarScreen() {
   const theme = useTheme();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const { permission, requestPermission, locating, people, isError } = useNearbyRadar(userId);
   const needsPermission =
     permission === 'undetermined' || permission === 'denied' || permission === 'blocked';

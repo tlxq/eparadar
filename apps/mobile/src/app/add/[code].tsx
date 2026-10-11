@@ -20,7 +20,7 @@ import {
 import { useTheme } from '@/hooks/use-theme';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
-import { useAuthStore } from '@/store/auth';
+import { useUserId } from '@/hooks/use-user-id';
 
 type Copy = {
   title: string;
@@ -79,7 +79,7 @@ function copyFor(outcome: RedeemOutcome, name: string): Copy {
 export default function RedeemFriendCodeScreen() {
   const theme = useTheme();
   const { code: rawCode } = useLocalSearchParams<{ code: string }>();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const queryClient = useQueryClient();
   const started = useRef(false);
 

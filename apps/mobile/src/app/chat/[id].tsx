@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Clipboard from 'expo-clipboard';
-import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useIsFocused } from 'expo-router/react-navigation';
 import { FlatList, Image, Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
@@ -21,9 +20,7 @@ import { useTheme } from '@/hooks/use-theme';
 import {
   chatImageUrl,
   conversationTitle,
-  fetchConversation,
   fetchMessages,
-  fetchProfile,
   markConversationRead,
   sendMessage,
   toggleReaction,
@@ -38,8 +35,11 @@ import { queryKeys } from '@/lib/query-keys';
 import { formatDayDivider } from '@/lib/relative-time';
 import { sendStoppedTyping, sendTyping } from '@/lib/typing';
 import { showToast } from '@/store/toast';
-import { useAuthStore } from '@/store/auth';
 import { activeTypists, TYPING_TTL_MS, typingLabel, useTypingStore } from '@/store/typing';
+import { useProfile } from '@/features/profile/hooks';
+import { useConversation } from '@/features/chat/hooks';
+import { useUserId } from '@/hooks/use-user-id';
+import { pickImage } from '@/lib/pick-image';
 
 const GROUP_WINDOW_MS = 5 * 60 * 1000;
 const DIVIDER_GAP_MS = 30 * 60 * 1000;
@@ -73,7 +73,7 @@ function ChatImage({
   onLongPress: () => void;
 }) {
   const { data: url } = useQuery({
-    queryKey: ['chat-image', path],
+    queryKey: queryKeys.chatImage(path),
     queryFn: () => chatImageUrl(path),
     staleTime: SIGNED_URL_STALE_MS,
   });
@@ -291,7 +291,7 @@ function MessageBubble({
 export default function ConversationScreen() {
   const theme = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const queryClient = useQueryClient();
   const listRef = useRef<FlatList<Message>>(null);
   const [body, setBody] = useState('');
@@ -300,11 +300,7 @@ export default function ConversationScreen() {
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
-  const { data: myProfile } = useQuery({
-    queryKey: queryKeys.profile(userId),
-    queryFn: () => fetchProfile(userId!),
-    enabled: !!userId,
-  });
+  const { data: myProfile } = useProfile();
   const myName = myProfile?.display_name ?? '';
 
   const typists = useTypingStore((state) => (id ? state.byConversation[id] : undefined));
@@ -316,11 +312,7 @@ export default function ConversationScreen() {
     return () => clearInterval(timer);
   }, [someoneTyping]);
 
-  const { data: conversation, isError: conversationError } = useQuery({
-    queryKey: queryKeys.conversation(id),
-    queryFn: () => fetchConversation(id!),
-    enabled: !!id,
-  });
+  const { data: conversation, isError: conversationError } = useConversation(id);
 
   const { data: messages } = useQuery({
     queryKey: queryKeys.messages(id),
@@ -418,19 +410,11 @@ export default function ConversationScreen() {
 
   async function handlePickImage() {
     if (!id || !userId) return;
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      showToast({ tone: 'error', message: 'epaRadar behöver tillgång till dina bilder.' });
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.7,
-    });
-    if (result.canceled || !result.assets[0]) return;
+    const uri = await pickImage({ quality: 0.7 });
+    if (!uri) return;
     setSending(true);
     try {
-      const imagePath = await uploadChatImage(id, result.assets[0].uri);
+      const imagePath = await uploadChatImage(id, uri);
       await sendMessage({ conversationId: id, senderId: userId, body: body.trim(), imagePath });
       setBody('');
       sendStoppedTyping(id, userId, myName);

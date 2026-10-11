@@ -14,7 +14,7 @@ import { MEETUP_VIBES, type MeetupVibe } from '@/features/map/map-icons';
 import { useCreateMeetup } from '@/features/meetups/hooks';
 import { quickTimeToDate, type QuickTimeOption } from '@/features/meetups/time';
 import { useTheme } from '@/hooks/use-theme';
-import { useAuthStore } from '@/store/auth';
+import { useUserId } from '@/hooks/use-user-id';
 
 const TIME_OPTIONS: { value: QuickTimeOption; label: string }[] = [
   { value: 'tonight', label: 'Ikväll' },
@@ -24,7 +24,7 @@ const TIME_OPTIONS: { value: QuickTimeOption; label: string }[] = [
 
 export default function CreateMeetupScreen() {
   const theme = useTheme();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const { lat, lng } = useLocalSearchParams<{ lat: string; lng: string }>();
 
   const [vibe, setVibe] = useState<MeetupVibe>('cruising');

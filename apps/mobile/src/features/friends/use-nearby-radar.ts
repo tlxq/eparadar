@@ -5,6 +5,7 @@ import { AppState } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 
 import { leaveNearby, scanNearby } from '@/features/friends/nearby';
+import { queryKeys } from '@/lib/query-keys';
 
 const SCAN_INTERVAL_MS = 5000;
 
@@ -77,7 +78,7 @@ export function useNearbyRadar(userId: string | undefined) {
   }, [permission, active]);
 
   const query = useQuery({
-    queryKey: ['nearby', userId, coords?.lat.toFixed(4), coords?.lng.toFixed(4)],
+    queryKey: queryKeys.nearby(userId, coords?.lat.toFixed(4), coords?.lng.toFixed(4)),
     queryFn: () => scanNearby(coords!.lat, coords!.lng),
     enabled: !!userId && !!coords && active && permission === 'granted',
     refetchInterval: SCAN_INTERVAL_MS,

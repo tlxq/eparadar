@@ -17,7 +17,13 @@ export const queryKeys = {
   friendLocations: (userId: string | undefined) => ['friendLocations', userId] as const,
   friendCode: (userId: string | undefined) => ['friendCode', userId] as const,
   spots: () => ['spots'] as const,
+  allSpotPhotos: () => ['spotPhotos'] as const,
   spotPhotos: (spotId: string | undefined) => ['spotPhotos', spotId] as const,
+  chatImage: (path: string) => ['chatImage', path] as const,
+  groupAvatar: (path: string | null | undefined) => ['groupAvatar', path] as const,
+  allNearby: (userId: string | undefined) => ['nearby', userId] as const,
+  nearby: (userId: string | undefined, lat: string | undefined, lng: string | undefined) =>
+    ['nearby', userId, lat, lng] as const,
   spotPhotoCounts: () => ['spotPhotoCounts'] as const,
   eveningHeat: (userId: string | undefined) => ['eveningHeat', userId] as const,
 };

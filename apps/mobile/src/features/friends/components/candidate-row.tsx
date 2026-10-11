@@ -48,7 +48,13 @@ export function CandidateRow({
           Skickad
         </ThemedText>
       ) : (
-        <Button label="Lägg till" size="sm" variant={buttonVariant} loading={sending} onPress={onAdd} />
+        <Button
+          label="Lägg till"
+          size="sm"
+          variant={buttonVariant}
+          loading={sending}
+          onPress={onAdd}
+        />
       )}
     </ThemedView>
   );

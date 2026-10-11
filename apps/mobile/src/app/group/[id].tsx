@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { ActionSheet, type SheetAction } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
@@ -22,7 +21,6 @@ import { useRealtimeTable } from '@/hooks/use-realtime-table';
 import { useTheme } from '@/hooks/use-theme';
 import {
   conversationTitle,
-  fetchConversation,
   leaveConversation,
   removeMember,
   renameConversation,
@@ -33,7 +31,9 @@ import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
-import { useAuthStore } from '@/store/auth';
+import { useConversation } from '@/features/chat/hooks';
+import { useUserId } from '@/hooks/use-user-id';
+import { pickImage } from '@/lib/pick-image';
 
 function byRoleThenName(a: ConversationMember, b: ConversationMember) {
   if (a.role !== b.role) return a.role === 'admin' ? -1 : 1;
@@ -43,7 +43,7 @@ function byRoleThenName(a: ConversationMember, b: ConversationMember) {
 export default function GroupInfoScreen() {
   const theme = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
@@ -51,11 +51,7 @@ export default function GroupInfoScreen() {
   const [busy, setBusy] = useState<string | null>(null);
   const [photoSheet, setPhotoSheet] = useState(false);
 
-  const { data: conversation, isError } = useQuery({
-    queryKey: queryKeys.conversation(id),
-    queryFn: () => fetchConversation(id!),
-    enabled: !!id,
-  });
+  const { data: conversation, isError } = useConversation(id);
 
   function refresh() {
     queryClient.invalidateQueries({ queryKey: queryKeys.conversation(id) });
@@ -103,22 +99,9 @@ export default function GroupInfoScreen() {
   }
 
   async function pickPhoto() {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      showToast({
-        tone: 'error',
-        message: 'epaRadar behöver tillgång till dina bilder för att byta gruppbild.',
-      });
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (result.canceled || !result.assets[0]) return;
-    await changePhoto(result.assets[0].uri);
+    const uri = await pickImage({ aspect: [1, 1] });
+    if (!uri) return;
+    await changePhoto(uri);
   }
 
   async function removePhoto() {
