@@ -30,6 +30,7 @@ import { readersOf } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
 import { sendStoppedTyping, sendTyping } from '@/lib/typing';
 import { openPerson } from '@/store/person-sheet';
+import { randomId } from '@/lib/random-id';
 import { showToast } from '@/store/toast';
 import { activeTypists, TYPING_TTL_MS, typingLabel, useTypingStore } from '@/store/typing';
 import { useProfile } from '@/features/profile/hooks';
@@ -185,20 +186,47 @@ export default function ConversationScreen() {
   async function handleSend() {
     const text = body.trim();
     if (!userId || !id || !text) return;
-    setSending(true);
+    const key = queryKeys.messages(id);
+    const draft: Message = {
+      id: randomId(),
+      conversation_id: id,
+      sender_id: userId,
+      body: text,
+      image_path: null,
+      created_at: new Date().toISOString(),
+      sender: myProfile
+        ? {
+            id: userId,
+            username: myProfile.username,
+            display_name: myProfile.display_name,
+            avatar_url: myProfile.avatar_url,
+          }
+        : null,
+      reactions: [],
+      pending: true,
+    };
+    setBody('');
+    sendStoppedTyping(id, userId, myName);
+    await queryClient.cancelQueries({ queryKey: key });
+    queryClient.setQueryData<Message[]>(key, (current) => [...(current ?? []), draft]);
     try {
-      await sendMessage({ conversationId: id, senderId: userId, body: text });
-      setBody('');
-      sendStoppedTyping(id, userId, myName);
-      queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) });
+      await sendMessage({ id: draft.id, conversationId: id, senderId: userId, body: text });
+      queryClient.setQueryData<Message[]>(key, (current) =>
+        current?.map((message) =>
+          message.id === draft.id ? { ...message, pending: false } : message,
+        ),
+      );
+      queryClient.invalidateQueries({ queryKey: key });
       queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });
     } catch (error) {
+      queryClient.setQueryData<Message[]>(key, (current) =>
+        current?.filter((message) => message.id !== draft.id),
+      );
+      setBody((current) => current || text);
       showToast({
         tone: 'error',
         message: `Meddelandet skickades inte. ${getErrorMessage(error)}`,
       });
-    } finally {
-      setSending(false);
     }
   }
 
@@ -299,7 +327,7 @@ export default function ConversationScreen() {
                 isMine={item.sender_id === userId}
                 showNames={isGroup}
                 myUserId={userId}
-                onLongPress={setSelected}
+                onLongPress={(message) => !message.pending && setSelected(message)}
                 onOpenImage={setViewerUrl}
               />
             )}

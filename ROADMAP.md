@@ -39,7 +39,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [x] Own posts on Profil (with delete)
    - [ ] Camera option when posting
    - [ ] Notification opens the right screen from a closed app
-   - [ ] Messages appear instantly when sent
+   - [x] Messages appear instantly when sent
    - [ ] Haptics on key actions
    - [ ] Blocked users list with unblock
    - [ ] Map friend search stays above the keyboard

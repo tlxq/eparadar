@@ -214,6 +214,7 @@ export type Conversation = DbRow<'conversations'> & {
 export type Message = DbRow<'messages'> & {
   sender: ProfileSummary | null;
   reactions: { user_id: string; emoji: string }[];
+  pending?: boolean;
 };
 
 export function conversationTitle(conversation: Conversation, myUserId: string): string {
@@ -341,12 +342,14 @@ export async function fetchMessages(conversationId: string): Promise<Message[]> 
 }
 
 export async function sendMessage(input: {
+  id?: string;
   conversationId: string;
   senderId: string;
   body: string;
   imagePath?: string | null;
 }) {
   const { error } = await supabase.from('messages').insert({
+    id: input.id,
     conversation_id: input.conversationId,
     sender_id: input.senderId,
     body: input.body,
