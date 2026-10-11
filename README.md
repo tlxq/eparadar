@@ -106,6 +106,10 @@ The second form forces a rebuild. The third form connects through Tailscale when
 discovered on the local network; the port is shown on the phone's Wireless debugging screen. The
 phone's Tailscale name defaults to `phone` and can be changed with `PHONE_HOST`.
 
+With several phones connected the script asks which one to use, or pick one directly with
+`npm run phone -- --device S928`. Each phone remembers its own last install, and a second phone
+reuses Metro when it is already running.
+
 ## Two-computer workflow
 
 Git is the sole source of truth for code:
