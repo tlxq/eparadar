@@ -1,3 +1,5 @@
+import { Colors } from '@eparadar/theme/colors';
+
 const SWEDEN_CENTER = { lat: 62.0, lng: 15.0, zoom: 4 };
 const LONG_PRESS_MS = 450;
 const MOVING_FRESH_MS = 3 * 60 * 1000;
@@ -11,6 +13,8 @@ const ICON_MEETUP =
 const ICON_PIN =
   '<svg viewBox="0 0 48 48" fill="none"><path d="M24 44s13-11.5 13-22a13 13 0 1 0-26 0c0 10.5 13 22 13 22Z" fill="#2F6FED" fill-opacity=".55"/><path d="M24 44s13-11.5 13-22a13 13 0 1 0-26 0c0 10.5 13 22 13 22Z" stroke="#F4F6F9" stroke-width="3" stroke-linejoin="round"/><circle cx="24" cy="22" r="4.5" fill="#F4F6F9"/></svg>';
 
+const NIGHT = Colors.dark;
+
 export const MAP_HTML = `<!DOCTYPE html>
 <html>
 <head>
@@ -20,17 +24,17 @@ export const MAP_HTML = `<!DOCTYPE html>
     html, body, #map { height: 100%; margin: 0; padding: 0; background: #0E1320; }
     body { font-family: Inter, -apple-system, Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     .maplibregl-ctrl-attrib { background: rgba(14,19,32,0.7) !important; }
-    .maplibregl-ctrl-attrib a, .maplibregl-ctrl-attrib-inner { color: #A2AAB8 !important; font-size: 9px; }
+    .maplibregl-ctrl-attrib a, .maplibregl-ctrl-attrib-inner { color: ${NIGHT.textSecondary} !important; font-size: 9px; }
     .maplibregl-ctrl-attrib-button { filter: invert(1); }
     .mk { display: flex; flex-direction: column; align-items: center; pointer-events: auto; position: relative; }
     .status-bubble {
       position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -8px); max-width: 160px;
-      background: #F4F6F9; color: #0B0E14; font-size: 11px; font-weight: 700; padding: 5px 9px; border-radius: 12px;
+      background: ${NIGHT.text}; color: ${NIGHT.background}; font-size: 11px; font-weight: 700; padding: 5px 9px; border-radius: 12px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 4px 12px rgba(0,0,0,0.45);
     }
     .status-bubble::after {
       content: ''; position: absolute; left: 50%; top: 100%; transform: translateX(-50%);
-      border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #F4F6F9;
+      border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid ${NIGHT.text};
     }
     .bubble { position: relative; width: 48px; height: 48px; }
     .ring {
@@ -39,14 +43,14 @@ export const MAP_HTML = `<!DOCTYPE html>
       box-shadow: 0 0 0 2px #0E1320, 0 6px 16px rgba(0,0,0,0.55);
     }
     .ring img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .initials { color: #F4F6F9; font-weight: 800; font-size: 15px; text-transform: uppercase; }
+    .initials { color: ${NIGHT.text}; font-weight: 800; font-size: 15px; text-transform: uppercase; }
     .carbadge {
       position: absolute; right: -5px; bottom: -3px; width: 20px; height: 20px; border-radius: 50%;
       background: var(--ring); border: 2px solid #0E1320; display: flex; align-items: center; justify-content: center;
     }
     .carbadge svg { width: 12px; height: 12px; }
     .label {
-      margin-top: 5px; font-size: 11px; font-weight: 700; color: #F4F6F9; white-space: nowrap;
+      margin-top: 5px; font-size: 11px; font-weight: 700; color: ${NIGHT.text}; white-space: nowrap;
       text-shadow: 0 1px 4px rgba(0,0,0,0.95), 0 0 2px rgba(0,0,0,0.9);
     }
     .is-approx .bubble::before {
@@ -65,14 +69,14 @@ export const MAP_HTML = `<!DOCTYPE html>
     .me.is-ghost .ring { border-style: dashed; opacity: 0.6; box-shadow: 0 0 0 2px #0E1320; }
     .me.is-ghost .bubble::after { display: none; }
     .ghost-chip {
-      margin-top: 5px; font-size: 10px; font-weight: 700; color: #F4F6F9; background: rgba(21,26,37,0.85);
+      margin-top: 5px; font-size: 10px; font-weight: 700; color: ${NIGHT.text}; background: rgba(21,26,37,0.85);
       border: 1px solid rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 999px; white-space: nowrap;
     }
     @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.9; } 100% { transform: scale(1.5); opacity: 0; } }
     .cluster { display: flex; align-items: center; }
     .cluster .ring { position: relative; width: 38px; height: 38px; border-width: 2.5px; }
     .cluster .ring + .ring { margin-left: -12px; }
-    .cluster .more { font-weight: 800; font-size: 12px; color: #0B0E14; }
+    .cluster .more { font-weight: 800; font-size: 12px; color: ${NIGHT.background}; }
     .tile {
       position: relative; width: 44px; height: 44px; border-radius: 14px; background: #1C2230;
       border: 1.5px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;
@@ -83,7 +87,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     @keyframes live { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6), 0 6px 14px rgba(0,0,0,0.5); } 100% { box-shadow: 0 0 0 12px rgba(34,197,94,0), 0 6px 14px rgba(0,0,0,0.5); } }
     .count {
       position: absolute; top: -7px; right: -7px; min-width: 18px; padding: 2px 5px; border-radius: 8px;
-      background: #22C55E; color: #06210F; font-size: 10px; font-weight: 800; text-align: center; border: 2px solid #0E1320;
+      background: ${NIGHT.success}; color: #06210F; font-size: 10px; font-weight: 800; text-align: center; border: 2px solid #0E1320;
     }
     .pin svg { width: 46px; height: 46px; filter: drop-shadow(0 0 10px rgba(47,111,237,0.8)); }
     .spot { display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; }
@@ -95,17 +99,17 @@ export const MAP_HTML = `<!DOCTYPE html>
       pointer-events: none; z-index: -1;
     }
     .chip {
-      font-size: 10.5px; font-weight: 700; color: #F4F6F9; background: rgba(21,26,37,0.85); white-space: nowrap;
+      font-size: 10.5px; font-weight: 700; color: ${NIGHT.text}; background: rgba(21,26,37,0.85); white-space: nowrap;
       border: 1px solid rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 999px; display: flex; gap: 5px; align-items: center;
     }
-    .chip .cam { display: inline-flex; align-items: center; gap: 2px; color: #A2AAB8; }
+    .chip .cam { display: inline-flex; align-items: center; gap: 2px; color: ${NIGHT.textSecondary}; }
     .chip .cam svg { width: 13px; height: 13px; }
-    .chip .n { background: #22C55E; color: #06210F; padding: 1px 5px; border-radius: 6px; font-weight: 800; }
+    .chip .n { background: ${NIGHT.success}; color: #06210F; padding: 1px 5px; border-radius: 6px; font-weight: 800; }
     .press-ring {
-      width: 64px; height: 64px; border-radius: 50%; border: 2px solid #7EA6FF; display: flex; align-items: center; justify-content: center;
+      width: 64px; height: 64px; border-radius: 50%; border: 2px solid ${NIGHT.brandOnSurface}; display: flex; align-items: center; justify-content: center;
       animation: pressGrow ${LONG_PRESS_MS}ms ease-out forwards;
     }
-    .press-ring::after { content: ''; width: 14px; height: 14px; border-radius: 50%; background: #7EA6FF; }
+    .press-ring::after { content: ''; width: 14px; height: 14px; border-radius: 50%; background: ${NIGHT.brandOnSurface}; }
     @keyframes pressGrow { from { transform: scale(0.4); opacity: 0.3; } to { transform: scale(1); opacity: 1; } }
     @media (prefers-reduced-motion: reduce) { .me .bubble::after, .tile.live { animation: none; } }
   </style>
@@ -227,7 +231,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     map.on('style.load', function () {
       Object.keys(NIGHT_PAINT).forEach(function (id) { setPaint(id, NIGHT_PAINT[id]); });
       TEXT_LAYERS.forEach(function (id) {
-        setPaint(id, { 'text-color': '#A2AAB8', 'text-halo-color': '#0B0E14', 'text-halo-width': 1.4 });
+        setPaint(id, { 'text-color': '${NIGHT.textSecondary}', 'text-halo-color': '${NIGHT.background}', 'text-halo-width': 1.4 });
       });
       if (map.getLayer('highway_major_casing')) {
         map.addLayer({
@@ -238,7 +242,7 @@ export const MAP_HTML = `<!DOCTYPE html>
           filter: ['in', ['get', 'class'], ['literal', ['motorway', 'trunk', 'primary', 'secondary', 'tertiary']]],
           layout: { 'line-cap': 'round', 'line-join': 'round' },
           paint: {
-            'line-color': ['match', ['get', 'class'], ['motorway', 'trunk'], '#FF8A3D', '#2F6FED'],
+            'line-color': ['match', ['get', 'class'], ['motorway', 'trunk'], '${NIGHT.accent}', '${NIGHT.brand}'],
             'line-opacity': 0.22,
             'line-blur': 6,
             'line-width': ['interpolate', ['exponential', 1.5], ['zoom'], 8, 3, 14, 14, 18, 40],
@@ -289,7 +293,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     }
     const CAR_MINI = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 15v-3l2.4-5h11.2L20 12v3z" fill="#fff" fill-opacity=".92"/><circle cx="8" cy="15.5" r="2" fill="#0E1320"/><circle cx="16" cy="15.5" r="2" fill="#0E1320"/></svg>';
     function carTop(color) {
-      return '<svg viewBox="0 0 48 48" fill="none"><rect x="13" y="5" width="22" height="38" rx="8" fill="' + color + '"/><rect x="13" y="5" width="22" height="38" rx="8" stroke="#F4F6F9" stroke-width="2.5"/><path d="M16.5 15.5h15l-2 6h-11zM17.5 34h13l-1.5-4.5h-10z" fill="#0E1320" fill-opacity=".85"/><path d="M17 7.5h3M28 7.5h3" stroke="#FFF6D6" stroke-width="2.4" stroke-linecap="round"/></svg>';
+      return '<svg viewBox="0 0 48 48" fill="none"><rect x="13" y="5" width="22" height="38" rx="8" fill="' + color + '"/><rect x="13" y="5" width="22" height="38" rx="8" stroke="${NIGHT.text}" stroke-width="2.5"/><path d="M16.5 15.5h15l-2 6h-11zM17.5 34h13l-1.5-4.5h-10z" fill="#0E1320" fill-opacity=".85"/><path d="M17 7.5h3M28 7.5h3" stroke="#FFF6D6" stroke-width="2.4" stroke-linecap="round"/></svg>';
     }
     function bubbleHtml(p) {
       const face = p.avatarUrl
@@ -382,7 +386,7 @@ export const MAP_HTML = `<!DOCTYPE html>
         const html = '<div class="cluster">' + shown.map(function (f) {
           const face = f.avatarUrl ? '<img src="' + escapeHtml(f.avatarUrl) + '" />' : '<span class="initials">' + initials(f.label) + '</span>';
           return '<div class="ring" style="--ring:' + f.ring + '">' + face + '</div>';
-        }).join('') + (rest > 0 ? '<div class="ring" style="--ring:#F4F6F9;background:#F4F6F9"><span class="more">+' + rest + '</span></div>' : '') +
+        }).join('') + (rest > 0 ? '<div class="ring" style="--ring:${NIGHT.text};background:${NIGHT.text}"><span class="more">+' + rest + '</span></div>' : '') +
           '</div><span class="label">' + g.members.length + ' vänner här</span>';
         const el = makeEl('mk', html);
         const lngLat = map.unproject([g.x, g.y]);
@@ -468,7 +472,7 @@ export const MAP_HTML = `<!DOCTYPE html>
       const rest = min % 60;
       return h + ' h' + (rest ? ' ' + rest + ' min' : '') + ' kvar';
     }
-    const CAM_MINI = '<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="3" stroke="#F4F6F9" stroke-width="2"/><path d="m9 7 1.5-2.5h3L15 7" stroke="#F4F6F9" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13.5" r="3" stroke="#7EA6FF" stroke-width="2"/></svg>';
+    const CAM_MINI = '<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="3" stroke="${NIGHT.text}" stroke-width="2"/><path d="m9 7 1.5-2.5h3L15 7" stroke="${NIGHT.text}" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13.5" r="3" stroke="${NIGHT.brandOnSurface}" stroke-width="2"/></svg>';
     function spotHtml(sp) {
       const warning = sp.kind === 'varning';
       const chip = warning

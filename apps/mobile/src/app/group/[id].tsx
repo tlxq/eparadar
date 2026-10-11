@@ -34,6 +34,7 @@ import { useConversation } from '@/features/chat/hooks';
 import { useUserId } from '@/hooks/use-user-id';
 import { pickImage } from '@/lib/pick-image';
 import { ModalHeader } from '@/components/modal-header';
+import { Common } from '@/constants/strings';
 
 function byRoleThenName(a: ConversationMember, b: ConversationMember) {
   if (a.role !== b.role) return a.role === 'admin' ? -1 : 1;
@@ -108,7 +109,7 @@ export default function GroupInfoScreen() {
     const ok = await confirmDestructive({
       title: 'Ta bort gruppbilden?',
       message: 'Gruppen visas med sin första bokstav igen.',
-      confirmLabel: 'Ta bort',
+      confirmLabel: Common.remove,
     });
     if (ok) await changePhoto(null);
   }
@@ -136,7 +137,7 @@ export default function GroupInfoScreen() {
     const ok = await confirmDestructive({
       title: `Ta bort ${member.profiles.display_name}?`,
       message: `${member.profiles.display_name} kan inte längre läsa eller skriva i gruppen.`,
-      confirmLabel: 'Ta bort',
+      confirmLabel: Common.remove,
     });
     if (!ok) return;
     setBusy(member.user_id);
@@ -235,7 +236,7 @@ export default function GroupInfoScreen() {
                     <View style={styles.editActions}>
                       <View style={styles.flex}>
                         <Button
-                          label="Avbryt"
+                          label={Common.cancel}
                           variant="secondary"
                           onPress={() => {
                             setEditing(false);
@@ -244,7 +245,11 @@ export default function GroupInfoScreen() {
                         />
                       </View>
                       <View style={styles.flex}>
-                        <Button label="Spara" loading={busy === 'rename'} onPress={saveName} />
+                        <Button
+                          label={Common.save}
+                          loading={busy === 'rename'}
+                          onPress={saveName}
+                        />
                       </View>
                     </View>
                   </View>
@@ -299,7 +304,7 @@ export default function GroupInfoScreen() {
                             </View>
                           ) : amAdmin && !isMe ? (
                             <Button
-                              label="Ta bort"
+                              label={Common.remove}
                               size="sm"
                               variant="ghost"
                               tone="danger"

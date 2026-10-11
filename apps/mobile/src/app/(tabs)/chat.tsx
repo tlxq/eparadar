@@ -13,7 +13,7 @@ import { ScreenBackground } from '@/components/screen-background';
 import { ScreenHeader } from '@/components/screen-header';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
-import { Fonts, Radius, Spacing } from '@/constants/theme';
+import { Fonts, Radius, Spacing, Typography } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
 import { conversationTitle, type Conversation } from '@/lib/api';
@@ -213,8 +213,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
-    fontFamily: Fonts.inter.regular,
+    ...Typography.input,
     paddingVertical: Spacing.two,
   },
   meta: { alignItems: 'flex-end', gap: Spacing.one, minWidth: 40 },

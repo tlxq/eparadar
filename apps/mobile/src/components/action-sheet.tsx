@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { Common } from '@/constants/strings';
 
 const CLOSE_DELAY_MS = 250;
 
@@ -34,7 +35,7 @@ export function ActionSheet({ visible, title, header, actions, onClose }: Action
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Stäng"
+        accessibilityLabel={Common.close}
         style={styles.backdrop}
         onPress={onClose}
       />
@@ -98,7 +99,7 @@ export function ActionSheet({ visible, title, header, actions, onClose }: Action
             { backgroundColor: pressed ? theme.backgroundSelected : theme.background },
           ]}
         >
-          <ThemedText type="headline">Avbryt</ThemedText>
+          <ThemedText type="headline">{Common.cancel}</ThemedText>
         </Pressable>
       </View>
     </Modal>

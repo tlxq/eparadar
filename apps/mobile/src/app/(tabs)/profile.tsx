@@ -32,6 +32,7 @@ import {
   EditProfileSheet,
   Stat,
 } from '@/features/profile/components/profile-parts';
+import { Common } from '@/constants/strings';
 const AVATAR_SIZE = 96;
 
 export default function ProfileScreen() {
@@ -81,7 +82,7 @@ export default function ProfileScreen() {
     const ok = await confirmDestructive({
       title: 'Ta bort profilbilden?',
       message: 'Din profil visas med din första bokstav i stället.',
-      confirmLabel: 'Ta bort',
+      confirmLabel: Common.remove,
     });
     if (!ok) return;
     setUploadingAvatar(true);
@@ -111,7 +112,7 @@ export default function ProfileScreen() {
     const ok = await confirmDestructive({
       title: `Ta bort ${car.nickname ?? `${car.make} ${car.model}`}?`,
       message: 'Bilen och dess bild tas bort. Inlägg där den är taggad finns kvar, utan taggen.',
-      confirmLabel: 'Ta bort',
+      confirmLabel: Common.remove,
     });
     if (!ok) return;
     try {

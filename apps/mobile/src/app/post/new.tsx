@@ -9,7 +9,7 @@ import { Button } from '@/components/button';
 import { FormScreen } from '@/components/form-screen';
 import { IconButton } from '@/components/icon-button';
 import { ThemedText } from '@/components/themed-text';
-import { Fonts, Radius, Spacing } from '@/constants/theme';
+import { Radius, Spacing, Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { createPost } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
@@ -158,9 +158,7 @@ const styles = StyleSheet.create({
   composerBody: { flex: 1, gap: Spacing.one },
   input: {
     minHeight: 120,
-    fontSize: 18,
-    lineHeight: 26,
-    fontFamily: Fonts.inter.regular,
+    ...Typography.lead,
     textAlignVertical: 'top',
     padding: 0,
   },

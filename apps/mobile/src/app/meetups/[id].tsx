@@ -9,7 +9,7 @@ import { IconButton } from '@/components/icon-button';
 import { ScreenBackground } from '@/components/screen-background';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
-import { Radius, Spacing } from '@/constants/theme';
+import { Radius, Spacing, Typography } from '@/constants/theme';
 import { meetupVibe } from '@/features/map/map-icons';
 import {
   useAutoCheckIn,
@@ -23,6 +23,7 @@ import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { showToast } from '@/store/toast';
 import { useUserId } from '@/hooks/use-user-id';
+import { Common } from '@/constants/strings';
 
 export default function MeetupDetailScreen() {
   const theme = useTheme();
@@ -40,7 +41,7 @@ export default function MeetupDetailScreen() {
       title: 'Ta bort träffen?',
       message:
         'Träffen försvinner från kartan för alla, tillsammans med intresseanmälningar och incheckningar.',
-      confirmLabel: 'Ta bort',
+      confirmLabel: Common.remove,
     });
     if (!ok) return;
     try {
@@ -57,7 +58,11 @@ export default function MeetupDetailScreen() {
     return (
       <ScreenBackground style={styles.center}>
         <View style={styles.errorClose}>
-          <IconButton icon="close" accessibilityLabel="Stäng" onPress={() => router.back()} />
+          <IconButton
+            icon="close"
+            accessibilityLabel={Common.close}
+            onPress={() => router.back()}
+          />
         </View>
         <ThemedText themeColor="danger" style={styles.errorText}>
           Kunde inte hämta träffen.{'\n'}
@@ -84,7 +89,11 @@ export default function MeetupDetailScreen() {
       <ScreenBackground style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.header}>
-            <IconButton icon="close" accessibilityLabel="Stäng" onPress={() => router.back()} />
+            <IconButton
+              icon="close"
+              accessibilityLabel={Common.close}
+              onPress={() => router.back()}
+            />
           </View>
           <View style={styles.content}>
             <Skeleton width="70%" height={32} />
@@ -103,7 +112,11 @@ export default function MeetupDetailScreen() {
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <IconButton icon="close" accessibilityLabel="Stäng" onPress={() => router.back()} />
+          <IconButton
+            icon="close"
+            accessibilityLabel={Common.close}
+            onPress={() => router.back()}
+          />
         </View>
 
         <ScrollView contentContainerStyle={styles.content}>
@@ -232,7 +245,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.two,
   },
   liveDot: { width: 7, height: 7, borderRadius: 4 },
-  title: { fontSize: 28, lineHeight: 34 },
+  title: Typography.display,
   meta: { marginTop: Spacing.one },
   avatarStrip: {
     flexDirection: 'row',

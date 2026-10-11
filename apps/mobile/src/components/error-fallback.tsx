@@ -8,6 +8,7 @@ import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { Common } from '@/constants/strings';
 
 type ErrorFallbackProps = {
   error: Error;
@@ -34,7 +35,7 @@ export function ErrorFallback({ error, retry }: ErrorFallbackProps) {
         Appen stötte på ett fel. Oftast hjälper det att försöka igen.
       </ThemedText>
       <View style={styles.button}>
-        <Button label="Försök igen" icon="refresh" onPress={() => retry()} />
+        <Button label={Common.retry} icon="refresh" onPress={() => retry()} />
       </View>
     </View>
   );

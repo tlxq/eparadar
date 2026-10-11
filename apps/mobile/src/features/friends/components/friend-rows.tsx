@@ -15,12 +15,13 @@ import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
 import { confirmDestructive } from '@/lib/confirm';
+import { Common } from '@/constants/strings';
 
 async function confirmBlock(name: string, consequence: string) {
   return confirmDestructive({
     title: `Blockera ${name}?`,
     message: `${consequence} ${name} får inget besked om det.`,
-    confirmLabel: 'Blockera',
+    confirmLabel: Common.block,
   });
 }
 
@@ -89,7 +90,7 @@ export function RequestRow({ request, myUserId }: { request: Friendship; myUserI
         onClose={() => setSheetOpen(false)}
         actions={[
           {
-            label: 'Blockera',
+            label: Common.block,
             icon: 'ban-outline',
             destructive: true,
             onPress: async () => {
@@ -131,7 +132,7 @@ export function OutgoingRequestRow({
       leading={<Avatar name={addressee.display_name} imageUrl={addressee.avatar_url} size={52} />}
       trailing={
         <Button
-          label="Avbryt"
+          label={Common.cancel}
           size="sm"
           variant="secondary"
           loading={cancel.isPending}
@@ -185,7 +186,7 @@ export function FriendRow({ friendship, myUserId }: { friendship: Friendship; my
             onPress: () => remove.mutate(),
           },
           {
-            label: 'Blockera',
+            label: Common.block,
             icon: 'ban-outline',
             destructive: true,
             onPress: async () => {

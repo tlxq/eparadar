@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Fonts, Radius, Spacing } from '@/constants/theme';
+import { Radius, Spacing, Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type ButtonProps = {
@@ -98,12 +98,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.two,
   },
-  label: {
-    fontFamily: Fonts.inter.bold,
-    fontSize: 16,
-  },
-  smallLabel: {
-    fontFamily: Fonts.inter.semiBold,
-    fontSize: 14,
-  },
+  label: Typography.button,
+  smallLabel: Typography.buttonSmall,
 });

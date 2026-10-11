@@ -27,11 +27,11 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [x] Shared hooks: `useUserId`, `useProfile`, `useMyCars`, `useFriends`, `useConversations`,
          `useFriendLocations`, `usePickImage`, `useQueryErrorToast`
    - [x] Shared UI: `FormSheet`, `ModalHeader`, `Chip`, `Radius.pill` everywhere
-   - [ ] Typography tokens, map colors from theme
+   - [x] Typography tokens, map colors from theme
    - [x] Types from `database.types.ts`, `ProfileSummary`
    - [x] Move chat, friends and profile parts into `features/*` (chat screen 762 → 466 lines)
    - [ ] Split `karta.tsx` into hooks and parts (needs a phone to verify)
-   - [ ] Common Swedish words in one place
+   - [x] Common Swedish words in one place
 4. **Fewer taps**
    - [ ] Person sheet from map, feed, friends and chat (Chatta, Visa på kartan)
    - [ ] Ghost mode toggle on Karta
