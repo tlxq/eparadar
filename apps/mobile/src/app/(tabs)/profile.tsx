@@ -4,28 +4,18 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'reac
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-
 import { ActionSheet, type SheetAction } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
-import { CarPhoto } from '@/components/car-photo';
 import { IconButton } from '@/components/icon-button';
 import { ScreenBackground } from '@/components/screen-background';
 import { ScreenHeader } from '@/components/screen-header';
 import { Skeleton } from '@/components/skeleton';
-import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
-import {
-  deleteCar,
-  removeAvatar,
-  setCarColor,
-  updateProfile,
-  type Car,
-  type Profile,
-} from '@/lib/api';
+import { deleteCar, removeAvatar, setCarColor, updateProfile, type Car } from '@/lib/api';
 import { CarColorPicker } from '@/features/map/car-color-picker';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
@@ -36,118 +26,13 @@ import { useMyCars, useMyPostCount, useProfile } from '@/features/profile/hooks'
 import { useFriends } from '@/features/friends/hooks';
 import { useUserId } from '@/hooks/use-user-id';
 import { pickImage } from '@/lib/pick-image';
-import { FormSheet } from '@/components/form-sheet';
-
+import {
+  CAR_CARD_WIDTH,
+  CarCard,
+  EditProfileSheet,
+  Stat,
+} from '@/features/profile/components/profile-parts';
 const AVATAR_SIZE = 96;
-const CAR_CARD_WIDTH = 160;
-
-function CarCard({ car, onMore }: { car: Car; onMore: () => void }) {
-  const theme = useTheme();
-  return (
-    <View style={[styles.carCard, { backgroundColor: theme.backgroundElement }]}>
-      <CarPhoto imageUrl={car.photo_url} size={CAR_CARD_WIDTH} radius={0} />
-      <View style={styles.carMore}>
-        <IconButton
-          icon="ellipsis-horizontal"
-          size={32}
-          accessibilityLabel={`Fler val för ${car.nickname ?? `${car.make} ${car.model}`}`}
-          onPress={onMore}
-        />
-      </View>
-      <View style={styles.carText}>
-        <ThemedText type="smallBold" numberOfLines={1}>
-          {car.nickname ?? `${car.make} ${car.model}`}
-        </ThemedText>
-        <ThemedText type="caption" themeColor="textSecondary" numberOfLines={1}>
-          {[`${car.make} ${car.model}`, car.year].filter(Boolean).join(' · ')}
-        </ThemedText>
-      </View>
-    </View>
-  );
-}
-
-function Stat({ value, label }: { value: number | undefined; label: string }) {
-  const theme = useTheme();
-  return (
-    <View style={[styles.stat, { backgroundColor: theme.backgroundElement }]}>
-      {value === undefined ? (
-        <Skeleton width={24} height={20} />
-      ) : (
-        <ThemedText type="subtitle" style={styles.statValue}>
-          {value}
-        </ThemedText>
-      )}
-      <ThemedText type="caption" themeColor="textSecondary">
-        {label}
-      </ThemedText>
-    </View>
-  );
-}
-
-type EditProfileSheetProps = {
-  profile: Profile;
-  visible: boolean;
-  onClose: () => void;
-};
-
-function EditProfileSheet({ profile, visible, onClose }: EditProfileSheetProps) {
-  const queryClient = useQueryClient();
-  const [displayName, setDisplayName] = useState(profile.display_name);
-  const [bio, setBio] = useState(profile.bio ?? '');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSave() {
-    if (!displayName.trim()) {
-      setError('Skriv ett visningsnamn.');
-      return;
-    }
-    setSaving(true);
-    setError(null);
-    try {
-      await updateProfile(profile.id, {
-        displayName: displayName.trim(),
-        bio: bio.trim() || null,
-        avatarUrl: profile.avatar_url ?? undefined,
-      });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.profile(profile.id) });
-      showToast({ tone: 'success', message: 'Profilen är sparad.' });
-      onClose();
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <FormSheet
-      title="Redigera profil"
-      visible={visible}
-      onClose={onClose}
-      action={{ label: 'Spara', onPress: handleSave, loading: saving }}
-    >
-      <TextField
-        label="Visningsnamn"
-        value={displayName}
-        onChangeText={setDisplayName}
-        error={error}
-        autoFocus
-      />
-      <TextField
-        label="Bio"
-        value={bio}
-        onChangeText={setBio}
-        placeholder="Vad kör du, var brukar du hänga?"
-        multiline
-        maxLength={160}
-      />
-      <ThemedText type="caption" themeColor="textSecondary" style={styles.counter}>
-        {bio.length}/160
-      </ThemedText>
-    </FormSheet>
-  );
-}
 
 export default function ProfileScreen() {
   const theme = useTheme();
@@ -454,20 +339,9 @@ const styles = StyleSheet.create({
   bio: { maxWidth: 320, marginTop: Spacing.one },
   pressed: { opacity: 0.8 },
   stats: { flexDirection: 'row', gap: Spacing.two },
-  stat: {
-    flex: 1,
-    alignItems: 'center',
-    gap: Spacing.half,
-    paddingVertical: Spacing.three,
-    borderRadius: Radius.lg,
-  },
-  statValue: { fontVariant: ['tabular-nums'] },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   sectionLabel: { letterSpacing: 0.6 },
   carRow: { flexDirection: 'row', gap: Spacing.two, paddingHorizontal: Spacing.three },
-  carCard: { width: CAR_CARD_WIDTH, borderRadius: Radius.lg, overflow: 'hidden' },
-  carText: { padding: Spacing.two + Spacing.half, gap: Spacing.half },
-  carMore: { position: 'absolute', top: Spacing.one, right: Spacing.one },
   addCar: {
     marginHorizontal: Spacing.three,
     alignItems: 'center',
@@ -478,5 +352,4 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderStyle: 'dashed',
   },
-  counter: { alignSelf: 'flex-end', marginTop: -Spacing.two },
 });
