@@ -40,7 +40,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [ ] Camera option when posting
    - [x] Notification opens the right screen from a closed app
    - [x] Messages appear instantly when sent
-   - [ ] Haptics on key actions
+   - [x] Haptics on key actions
    - [x] Blocked users list with unblock (Inställningar)
    - [ ] Map friend search stays above the keyboard
 5. **Bigger features**

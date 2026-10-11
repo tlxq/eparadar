@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
-import { Platform, StyleSheet, Vibration } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { useQueryClient } from '@tanstack/react-query';
@@ -24,6 +24,7 @@ import { markInterested } from '@/features/meetups/api';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useUserId } from '@/hooks/use-user-id';
 import { type FriendLocation } from '@/lib/api';
+import { pressHaptic } from '@/lib/haptics';
 import { queryKeys } from '@/lib/query-keys';
 import { openPerson } from '@/store/person-sheet';
 import { showToast } from '@/store/toast';
@@ -197,7 +198,7 @@ export default function MapScreen() {
       } else if (msg.type === 'SPOT_TAP') {
         setSelectedSpotId(msg.id);
       } else if (msg.type === 'MAP_LONG_PRESS') {
-        Vibration.vibrate(15);
+        pressHaptic();
         openComposer({ lat: msg.lat, lng: msg.lng }, 'ragg');
       } else if (msg.type === 'MEETUP_TAP') {
         router.push(`/meetups/${msg.id}`);
@@ -205,7 +206,7 @@ export default function MapScreen() {
         setDraftPin({ lat: msg.lat, lng: msg.lng });
         setPlacingStep('confirming');
       } else if (msg.type === 'MEETUP_LONG_PRESS' && userId) {
-        Vibration.vibrate(15);
+        pressHaptic();
         markInterested(msg.id, userId).then(() => {
           queryClient.invalidateQueries({ queryKey: queryKeys.meetups() });
           queryClient.invalidateQueries({ queryKey: queryKeys.meetupDetail(msg.id) });

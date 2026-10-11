@@ -26,6 +26,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { usePersonSheetStore } from '@/store/person-sheet';
 import { showToast } from '@/store/toast';
+import { successHaptic } from '@/lib/haptics';
 
 export function PersonSheetHost() {
   const userId = usePersonSheetStore((state) => state.userId);
@@ -73,6 +74,7 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
   async function requestFriend() {
     try {
       await sendFriendRequest(personId);
+      successHaptic();
       queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(myUserId) });
       showToast({ tone: 'success', message: `Vänförfrågan skickad till ${name}.` });
     } catch (error) {

@@ -17,6 +17,7 @@ import { openPerson } from '@/store/person-sheet';
 import { showToast } from '@/store/toast';
 import { confirmDestructive } from '@/lib/confirm';
 import { Common } from '@/constants/strings';
+import { successHaptic } from '@/lib/haptics';
 
 async function confirmBlock(name: string, consequence: string) {
   return confirmDestructive({
@@ -46,6 +47,7 @@ export function RequestRow({ request, myUserId }: { request: Friendship; myUserI
       queryClient.invalidateQueries({ queryKey: queryKeys.friends(myUserId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.friendRequests(myUserId) });
       if (accepted) {
+        successHaptic();
         showToast({ tone: 'success', message: `Du och ${requester.display_name} är nu vänner.` });
         maybeRequestNotificationPermission(myUserId);
       }
