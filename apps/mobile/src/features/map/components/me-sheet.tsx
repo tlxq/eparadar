@@ -7,6 +7,8 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import type { Profile } from '@/lib/api';
 import type { DbRow } from '@/lib/db-types';
+import { useSharingToggle } from '@/features/map/use-sharing-toggle';
+import { showToast } from '@/store/toast';
 
 type MeSheetProps = {
   visible: boolean;
@@ -17,6 +19,21 @@ type MeSheetProps = {
 };
 
 export function MeSheet({ visible, profile, location, onClose, onStatus }: MeSheetProps) {
+  const { setSharing, busy } = useSharingToggle();
+  const ghost = !location?.sharing_enabled;
+
+  async function toggleGhost() {
+    const error = await setSharing(ghost);
+    showToast(
+      error
+        ? { tone: 'error', message: error }
+        : {
+            tone: 'success',
+            message: ghost ? 'Dina vänner ser dig igen.' : 'Spökläge på. Ingen ser dig nu.',
+          },
+    );
+  }
+
   const sharingText = !location?.sharing_enabled
     ? 'Spökläge är på. Ingen av dina vänner ser dig på kartan.'
     : location.approximate_enabled
@@ -24,6 +41,13 @@ export function MeSheet({ visible, profile, location, onClose, onStatus }: MeShe
       : 'Dina vänner ser din exakta plats och när du kör.';
 
   const actions: SheetAction[] = [
+    {
+      label: ghost ? 'Stäng av spökläge' : 'Slå på spökläge',
+      icon: ghost ? 'eye-outline' : 'eye-off-outline',
+      hint: ghost ? 'Vännerna ser dig på kartan igen' : 'Vännerna slutar se dig direkt',
+      disabled: busy,
+      onPress: toggleGhost,
+    },
     {
       label: location?.status_text ? 'Ändra status' : 'Sätt status',
       icon: 'chatbubble-ellipses-outline',
