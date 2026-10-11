@@ -8,6 +8,7 @@
     "./spacing": "./src/spacing.ts",
     "./fonts": "./src/fonts.ts",
     "./radius": "./src/radius.ts",
+    "./typography": "./src/typography.ts",
     "./assets/*": "./assets/*"
   }
 }

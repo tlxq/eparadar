@@ -11,6 +11,7 @@ import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
+import { Common } from '@/constants/strings';
 
 const THUMB_W = 132;
 const THUMB_H = 99;
@@ -33,7 +34,7 @@ export function SpotPhotoStrip({ spotId, userId, spotCreatorId }: SpotPhotoStrip
     const ok = await confirmDestructive({
       title: 'Ta bort bilden?',
       message: 'Den försvinner från spotten för alla.',
-      confirmLabel: 'Ta bort',
+      confirmLabel: Common.remove,
     });
     if (!ok) return;
     try {

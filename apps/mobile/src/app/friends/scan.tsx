@@ -11,6 +11,7 @@ import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { parseScannedFriendCode } from '@/features/friends/friend-code';
+import { Common } from '@/constants/strings';
 
 const FRAME_SIZE = 240;
 const CORNER = 44;
@@ -54,7 +55,11 @@ export default function ScanFriendCodeScreen() {
       <ScreenBackground style={styles.container}>
         <SafeAreaView style={styles.container}>
           <View style={styles.permissionNav}>
-            <IconButton icon="close" accessibilityLabel="Stäng" onPress={() => router.back()} />
+            <IconButton
+              icon="close"
+              accessibilityLabel={Common.close}
+              onPress={() => router.back()}
+            />
           </View>
           <View style={styles.permissionBody}>
             <EmptyState
@@ -96,7 +101,11 @@ export default function ScanFriendCodeScreen() {
       />
       <SafeAreaView style={styles.overlay} edges={['top', 'bottom']}>
         <View style={styles.cameraNav}>
-          <IconButton icon="close" accessibilityLabel="Stäng" onPress={() => router.back()} />
+          <IconButton
+            icon="close"
+            accessibilityLabel={Common.close}
+            onPress={() => router.back()}
+          />
           <ThemedText type="headline" style={styles.overlayText} accessibilityRole="header">
             Skanna kod
           </ThemedText>

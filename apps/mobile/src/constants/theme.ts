@@ -4,8 +4,9 @@ import { Colors } from '@eparadar/theme/colors';
 import { FontFamilies } from '@eparadar/theme/fonts';
 import { Radius } from '@eparadar/theme/radius';
 import { Spacing } from '@eparadar/theme/spacing';
+import { Typography } from '@eparadar/theme/typography';
 
-export { Colors, Radius, Spacing };
+export { Colors, Radius, Spacing, Typography };
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 

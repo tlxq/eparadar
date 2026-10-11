@@ -45,6 +45,7 @@ import { useMyCars, useProfile } from '@/features/profile/hooks';
 import { useFriendLocations, useMyLocation } from '@/features/map/hooks';
 import { useUserId } from '@/hooks/use-user-id';
 import { pickImage } from '@/lib/pick-image';
+import { Common } from '@/constants/strings';
 
 export default function MapScreen() {
   const theme = useTheme();
@@ -345,7 +346,7 @@ export default function MapScreen() {
     const ok = await confirmDestructive({
       title: 'Ta bort spotten?',
       message: 'Den försvinner från kartan för alla.',
-      confirmLabel: 'Ta bort',
+      confirmLabel: Common.remove,
     });
     if (!ok) return;
     try {

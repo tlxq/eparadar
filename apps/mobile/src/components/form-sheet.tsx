@@ -7,6 +7,7 @@ import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { Common } from '@/constants/strings';
 
 type FormSheetProps = {
   title: string;
@@ -42,7 +43,7 @@ export function FormSheet({
           <KeyboardAvoider style={styles.sheet}>
             <View style={styles.header}>
               <View style={styles.side}>
-                <Button label="Avbryt" variant="ghost" size="sm" onPress={onClose} />
+                <Button label={Common.cancel} variant="ghost" size="sm" onPress={onClose} />
               </View>
               <ThemedText type="headline" accessibilityRole="header" numberOfLines={1}>
                 {title}

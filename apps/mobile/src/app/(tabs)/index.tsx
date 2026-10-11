@@ -34,6 +34,7 @@ import { showToast } from '@/store/toast';
 import { useFriendLocations } from '@/features/map/hooks';
 import { useUserId } from '@/hooks/use-user-id';
 import { useQueryErrorToast } from '@/hooks/use-query-error-toast';
+import { Common } from '@/constants/strings';
 
 const ON_MAP_AVATAR = 56;
 
@@ -167,7 +168,7 @@ export default function FeedScreen() {
     const ok = await confirmDestructive({
       title: 'Ta bort inlägget?',
       message: 'Inlägget och dess bild tas bort för alla. Det går inte att ångra.',
-      confirmLabel: 'Ta bort',
+      confirmLabel: Common.remove,
     });
     if (!ok) return;
     try {

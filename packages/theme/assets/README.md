@@ -12,12 +12,12 @@ have exactly one source of truth across both apps. These SVGs moved here from
 
 ## Files
 
-| File | Use | Detail level |
-| --- | --- | --- |
-| `icon-minimal.svg` | Favicon, tab icons, anywhere ≤ ~24px | Ring + center dot only (2 shapes) |
-| `icon.svg` | General web/UI icon | Ring + center dot + sweep line + one trailing wedge |
-| `icon-app.svg` | App Store / Play Store icon source (1024px master) | Splits the single trailing wedge into two overlapping wedges of different opacity for a smoother fade — no other added elements |
-| `lockup.svg` | Icon + wordmark lockup (EPA / RADAR stacked) | Icon reused verbatim from `icon.svg`; text is a placeholder — see TODO below |
+| File               | Use                                                | Detail level                                                                                                                    |
+| ------------------ | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `icon-minimal.svg` | Favicon, tab icons, anywhere ≤ ~24px               | Ring + center dot only (2 shapes)                                                                                               |
+| `icon.svg`         | General web/UI icon                                | Ring + center dot + sweep line + one trailing wedge                                                                             |
+| `icon-app.svg`     | App Store / Play Store icon source (1024px master) | Splits the single trailing wedge into two overlapping wedges of different opacity for a smoother fade — no other added elements |
+| `lockup.svg`       | Icon + wordmark lockup (EPA / RADAR stacked)       | Icon reused verbatim from `icon.svg`; text is a placeholder — see TODO below                                                    |
 
 All four share the same `viewBox="0 0 64 64"` icon geometry (center `32,32`, outer ring radius `24`,
 stroke weight `6.5`), so they scale together and swapping one variant for another at a given size
@@ -90,21 +90,21 @@ brand identity color rather than a theme-adaptive UI color.
 Full color inventory found in the repo (for reference — nothing here besides `#2F6FED` is a brand
 color, the rest are functional UI tokens):
 
-| Token | Light | Dark |
-| --- | --- | --- |
-| `background` | `#FFFFFF` | `#0B0E14` |
-| `gradientTop` | `#F6F8FC` | `#151B28` |
-| `backgroundElement` | `#F0F0F3` | `#171B23` |
-| `backgroundSelected` | `#E4E6EC` | `#232833` |
-| `border` | `#7B8291` | `#67738A` |
-| `text` | `#10131A` | `#F4F6F9` |
-| `textSecondary` | `#5B6472` | `#A2AAB8` |
-| **`brand`** | **`#2F6FED`** | **`#2F6FED`** |
-| `brandOnSurface` | `#1B54D6` | `#7EA6FF` |
-| `brandText` | `#FFFFFF` | `#FFFFFF` |
-| `accent` | `#C15A1A` | `#FF8A3D` |
-| `success` | `#16A34A` | `#22C55E` |
-| `danger` | `#C22F35` | `#FF6B6B` |
+| Token                | Light         | Dark          |
+| -------------------- | ------------- | ------------- |
+| `background`         | `#FFFFFF`     | `#0B0E14`     |
+| `gradientTop`        | `#F6F8FC`     | `#151B28`     |
+| `backgroundElement`  | `#F0F0F3`     | `#171B23`     |
+| `backgroundSelected` | `#E4E6EC`     | `#232833`     |
+| `border`             | `#7B8291`     | `#67738A`     |
+| `text`               | `#10131A`     | `#F4F6F9`     |
+| `textSecondary`      | `#5B6472`     | `#A2AAB8`     |
+| **`brand`**          | **`#2F6FED`** | **`#2F6FED`** |
+| `brandOnSurface`     | `#1B54D6`     | `#7EA6FF`     |
+| `brandText`          | `#FFFFFF`     | `#FFFFFF`     |
+| `accent`             | `#C15A1A`     | `#FF8A3D`     |
+| `success`            | `#16A34A`     | `#22C55E`     |
+| `danger`             | `#C22F35`     | `#FF6B6B`     |
 
 No NativeWind/Tailwind config exists in `apps/mobile` (`global.css` is empty, no `tailwind.config.*`
 file) — this table is the single source of truth, consumed by `apps/mobile/src/constants/theme.ts`

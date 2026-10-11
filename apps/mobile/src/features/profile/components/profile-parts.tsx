@@ -13,6 +13,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
 import { FormSheet } from '@/components/form-sheet';
+import { Common } from '@/constants/strings';
 
 export const CAR_CARD_WIDTH = 160;
 
@@ -100,7 +101,7 @@ export function EditProfileSheet({ profile, visible, onClose }: EditProfileSheet
       title="Redigera profil"
       visible={visible}
       onClose={onClose}
-      action={{ label: 'Spara', onPress: handleSave, loading: saving }}
+      action={{ label: Common.save, onPress: handleSave, loading: saving }}
     >
       <TextField
         label="Visningsnamn"

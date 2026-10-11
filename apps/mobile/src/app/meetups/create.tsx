@@ -15,6 +15,7 @@ import { useCreateMeetup } from '@/features/meetups/hooks';
 import { quickTimeToDate, type QuickTimeOption } from '@/features/meetups/time';
 import { useTheme } from '@/hooks/use-theme';
 import { useUserId } from '@/hooks/use-user-id';
+import { Common } from '@/constants/strings';
 
 const TIME_OPTIONS: { value: QuickTimeOption; label: string }[] = [
   { value: 'tonight', label: 'Ikväll' },
@@ -53,7 +54,7 @@ export default function CreateMeetupScreen() {
       <SafeAreaView style={styles.container}>
         <KeyboardAvoider style={styles.container}>
           <View style={styles.header}>
-            <Button label="Avbryt" variant="ghost" size="sm" onPress={() => router.back()} />
+            <Button label={Common.cancel} variant="ghost" size="sm" onPress={() => router.back()} />
             <ThemedText type="headline">Ny träff</ThemedText>
             <View style={styles.headerSpacer} />
           </View>

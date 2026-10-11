@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Fonts, Radius, Spacing } from '@/constants/theme';
+import { Radius, Spacing, Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type TextFieldProps = TextInputProps & {
@@ -68,8 +68,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two + Spacing.half,
-    fontSize: 16,
-    fontFamily: Fonts.inter.regular,
+    ...Typography.input,
   },
   multiline: { minHeight: 96, textAlignVertical: 'top' },
   error: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },

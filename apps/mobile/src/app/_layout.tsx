@@ -17,7 +17,7 @@ import '@/lib/location-task';
 
 import { ErrorFallback } from '@/components/error-fallback';
 import { ToastHost } from '@/components/toast-host';
-import { Colors, Fonts } from '@/constants/theme';
+import { Colors, Typography } from '@/constants/theme';
 import { trackEvent } from '@/lib/analytics';
 import { queryClient } from '@/lib/queryClient';
 import {
@@ -85,8 +85,8 @@ function RootLayout() {
             headerShadowVisible: false,
             headerTintColor: palette.brandOnSurface,
             headerTitleStyle: {
-              fontFamily: Fonts.inter.semiBold,
-              fontSize: 17,
+              fontFamily: Typography.headline.fontFamily,
+              fontSize: Typography.headline.fontSize,
               color: palette.text,
             },
             headerBackButtonDisplayMode: 'minimal',

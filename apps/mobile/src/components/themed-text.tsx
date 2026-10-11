@@ -1,6 +1,6 @@
 import { Platform, StyleSheet, Text, type TextProps } from 'react-native';
 
-import { Fonts, ThemeColor } from '@/constants/theme';
+import { Fonts, ThemeColor, Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
@@ -32,16 +32,16 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
 }
 
 const styles = StyleSheet.create({
-  default: { fontSize: 16, lineHeight: 22, fontFamily: Fonts.inter.regular },
-  title: { fontSize: 30, lineHeight: 36, fontFamily: Fonts.inter.extraBold, letterSpacing: -0.6 },
-  subtitle: { fontSize: 22, lineHeight: 28, fontFamily: Fonts.inter.bold, letterSpacing: -0.3 },
-  headline: { fontSize: 17, lineHeight: 22, fontFamily: Fonts.inter.semiBold, letterSpacing: -0.2 },
-  small: { fontSize: 14, lineHeight: 20, fontFamily: Fonts.inter.medium },
-  smallBold: { fontSize: 14, lineHeight: 20, fontFamily: Fonts.inter.semiBold },
-  caption: { fontSize: 12, lineHeight: 16, fontFamily: Fonts.inter.semiBold },
-  link: { fontSize: 14, lineHeight: 30, fontFamily: Fonts.inter.medium },
-  linkPrimary: { fontSize: 14, lineHeight: 30, fontFamily: Fonts.inter.semiBold },
-  error: { fontSize: 13, lineHeight: 18, fontFamily: Fonts.inter.medium },
+  default: Typography.body,
+  title: Typography.title,
+  subtitle: Typography.subtitle,
+  headline: Typography.headline,
+  small: Typography.small,
+  smallBold: Typography.smallBold,
+  caption: Typography.caption,
+  link: Typography.link,
+  linkPrimary: Typography.linkPrimary,
+  error: Typography.error,
   code: {
     fontFamily: Fonts.mono,
     fontWeight: Platform.select({ android: 700 }) ?? 500,

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { showToast } from '@/store/toast';
+import { Common } from '@/constants/strings';
 
 export function useQueryErrorToast(isError: boolean, message: string, retry: () => unknown) {
   useEffect(() => {
@@ -8,7 +9,7 @@ export function useQueryErrorToast(isError: boolean, message: string, retry: () 
       showToast({
         tone: 'error',
         message,
-        action: { label: 'Försök igen', onPress: () => retry() },
+        action: { label: Common.retry, onPress: () => retry() },
       });
     }
   }, [isError, message, retry]);

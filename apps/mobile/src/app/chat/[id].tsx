@@ -12,7 +12,7 @@ import { IconButton } from '@/components/icon-button';
 import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
-import { Fonts, Spacing } from '@/constants/theme';
+import { Spacing, Typography } from '@/constants/theme';
 import { useRealtimeTable } from '@/hooks/use-realtime-table';
 import { useTheme } from '@/hooks/use-theme';
 import {
@@ -41,6 +41,7 @@ import {
   ReadReceipt,
   TypingBubble,
 } from '@/features/chat/components/message-bubble';
+import { Common } from '@/constants/strings';
 export default function ConversationScreen() {
   const theme = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -220,7 +221,7 @@ export default function ConversationScreen() {
         ...(selectedIsMine
           ? [
               {
-                label: 'Ta bort',
+                label: Common.remove,
                 icon: 'trash-outline' as const,
                 destructive: true,
                 disabled: selectedIsRead,
@@ -247,7 +248,7 @@ export default function ConversationScreen() {
           <IconButton
             icon="chevron-back"
             variant="plain"
-            accessibilityLabel="Tillbaka"
+            accessibilityLabel={Common.back}
             onPress={() => router.back()}
           />
           <Pressable
@@ -438,7 +439,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  reactionEmoji: { fontSize: 26, lineHeight: 32 },
+  reactionEmoji: Typography.emoji,
   viewer: { flex: 1, backgroundColor: '#000000', justifyContent: 'center' },
   viewerImage: { width: '100%', height: '100%' },
   viewerClose: { position: 'absolute', top: 0, right: Spacing.three },
@@ -460,7 +461,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingTop: 11,
     paddingBottom: 11,
-    fontSize: 16,
-    fontFamily: Fonts.inter.regular,
+    ...Typography.input,
   },
 });

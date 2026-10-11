@@ -9,6 +9,7 @@ import { setMapStatus, STATUS_MAX_LENGTH, STATUS_PRESETS } from '@/features/map/
 import { getErrorMessage } from '@/lib/errors';
 import { FormSheet } from '@/components/form-sheet';
 import { Chip } from '@/components/chip';
+import { Common } from '@/constants/strings';
 
 type StatusSheetProps = {
   userId: string;
@@ -40,7 +41,7 @@ export function StatusSheet({ userId, current, onClose, onSaved }: StatusSheetPr
       title="Din status"
       onClose={onClose}
       action={{
-        label: 'Spara',
+        label: Common.save,
         onPress: () => save(text),
         loading: saving,
         disabled: !text.trim(),
