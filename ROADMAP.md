@@ -28,7 +28,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
          `useFriendLocations`, `usePickImage`, `useQueryErrorToast`
    - [x] Shared UI: `FormSheet`, `ModalHeader`, `Chip`, `Radius.pill` everywhere
    - [ ] Typography tokens, map colors from theme
-   - [ ] Types from `database.types.ts`, `ProfileSummary`
+   - [x] Types from `database.types.ts`, `ProfileSummary`
    - [ ] Split `karta.tsx` and `chat/[id].tsx`, move inline components into `features/*`,
          common Swedish words in one place
 4. **Fewer taps**
