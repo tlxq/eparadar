@@ -54,15 +54,28 @@ export async function deleteAccount(password: string): Promise<void> {
   await supabase.auth.signOut({ scope: 'local' });
 }
 
-export async function fetchPosts(): Promise<Post[]> {
+export const POSTS_PAGE_SIZE = 20;
+
+export async function fetchPosts(page = 0): Promise<Post[]> {
+  const from = page * POSTS_PAGE_SIZE;
   const { data, error } = await supabase
     .from('posts')
     .select(
       '*, author:profiles!posts_author_id_fkey(id, username, display_name, avatar_url), car:cars(id, make, model, nickname, photo_url)',
     )
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .range(from, from + POSTS_PAGE_SIZE - 1);
   if (error) throw error;
   return (data ?? []) as unknown as Post[];
+}
+
+export async function countMyPosts(userId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('posts')
+    .select('id', { count: 'exact', head: true })
+    .eq('author_id', userId);
+  if (error) throw error;
+  return count ?? 0;
 }
 
 export async function createPost(input: {
@@ -225,17 +238,6 @@ export function conversationAvatarUrl(conversation: Conversation, myUserId: stri
   if (conversation.is_group) return null;
   const other = conversation.conversation_members.find((member) => member.user_id !== myUserId);
   return other?.profiles.avatar_url ?? null;
-}
-
-export async function searchUsers(query: string, excludeUserId: string): Promise<Profile[]> {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .ilike('username', `%${query}%`)
-    .neq('id', excludeUserId)
-    .limit(20);
-  if (error) throw error;
-  return data ?? [];
 }
 
 export async function renameConversation(conversationId: string, name: string): Promise<void> {

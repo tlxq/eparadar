@@ -7,6 +7,7 @@ export const queryKeys = {
   meetups: () => ['meetups'] as const,
   meetupDetail: (meetupId: string | undefined) => ['meetupDetail', meetupId] as const,
   posts: () => ['posts'] as const,
+  myPostCount: (userId: string | undefined) => ['posts', 'count', userId] as const,
   cars: (userId: string | undefined) => ['cars', userId] as const,
   profile: (userId: string | undefined) => ['profile', userId] as const,
   conversations: (userId: string | undefined) => ['conversations', userId] as const,
