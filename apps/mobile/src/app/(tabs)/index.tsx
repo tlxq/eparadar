@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import {
@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 
 import { ActionSheet } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
@@ -25,20 +25,15 @@ import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
-import {
-  deletePost,
-  fetchFriendLocations,
-  fetchPosts,
-  POSTS_PAGE_SIZE,
-  type FriendLocation,
-  type Post,
-} from '@/lib/api';
+import { deletePost, fetchPosts, POSTS_PAGE_SIZE, type FriendLocation, type Post } from '@/lib/api';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { formatPostAge } from '@/lib/relative-time';
 import { showToast } from '@/store/toast';
-import { useAuthStore } from '@/store/auth';
+import { useFriendLocations } from '@/features/map/hooks';
+import { useUserId } from '@/hooks/use-user-id';
+import { useQueryErrorToast } from '@/hooks/use-query-error-toast';
 
 const ON_MAP_AVATAR = 56;
 
@@ -148,7 +143,7 @@ function FeedSkeleton() {
 }
 
 export default function FeedScreen() {
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const tabBarInset = useTabBarInset();
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<Post | null>(null);
@@ -162,21 +157,9 @@ export default function FeedScreen() {
     });
   const posts = useMemo(() => data?.pages.flat() ?? [], [data]);
 
-  const { data: friendLocations } = useQuery({
-    queryKey: queryKeys.friendLocations(userId),
-    queryFn: () => fetchFriendLocations(userId!),
-    enabled: !!userId,
-  });
+  const { data: friendLocations } = useFriendLocations();
 
-  useEffect(() => {
-    if (isError) {
-      showToast({
-        tone: 'error',
-        message: 'Kunde inte ladda flödet.',
-        action: { label: 'Försök igen', onPress: () => refetch() },
-      });
-    }
-  }, [isError, refetch]);
+  useQueryErrorToast(isError, 'Kunde inte ladda flödet.', refetch);
 
   const onMap = friendLocations ?? [];
 

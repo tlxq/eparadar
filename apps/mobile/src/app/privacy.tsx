@@ -58,9 +58,9 @@ export default function PrivacyScreen() {
           <ThemedText type="default" style={styles.paragraph}>
             Dina profiluppgifter, inlägg, kommentarer och meddelanden visas enligt appens
             behörighetsregler för de personer och grupper som funktionen kräver. Inlägg visas bara
-            för dina vänner, och nya chattar kan bara startas mellan vänner. Platsdata visas bara för
-            dina vänner när platsdelning är på. Vi säljer inte personuppgifter och delar
-            dem inte för annonsering.
+            för dina vänner, och nya chattar kan bara startas mellan vänner. Platsdata visas bara
+            för dina vänner när platsdelning är på. Vi säljer inte personuppgifter och delar dem
+            inte för annonsering.
           </ThemedText>
           <ThemedText type="subtitle" style={styles.heading}>
             Var uppgifterna lagras

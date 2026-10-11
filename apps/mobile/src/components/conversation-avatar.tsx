@@ -7,6 +7,7 @@ import {
   groupAvatarUrl,
   type Conversation,
 } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 const SIGNED_URL_STALE_MS = 50 * 60 * 1000;
 
@@ -20,7 +21,7 @@ export function ConversationAvatar({ conversation, myUserId, size }: Conversatio
   const groupPath = conversation.is_group ? conversation.avatar_path : null;
 
   const { data: signedUrl } = useQuery({
-    queryKey: ['group-avatar', groupPath],
+    queryKey: queryKeys.groupAvatar(groupPath),
     queryFn: () => groupAvatarUrl(groupPath!),
     enabled: !!groupPath,
     staleTime: SIGNED_URL_STALE_MS,

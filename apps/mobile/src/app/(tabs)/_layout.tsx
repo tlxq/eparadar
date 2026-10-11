@@ -1,38 +1,28 @@
 import { useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Redirect, Tabs } from 'expo-router';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { FloatingTabBar } from '@/components/floating-tab-bar';
 import { useRealtimeTable } from '@/hooks/use-realtime-table';
-import { fetchConversations, fetchPendingRequests, fetchProfile } from '@/lib/api';
 import { isUnread } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
 import { subscribeTyping } from '@/lib/typing';
-import { useAuthStore } from '@/store/auth';
+import { useProfile } from '@/features/profile/hooks';
+import { useFriendRequests } from '@/features/friends/hooks';
+import { useConversations } from '@/features/chat/hooks';
+import { useUserId } from '@/hooks/use-user-id';
 
 export default function TabsLayout() {
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const queryClient = useQueryClient();
 
-  const { data: profile } = useQuery({
-    queryKey: queryKeys.profile(userId),
-    queryFn: () => fetchProfile(userId!),
-    enabled: !!userId,
-  });
+  const { data: profile } = useProfile();
 
-  const { data: pendingRequests } = useQuery({
-    queryKey: queryKeys.friendRequests(userId),
-    queryFn: () => fetchPendingRequests(userId!),
-    enabled: !!userId,
-  });
+  const { data: pendingRequests } = useFriendRequests();
   const pendingCount = pendingRequests?.length ?? 0;
 
-  const { data: conversations } = useQuery({
-    queryKey: queryKeys.conversations(userId),
-    queryFn: fetchConversations,
-    enabled: !!userId,
-  });
+  const { data: conversations } = useConversations();
   const unreadChats = userId
     ? (conversations ?? []).filter((conversation) => isUnread(conversation, userId)).length
     : 0;

@@ -13,7 +13,13 @@ type SuggestionSectionProps = {
   children: ReactNode;
 };
 
-export function SuggestionSection({ title, isLoading, isEmpty, emptyText, children }: SuggestionSectionProps) {
+export function SuggestionSection({
+  title,
+  isLoading,
+  isEmpty,
+  emptyText,
+  children,
+}: SuggestionSectionProps) {
   return (
     <View style={styles.section}>
       <ThemedText type="caption" themeColor="textSecondary" style={styles.title}>

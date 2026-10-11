@@ -24,13 +24,28 @@ export function RadarHero({ size = 176, blipCount = 0 }: RadarHeroProps) {
 
   useEffect(() => {
     const sweepLoop = Animated.loop(
-      Animated.timing(sweep, { toValue: 1, duration: 3000, easing: Easing.linear, useNativeDriver: true }),
+      Animated.timing(sweep, {
+        toValue: 1,
+        duration: 3000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
     );
     const ringALoop = Animated.loop(
-      Animated.timing(ringA, { toValue: 1, duration: 2400, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+      Animated.timing(ringA, {
+        toValue: 1,
+        duration: 2400,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
     );
     const ringBLoop = Animated.loop(
-      Animated.timing(ringB, { toValue: 1, duration: 2400, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+      Animated.timing(ringB, {
+        toValue: 1,
+        duration: 2400,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
     );
 
     sweepLoop.start();
@@ -70,7 +85,12 @@ export function RadarHero({ size = 176, blipCount = 0 }: RadarHeroProps) {
       <View
         style={[
           styles.disc,
-          { width: size, height: size, borderRadius: size / 2, backgroundColor: theme.backgroundElement },
+          {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            backgroundColor: theme.backgroundElement,
+          },
         ]}
       >
         <Animated.View
@@ -90,7 +110,10 @@ export function RadarHero({ size = 176, blipCount = 0 }: RadarHeroProps) {
         {BLIP_POSITIONS.slice(0, blipCount).map((position, index) => (
           <View
             key={index}
-            style={[styles.blip, { backgroundColor: theme.brandOnSurface, top: position.top, left: position.left }]}
+            style={[
+              styles.blip,
+              { backgroundColor: theme.brandOnSurface, top: position.top, left: position.left },
+            ]}
           />
         ))}
       </View>

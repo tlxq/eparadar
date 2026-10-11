@@ -21,10 +21,10 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [x] Unused dependencies, dead exports, duplicate assets, short README, this roadmap
    - [ ] Delete merged and superseded branches
 2. **Safety (friends only)**
-   - [ ] New chats only between friends (database check + friends-first new-chat screen)
-   - [ ] Feed shows friends' posts and your own, with paging
+   - [x] New chats only between friends (database check + friends-first new-chat screen)
+   - [x] Feed shows friends' posts and your own, with paging
 3. **Structure** (no visual change)
-   - [ ] Shared hooks: `useUserId`, `useProfile`, `useMyCars`, `useFriends`, `useConversations`,
+   - [x] Shared hooks: `useUserId`, `useProfile`, `useMyCars`, `useFriends`, `useConversations`,
          `useFriendLocations`, `usePickImage`, `useQueryErrorToast`
    - [ ] Shared UI: `ModalHeader`, `FormSheet`, `Chip`, `Dot`, typography tokens, map colors
          from theme

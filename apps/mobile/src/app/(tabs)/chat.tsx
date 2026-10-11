@@ -3,7 +3,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { FlatList, RefreshControl, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
 
 import { Avatar } from '@/components/avatar';
 import { ConversationAvatar } from '@/components/conversation-avatar';
@@ -17,13 +16,13 @@ import { ThemedText } from '@/components/themed-text';
 import { Fonts, Radius, Spacing } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
-import { conversationTitle, fetchConversations, type Conversation } from '@/lib/api';
+import { conversationTitle, type Conversation } from '@/lib/api';
 import { isUnread, readersOf } from '@/lib/chat-state';
-import { queryKeys } from '@/lib/query-keys';
 import { formatChatTimestamp } from '@/lib/relative-time';
-import { showToast } from '@/store/toast';
 import { activeTypists, typingLabel, useTypingStore } from '@/store/typing';
-import { useAuthStore } from '@/store/auth';
+import { useConversations } from '@/features/chat/hooks';
+import { useUserId } from '@/hooks/use-user-id';
+import { useQueryErrorToast } from '@/hooks/use-query-error-toast';
 
 function previewText(conversation: Conversation, myUserId: string) {
   const lastMessage = conversation.messages?.[0];
@@ -110,25 +109,13 @@ export default function ChatListScreen() {
     (typists) => Object.keys(typists).length > 0,
   );
   const now = useTicker(anyTyping);
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const tabBarInset = useTabBarInset();
   const [query, setQuery] = useState('');
 
-  const { data, isLoading, isError, refetch, isRefetching } = useQuery({
-    queryKey: queryKeys.conversations(userId),
-    queryFn: fetchConversations,
-    enabled: !!userId,
-  });
+  const { data, isLoading, isError, refetch, isRefetching } = useConversations();
 
-  useEffect(() => {
-    if (isError) {
-      showToast({
-        tone: 'error',
-        message: 'Kunde inte ladda chattarna.',
-        action: { label: 'Försök igen', onPress: () => refetch() },
-      });
-    }
-  }, [isError, refetch]);
+  useQueryErrorToast(isError, 'Kunde inte ladda chattarna.', refetch);
 
   const conversations = useMemo(() => {
     const all = data ?? [];

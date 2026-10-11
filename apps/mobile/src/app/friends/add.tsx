@@ -18,15 +18,15 @@ import { useTheme } from '@/hooks/use-theme';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { sendFriendRequest } from '@/lib/api';
-import { useAuthStore } from '@/store/auth';
+import { useUserId } from '@/hooks/use-user-id';
 
 export default function AddFriendScreen() {
   const theme = useTheme();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const queryClient = useQueryClient();
 
-  const meetupSuggestions = useMeetupSuggestions(userId);
-  const mutualSuggestions = useMutualSuggestions(userId);
+  const meetupSuggestions = useMeetupSuggestions();
+  const mutualSuggestions = useMutualSuggestions();
 
   const [sentIds, setSentIds] = useState<Set<string>>(new Set());
   const [sendingId, setSendingId] = useState<string | null>(null);
@@ -46,7 +46,10 @@ export default function AddFriendScreen() {
     onSettled: () => setSendingId(null),
   });
 
-  const blipCount = Math.min(4, (meetupSuggestions.data?.length ?? 0) + (mutualSuggestions.data?.length ?? 0));
+  const blipCount = Math.min(
+    4,
+    (meetupSuggestions.data?.length ?? 0) + (mutualSuggestions.data?.length ?? 0),
+  );
 
   return (
     <ScreenBackground style={styles.container}>
@@ -141,7 +144,11 @@ export default function AddFriendScreen() {
             />
           </View>
           <View style={styles.actionButton}>
-            <Button label="Skanna kod" icon="scan-outline" onPress={() => router.push('/friends/scan')} />
+            <Button
+              label="Skanna kod"
+              icon="scan-outline"
+              onPress={() => router.push('/friends/scan')}
+            />
           </View>
         </View>
       </SafeAreaView>

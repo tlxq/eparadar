@@ -4,33 +4,30 @@ import * as Location from 'expo-location';
 import { router, useFocusEffect } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { ScreenBackground } from '@/components/screen-background';
 import { Switch } from '@/components/switch';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { fetchMyLocation, setLocationApproximate, setLocationSharing, signOut } from '@/lib/api';
+import { setLocationApproximate, setLocationSharing, signOut } from '@/lib/api';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { enableLocationSharing } from '@/lib/location-sharing';
 import { stopLocationSharing, stopLocationSharingQuietly } from '@/lib/location-task';
 import { queryKeys } from '@/lib/query-keys';
-import { useAuthStore } from '@/store/auth';
+import { useMyLocation } from '@/features/map/hooks';
+import { useUserId } from '@/hooks/use-user-id';
 
 export default function SettingsScreen() {
   const theme = useTheme();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: location, refetch } = useQuery({
-    queryKey: queryKeys.myLocation(userId),
-    queryFn: () => fetchMyLocation(userId!),
-    enabled: !!userId,
-  });
+  const { data: location, refetch } = useMyLocation();
   const sharingEnabled = location?.sharing_enabled ?? false;
   const approximateEnabled = location?.approximate_enabled ?? false;
   const [approximateBusy, setApproximateBusy] = useState(false);

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { FlatList, Platform, Pressable, StyleSheet, Vibration, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -35,50 +34,30 @@ import { motionFromCoords } from '@/features/map/motion';
 import { markInterested } from '@/features/meetups/api';
 import { useMeetups } from '@/features/meetups/hooks';
 import { useRealtimeTable } from '@/hooks/use-realtime-table';
-import {
-  fetchFriendLocations,
-  fetchMyCars,
-  fetchMyLocation,
-  fetchProfile,
-  type Car,
-  type FriendLocation,
-} from '@/lib/api';
+import { type Car, type FriendLocation } from '@/lib/api';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
-import { useAuthStore } from '@/store/auth';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
+import { useMyCars, useProfile } from '@/features/profile/hooks';
+import { useFriendLocations, useMyLocation } from '@/features/map/hooks';
+import { useUserId } from '@/hooks/use-user-id';
+import { pickImage } from '@/lib/pick-image';
 
 export default function MapScreen() {
   const theme = useTheme();
   const tabBarInset = useTabBarInset();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const webviewRef = useRef<WebView>(null);
   const queryClient = useQueryClient();
 
-  const { data: friendLocations } = useQuery({
-    queryKey: queryKeys.friendLocations(userId),
-    queryFn: () => fetchFriendLocations(userId!),
-    enabled: !!userId,
-  });
+  const { data: friendLocations } = useFriendLocations();
   const { data: meetups } = useMeetups();
-  const { data: myLocation } = useQuery({
-    queryKey: queryKeys.myLocation(userId),
-    queryFn: () => fetchMyLocation(userId!),
-    enabled: !!userId,
-  });
-  const { data: myProfile } = useQuery({
-    queryKey: queryKeys.profile(userId),
-    queryFn: () => fetchProfile(userId!),
-    enabled: !!userId,
-  });
-  const { data: myCars } = useQuery({
-    queryKey: queryKeys.cars(userId),
-    queryFn: () => fetchMyCars(userId!),
-    enabled: !!userId,
-  });
+  const { data: myLocation } = useMyLocation();
+  const { data: myProfile } = useProfile();
+  const { data: myCars } = useMyCars();
   const hasCentered = useRef(false);
   const [devicePosition, setDevicePosition] = useState<{ lat: number; lng: number } | null>(null);
   const [deviceMotion, setDeviceMotion] = useState<{ moving: boolean; heading: number | null }>({
@@ -119,7 +98,7 @@ export default function MapScreen() {
     enabled: !!userId,
     onChange: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.spotPhotoCounts() });
-      queryClient.invalidateQueries({ queryKey: ['spotPhotos'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.allSpotPhotos() });
     },
   });
 
@@ -347,21 +326,11 @@ export default function MapScreen() {
 
   async function handleAddSpotPhoto(spotId: string) {
     if (!userId) return;
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      showToast({ tone: 'error', message: 'epaRadar behöver tillgång till dina bilder.' });
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.7,
-    });
-    if (result.canceled || !result.assets[0]) return;
+    const uri = await pickImage({ aspect: [4, 3], quality: 0.7 });
+    if (!uri) return;
     setUploadingPhoto(true);
     try {
-      await addSpotPhoto(spotId, userId, result.assets[0].uri);
+      await addSpotPhoto(spotId, userId, uri);
       queryClient.invalidateQueries({ queryKey: queryKeys.spotPhotos(spotId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.spotPhotoCounts() });
       showToast({ tone: 'success', message: 'Bilden ligger på spotten i 24 timmar.' });

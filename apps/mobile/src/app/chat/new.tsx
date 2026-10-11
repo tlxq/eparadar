@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
@@ -13,27 +13,24 @@ import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { createConversation, fetchFriends, friendProfile } from '@/lib/api';
+import { createConversation, friendProfile } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
-import { useAuthStore } from '@/store/auth';
+import { useFriends } from '@/features/friends/hooks';
+import { useUserId } from '@/hooks/use-user-id';
 
 type FriendProfile = ReturnType<typeof friendProfile>;
 
 export default function NewChatScreen() {
   const theme = useTheme();
-  const userId = useAuthStore((state) => state.session?.user.id);
+  const userId = useUserId();
   const queryClient = useQueryClient();
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<FriendProfile[]>([]);
   const [groupName, setGroupName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const { data: friendships, isLoading } = useQuery({
-    queryKey: queryKeys.friends(userId),
-    queryFn: () => fetchFriends(userId!),
-    enabled: !!userId,
-  });
+  const { data: friendships, isLoading } = useFriends();
 
   const friends = useMemo(
     () =>
