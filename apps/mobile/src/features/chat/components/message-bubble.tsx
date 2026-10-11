@@ -232,7 +232,13 @@ export function MessageBubble({
             <Avatar name={senderName} imageUrl={message.sender?.avatar_url} size={AVATAR_SIZE} />
           )
         ) : null}
-        <View style={[styles.bubbleColumn, isMine && styles.bubbleColumnMine]}>
+        <View
+          style={[
+            styles.bubbleColumn,
+            isMine && styles.bubbleColumnMine,
+            message.pending && styles.pending,
+          ]}
+        >
           {message.image_path ? (
             <ChatImage
               path={message.image_path}
@@ -301,6 +307,7 @@ const styles = StyleSheet.create({
   bubbleRow: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.two },
   bubbleRowMine: { justifyContent: 'flex-end' },
   bubblePressed: { opacity: 0.8 },
+  pending: { opacity: 0.6 },
   seen: { alignSelf: 'flex-end', paddingTop: Spacing.one },
   readers: {
     flexDirection: 'row',
