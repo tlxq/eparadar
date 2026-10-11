@@ -22,6 +22,7 @@ import { Colors, Typography } from '@/constants/theme';
 import { trackEvent } from '@/lib/analytics';
 import { queryClient } from '@/lib/queryClient';
 import {
+  setNotificationNavigationReady,
   setupNotificationResponseListener,
   syncPushTokenIfGranted,
 } from '@/lib/push-notifications';
@@ -65,6 +66,11 @@ function RootLayout() {
   }, []);
 
   useEffect(() => setupNotificationResponseListener(), []);
+
+  const ready = !initializing && fontsLoaded && !!session;
+  useEffect(() => {
+    setNotificationNavigationReady(ready);
+  }, [ready]);
 
   useEffect(() => {
     if (!initializing && fontsLoaded) {

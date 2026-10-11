@@ -62,11 +62,31 @@ function navigateForNotificationData(data: Record<string, unknown> | undefined):
   }
 }
 
+let navigationReady = false;
+let pendingResponse: Notifications.NotificationResponse | null = null;
+
+function handleNotificationResponse(response: Notifications.NotificationResponse): void {
+  Notifications.clearLastNotificationResponse();
+  if (!navigationReady) {
+    pendingResponse = response;
+    return;
+  }
+  navigateForNotificationData(response.notification.request.content.data);
+}
+
 export function setupNotificationResponseListener(): () => void {
-  const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-    navigateForNotificationData(response.notification.request.content.data);
-  });
+  const subscription = Notifications.addNotificationResponseReceivedListener(
+    handleNotificationResponse,
+  );
   return () => subscription.remove();
+}
+
+export function setNotificationNavigationReady(ready: boolean): void {
+  navigationReady = ready;
+  if (!ready) return;
+  const response = pendingResponse ?? Notifications.getLastNotificationResponse();
+  pendingResponse = null;
+  if (response) handleNotificationResponse(response);
 }
 
 export async function maybeRequestNotificationPermission(userId: string): Promise<void> {
