@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import {
@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { ActionSheet } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
@@ -29,6 +29,7 @@ import {
   deletePost,
   fetchFriendLocations,
   fetchPosts,
+  POSTS_PAGE_SIZE,
   type FriendLocation,
   type Post,
 } from '@/lib/api';
@@ -151,10 +152,15 @@ export default function FeedScreen() {
   const tabBarInset = useTabBarInset();
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<Post | null>(null);
-  const { data, isLoading, isError, refetch, isRefetching } = useQuery({
-    queryKey: queryKeys.posts(),
-    queryFn: fetchPosts,
-  });
+  const { data, isLoading, isError, refetch, isRefetching, fetchNextPage, hasNextPage } =
+    useInfiniteQuery({
+      queryKey: queryKeys.posts(),
+      queryFn: ({ pageParam }) => fetchPosts(pageParam),
+      initialPageParam: 0,
+      getNextPageParam: (lastPage, pages) =>
+        lastPage.length === POSTS_PAGE_SIZE ? pages.length : undefined,
+    });
+  const posts = useMemo(() => data?.pages.flat() ?? [], [data]);
 
   const { data: friendLocations } = useQuery({
     queryKey: queryKeys.friendLocations(userId),
@@ -194,7 +200,11 @@ export default function FeedScreen() {
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <FlatList
-          data={data ?? []}
+          data={posts}
+          onEndReached={() => {
+            if (hasNextPage) fetchNextPage();
+          }}
+          onEndReachedThreshold={0.5}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <PostItem
@@ -217,7 +227,7 @@ export default function FeedScreen() {
               <EmptyState
                 icon="newspaper-outline"
                 title="Inga inlägg än"
-                message="Visa upp bilen, fråga om en träff eller dela en bild från helgens tur."
+                message="Här ser du inlägg från dina vänner. Visa upp bilen eller dela en bild från helgens tur."
                 action={{
                   label: 'Skriv ett inlägg',
                   icon: 'create-outline',

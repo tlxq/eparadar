@@ -26,6 +26,10 @@ insert into public.conversation_members (conversation_id, user_id, role, joined_
   ('f6000000-1111-0000-0000-000000000002', 'f6000001-0000-0000-0000-000000000001', 'member', now()),
   ('f6000000-1111-0000-0000-000000000002', 'f6000002-0000-0000-0000-000000000001', 'member', now());
 
+insert into public.friendships (requester_id, addressee_id, status) values
+  ('f6000001-0000-0000-0000-000000000001', 'f6000002-0000-0000-0000-000000000001', 'accepted'),
+  ('f6000001-0000-0000-0000-000000000001', 'f6000003-0000-0000-0000-000000000001', 'accepted');
+
 set local role authenticated;
 set local request.jwt.claim.sub = 'f6000001-0000-0000-0000-000000000001';
 

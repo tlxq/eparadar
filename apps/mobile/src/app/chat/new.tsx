@@ -1,33 +1,59 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
+import { EmptyState } from '@/components/empty-state';
 import { FormScreen } from '@/components/form-screen';
 import { ListRow } from '@/components/list-row';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { useUserSearch } from '@/hooks/use-user-search';
-import { createConversation, searchUsers, type Profile } from '@/lib/api';
+import { createConversation, fetchFriends, friendProfile } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuthStore } from '@/store/auth';
+
+type FriendProfile = ReturnType<typeof friendProfile>;
 
 export default function NewChatScreen() {
   const theme = useTheme();
   const userId = useAuthStore((state) => state.session?.user.id);
   const queryClient = useQueryClient();
-  const { query, results, handleSearch } = useUserSearch(searchUsers, userId);
-  const [selected, setSelected] = useState<Profile[]>([]);
+  const [query, setQuery] = useState('');
+  const [selected, setSelected] = useState<FriendProfile[]>([]);
   const [groupName, setGroupName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  function toggleSelected(user: Profile) {
+  const { data: friendships, isLoading } = useQuery({
+    queryKey: queryKeys.friends(userId),
+    queryFn: () => fetchFriends(userId!),
+    enabled: !!userId,
+  });
+
+  const friends = useMemo(
+    () =>
+      (friendships ?? [])
+        .map((friendship) => friendProfile(friendship, userId!))
+        .sort((a, b) => a.display_name.localeCompare(b.display_name, 'sv')),
+    [friendships, userId],
+  );
+
+  const results = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return friends;
+    return friends.filter(
+      (friend) =>
+        friend.display_name.toLowerCase().includes(needle) ||
+        friend.username.toLowerCase().includes(needle),
+    );
+  }, [friends, query]);
+
+  function toggleSelected(user: FriendProfile) {
     setSelected((current) =>
       current.some((u) => u.id === user.id)
         ? current.filter((u) => u.id !== user.id)
@@ -62,14 +88,15 @@ export default function NewChatScreen() {
         </>
       }
     >
-      <TextField
-        label="Till"
-        placeholder="Sök på namn eller användarnamn"
-        autoCapitalize="none"
-        autoFocus
-        value={query}
-        onChangeText={handleSearch}
-      />
+      {friends.length > 5 ? (
+        <TextField
+          label="Till"
+          placeholder="Sök bland dina vänner"
+          autoCapitalize="none"
+          value={query}
+          onChangeText={setQuery}
+        />
+      ) : null}
       {selected.length > 0 ? (
         <View style={styles.chips}>
           {selected.map((user) => (
@@ -95,10 +122,17 @@ export default function NewChatScreen() {
           onChangeText={setGroupName}
         />
       ) : null}
-      {query.trim().length < 2 ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          Skriv minst två tecken för att söka.
-        </ThemedText>
+      {isLoading ? null : friends.length === 0 ? (
+        <EmptyState
+          icon="people-outline"
+          title="Inga vänner än"
+          message="Du kan chatta med dina vänner. Lägg till någon du har träffat först."
+          action={{
+            label: 'Lägg till vän',
+            icon: 'person-add-outline',
+            onPress: () => router.replace('/friends/add'),
+          }}
+        />
       ) : results.length === 0 ? (
         <ThemedText type="small" themeColor="textSecondary">
           Ingen hittades.

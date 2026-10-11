@@ -24,7 +24,7 @@ import {
   deleteCar,
   fetchFriends,
   fetchMyCars,
-  fetchPosts,
+  countMyPosts,
   fetchProfile,
   removeAvatar,
   setCarColor,
@@ -199,9 +199,10 @@ export default function ProfileScreen() {
     enabled: !!userId,
   });
 
-  const { data: posts } = useQuery({
-    queryKey: queryKeys.posts(),
-    queryFn: fetchPosts,
+  const { data: postCount } = useQuery({
+    queryKey: queryKeys.myPostCount(userId),
+    queryFn: () => countMyPosts(userId!),
+    enabled: !!userId,
   });
 
   async function handlePickAvatar() {
@@ -300,7 +301,6 @@ export default function ProfileScreen() {
     },
   ];
 
-  const postCount = posts?.filter((post) => post.author_id === userId).length;
 
   return (
     <ScreenBackground style={styles.container}>
