@@ -30,7 +30,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [x] Typography tokens, map colors from theme
    - [x] Types from `database.types.ts`, `ProfileSummary`
    - [x] Move chat, friends and profile parts into `features/*` (chat screen 762 → 466 lines)
-   - [ ] Split `karta.tsx` into hooks and parts (needs a phone to verify)
+   - [x] Split `karta.tsx` into hooks and parts (855 → 336 lines)
    - [x] Common Swedish words in one place
 4. **Fewer taps**
    - [ ] Person sheet from map, feed, friends and chat (Chatta, Visa på kartan)
@@ -42,6 +42,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [ ] Messages appear instantly when sent
    - [ ] Haptics on key actions
    - [ ] Blocked users list with unblock
+   - [ ] Map friend search stays above the keyboard
 5. **Bigger features**
    - [ ] Meetup list inside Karta, invite friends, share to chat
    - [ ] Likes, comments and photo zoom in the feed
