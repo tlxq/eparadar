@@ -38,7 +38,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [x] Code entry directly on Lägg till vän
    - [x] Own posts on Profil (with delete)
    - [ ] Camera option when posting
-   - [ ] Notification opens the right screen from a closed app
+   - [x] Notification opens the right screen from a closed app
    - [x] Messages appear instantly when sent
    - [ ] Haptics on key actions
    - [x] Blocked users list with unblock (Inställningar)
