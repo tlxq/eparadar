@@ -55,15 +55,17 @@ export async function deleteAccount(password: string): Promise<void> {
 
 export const POSTS_PAGE_SIZE = 20;
 
-export async function fetchPosts(page = 0): Promise<Post[]> {
+export async function fetchPosts(page = 0, authorId?: string): Promise<Post[]> {
   const from = page * POSTS_PAGE_SIZE;
-  const { data, error } = await supabase
+  let query = supabase
     .from('posts')
     .select(
       '*, author:profiles!posts_author_id_fkey(id, username, display_name, avatar_url), car:cars(id, make, model, nickname, photo_url)',
     )
     .order('created_at', { ascending: false })
     .range(from, from + POSTS_PAGE_SIZE - 1);
+  if (authorId) query = query.eq('author_id', authorId);
+  const { data, error } = await query;
   if (error) throw error;
   return (data ?? []) as unknown as Post[];
 }

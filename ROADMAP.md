@@ -36,7 +36,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [x] Person sheet from map, feed, friends and chat (Chatta, Visa på kartan)
    - [ ] Ghost mode toggle on Karta
    - [x] Code entry directly on Lägg till vän
-   - [ ] Own posts on Profil
+   - [x] Own posts on Profil (with delete)
    - [ ] Camera option when posting
    - [ ] Notification opens the right screen from a closed app
    - [ ] Messages appear instantly when sent

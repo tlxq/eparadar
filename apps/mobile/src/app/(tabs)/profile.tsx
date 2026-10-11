@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { router } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,14 +15,23 @@ import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
-import { deleteCar, removeAvatar, setCarColor, updateProfile, type Car } from '@/lib/api';
+import {
+  deleteCar,
+  removeAvatar,
+  setCarColor,
+  updateProfile,
+  type Car,
+  type Post,
+} from '@/lib/api';
 import { CarColorPicker } from '@/features/map/car-color-picker';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { uploadAvatar } from '@/lib/image-upload';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
-import { useMyCars, useMyPostCount, useProfile } from '@/features/profile/hooks';
+import { useMyCars, useMyPostCount, useMyPosts, useProfile } from '@/features/profile/hooks';
+import { PostItem } from '@/features/feed/components/post-item';
+import { PostActionsSheet } from '@/features/feed/components/post-actions-sheet';
 import { useFriends } from '@/features/friends/hooks';
 import { useUserId } from '@/hooks/use-user-id';
 import { pickImage } from '@/lib/pick-image';
@@ -52,6 +61,10 @@ export default function ProfileScreen() {
   const { data: friends } = useFriends();
 
   const { data: postCount } = useMyPostCount();
+
+  const myPosts = useMyPosts();
+  const posts = useMemo(() => myPosts.data?.pages.flat() ?? [], [myPosts.data]);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   async function handlePickAvatar() {
     if (!userId || !profile) return;
@@ -262,6 +275,41 @@ export default function ProfileScreen() {
               <Skeleton width={CAR_CARD_WIDTH} height={CAR_CARD_WIDTH + 52} radius={Radius.lg} />
             </View>
           )}
+
+          <View style={[styles.padded, styles.postsHeader]}>
+            <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
+              MINA INLÄGG
+            </ThemedText>
+            <Button
+              label="Skriv"
+              icon="create-outline"
+              size="sm"
+              variant="ghost"
+              onPress={() => router.push('/post/new')}
+            />
+          </View>
+          {posts.map((post) => (
+            <PostItem key={post.id} post={post} onMore={() => setSelectedPost(post)} />
+          ))}
+          {myPosts.hasNextPage ? (
+            <View style={styles.padded}>
+              <Button
+                label="Visa fler"
+                variant="secondary"
+                loading={myPosts.isFetchingNextPage}
+                onPress={() => myPosts.fetchNextPage()}
+              />
+            </View>
+          ) : null}
+          {myPosts.data && posts.length === 0 ? (
+            <ThemedText
+              type="small"
+              themeColor="textSecondary"
+              style={[styles.padded, styles.noPosts]}
+            >
+              Du har inte postat något än. Dina inlägg syns här och i dina vänners flöde.
+            </ThemedText>
+          ) : null}
         </ScrollView>
       </SafeAreaView>
       <ActionSheet
@@ -301,6 +349,7 @@ export default function ProfileScreen() {
             : []
         }
       />
+      <PostActionsSheet post={selectedPost} onClose={() => setSelectedPost(null)} />
       {profile ? (
         <EditProfileSheet
           key={`${profile.id}:${editing}`}
@@ -342,6 +391,13 @@ const styles = StyleSheet.create({
   stats: { flexDirection: 'row', gap: Spacing.two },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   sectionLabel: { letterSpacing: 0.6 },
+  postsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: Spacing.four,
+  },
+  noPosts: { paddingBottom: Spacing.four },
   carRow: { flexDirection: 'row', gap: Spacing.two, paddingHorizontal: Spacing.three },
   addCar: {
     marginHorizontal: Spacing.three,
