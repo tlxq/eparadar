@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.two,
     borderWidth: 1.5,
-    borderRadius: 999,
+    borderRadius: Radius.pill,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     marginTop: Spacing.two,

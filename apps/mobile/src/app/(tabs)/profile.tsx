@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -10,7 +10,6 @@ import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { CarPhoto } from '@/components/car-photo';
 import { IconButton } from '@/components/icon-button';
-import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ScreenBackground } from '@/components/screen-background';
 import { ScreenHeader } from '@/components/screen-header';
 import { Skeleton } from '@/components/skeleton';
@@ -37,6 +36,7 @@ import { useMyCars, useMyPostCount, useProfile } from '@/features/profile/hooks'
 import { useFriends } from '@/features/friends/hooks';
 import { useUserId } from '@/hooks/use-user-id';
 import { pickImage } from '@/lib/pick-image';
+import { FormSheet } from '@/components/form-sheet';
 
 const AVATAR_SIZE = 96;
 const CAR_CARD_WIDTH = 160;
@@ -91,7 +91,6 @@ type EditProfileSheetProps = {
 };
 
 function EditProfileSheet({ profile, visible, onClose }: EditProfileSheetProps) {
-  const theme = useTheme();
   const queryClient = useQueryClient();
   const [displayName, setDisplayName] = useState(profile.display_name);
   const [bio, setBio] = useState(profile.bio ?? '');
@@ -122,50 +121,31 @@ function EditProfileSheet({ profile, visible, onClose }: EditProfileSheetProps) 
   }
 
   return (
-    <Modal
+    <FormSheet
+      title="Redigera profil"
       visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
+      onClose={onClose}
+      action={{ label: 'Spara', onPress: handleSave, loading: saving }}
     >
-      <SafeAreaProvider>
-        <SafeAreaView
-          style={[styles.sheet, { backgroundColor: theme.background }]}
-          edges={['top', 'bottom']}
-        >
-          <KeyboardAvoider style={styles.sheet}>
-            <View style={styles.sheetHeader}>
-              <Button label="Avbryt" variant="ghost" size="sm" onPress={onClose} />
-              <ThemedText type="headline">Redigera profil</ThemedText>
-              <Button label="Spara" size="sm" loading={saving} onPress={handleSave} />
-            </View>
-            <ScrollView
-              contentContainerStyle={styles.sheetBody}
-              keyboardShouldPersistTaps="handled"
-            >
-              <TextField
-                label="Visningsnamn"
-                value={displayName}
-                onChangeText={setDisplayName}
-                error={error}
-                autoFocus
-              />
-              <TextField
-                label="Bio"
-                value={bio}
-                onChangeText={setBio}
-                placeholder="Vad kör du, var brukar du hänga?"
-                multiline
-                maxLength={160}
-              />
-              <ThemedText type="caption" themeColor="textSecondary" style={styles.counter}>
-                {bio.length}/160
-              </ThemedText>
-            </ScrollView>
-          </KeyboardAvoider>
-        </SafeAreaView>
-      </SafeAreaProvider>
-    </Modal>
+      <TextField
+        label="Visningsnamn"
+        value={displayName}
+        onChangeText={setDisplayName}
+        error={error}
+        autoFocus
+      />
+      <TextField
+        label="Bio"
+        value={bio}
+        onChangeText={setBio}
+        placeholder="Vad kör du, var brukar du hänga?"
+        multiline
+        maxLength={160}
+      />
+      <ThemedText type="caption" themeColor="textSecondary" style={styles.counter}>
+        {bio.length}/160
+      </ThemedText>
+    </FormSheet>
   );
 }
 
@@ -498,14 +478,5 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderStyle: 'dashed',
   },
-  sheet: { flex: 1 },
-  sheetHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.two,
-  },
-  sheetBody: { padding: Spacing.three, gap: Spacing.three },
   counter: { alignSelf: 'flex-end', marginTop: -Spacing.two },
 });

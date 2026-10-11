@@ -26,8 +26,8 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
 3. **Structure** (no visual change)
    - [x] Shared hooks: `useUserId`, `useProfile`, `useMyCars`, `useFriends`, `useConversations`,
          `useFriendLocations`, `usePickImage`, `useQueryErrorToast`
-   - [ ] Shared UI: `ModalHeader`, `FormSheet`, `Chip`, `Dot`, typography tokens, map colors
-         from theme
+   - [x] Shared UI: `FormSheet`, `ModalHeader`, `Chip`, `Radius.pill` everywhere
+   - [ ] Typography tokens, map colors from theme
    - [ ] Types from `database.types.ts`, `ProfileSummary`
    - [ ] Split `karta.tsx` and `chat/[id].tsx`, move inline components into `features/*`,
          common Swedish words in one place

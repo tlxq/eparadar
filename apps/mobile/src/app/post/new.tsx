@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Image, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Avatar } from '@/components/avatar';
@@ -19,6 +19,7 @@ import { showToast } from '@/store/toast';
 import { useMyCars, useProfile } from '@/features/profile/hooks';
 import { useUserId } from '@/hooks/use-user-id';
 import { pickImage } from '@/lib/pick-image';
+import { Chip } from '@/components/chip';
 
 const MAX_LENGTH = 500;
 
@@ -130,30 +131,19 @@ export default function NewPostScreen() {
             {cars.map((car) => {
               const selected = carId === car.id;
               return (
-                <Pressable
+                <Chip
                   key={car.id}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
+                  label={car.nickname ?? `${car.make} ${car.model}`}
+                  selected={selected}
                   onPress={() => setCarId(selected ? null : car.id)}
-                  style={[
-                    styles.chip,
-                    {
-                      backgroundColor: selected ? theme.brand : theme.backgroundElement,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={selected ? 'checkmark' : 'car-sport-outline'}
-                    size={16}
-                    color={selected ? theme.brandText : theme.text}
-                  />
-                  <ThemedText
-                    type="smallBold"
-                    style={selected ? { color: theme.brandText } : undefined}
-                  >
-                    {car.nickname ?? `${car.make} ${car.model}`}
-                  </ThemedText>
-                </Pressable>
+                  leading={(isSelected, color) => (
+                    <Ionicons
+                      name={isSelected ? 'checkmark' : 'car-sport-outline'}
+                      size={16}
+                      color={color}
+                    />
+                  )}
+                />
               );
             })}
           </ScrollView>
@@ -179,14 +169,6 @@ const styles = StyleSheet.create({
   carSection: { gap: Spacing.two },
   sectionLabel: { letterSpacing: 0.6 },
   chips: { gap: Spacing.two },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.one,
-    minHeight: 40,
-    paddingHorizontal: Spacing.three,
-    borderRadius: Radius.pill,
-  },
   footerRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   counter: { flex: 1, textAlign: 'right' },
 });
