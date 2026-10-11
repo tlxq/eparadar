@@ -372,7 +372,7 @@ export async function chatImageUrl(path: string): Promise<string> {
   return data.signedUrl;
 }
 
-type FriendshipStatus = 'pending' | 'accepted';
+type FriendshipStatus = 'pending' | 'accepted' | 'blocked';
 
 type FriendshipRow = Omit<DbRow<'friendships'>, 'status'> & {
   status: FriendshipStatus;
@@ -389,6 +389,17 @@ export function friendProfile(friendship: Friendship, myUserId: string) {
 
 const FRIENDSHIP_SELECT =
   '*, requester:profiles!friendships_requester_id_fkey(id, username, display_name, avatar_url), addressee:profiles!friendships_addressee_id_fkey(id, username, display_name, avatar_url)';
+
+export async function fetchBlocked(userId: string): Promise<Friendship[]> {
+  const { data, error } = await supabase
+    .from('friendships')
+    .select(FRIENDSHIP_SELECT)
+    .eq('status', 'blocked')
+    .eq('blocked_by', userId)
+    .order('responded_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as Friendship[];
+}
 
 export async function fetchFriends(userId: string): Promise<Friendship[]> {
   const { data, error } = await supabase

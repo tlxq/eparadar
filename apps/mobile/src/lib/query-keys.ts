@@ -1,6 +1,7 @@
 export const queryKeys = {
   friends: (userId: string | undefined) => ['friends', userId] as const,
   friendRequests: (userId: string | undefined) => ['friendRequests', userId] as const,
+  blocked: (userId: string | undefined) => ['blocked', userId] as const,
   outgoingRequests: (userId: string | undefined) => ['outgoingRequests', userId] as const,
   meetupSuggestions: (userId: string | undefined) => ['meetupSuggestions', userId] as const,
   mutualSuggestions: (userId: string | undefined) => ['mutualSuggestions', userId] as const,

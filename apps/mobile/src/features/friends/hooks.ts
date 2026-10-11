@@ -7,7 +7,7 @@ import {
   unblockUser,
 } from '@/features/friends/api';
 import { useUserId } from '@/hooks/use-user-id';
-import { fetchFriends, fetchOutgoingRequests, fetchPendingRequests } from '@/lib/api';
+import { fetchBlocked, fetchFriends, fetchOutgoingRequests, fetchPendingRequests } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 
 export function useFriends() {
@@ -15,6 +15,15 @@ export function useFriends() {
   return useQuery({
     queryKey: queryKeys.friends(userId),
     queryFn: () => fetchFriends(userId!),
+    enabled: !!userId,
+  });
+}
+
+export function useBlockedUsers() {
+  const userId = useUserId();
+  return useQuery({
+    queryKey: queryKeys.blocked(userId),
+    queryFn: () => fetchBlocked(userId!),
     enabled: !!userId,
   });
 }
@@ -66,6 +75,7 @@ export function useBlockUser() {
       queryClient.invalidateQueries({ queryKey: queryKeys.friendRequests(userId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.meetupSuggestions(userId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.mutualSuggestions(userId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.blocked(userId) });
     },
   });
 }
@@ -78,6 +88,7 @@ export function useUnblockUser() {
     mutationFn: (targetUserId: string) => unblockUser(targetUserId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.friends(userId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.blocked(userId) });
     },
   });
 }

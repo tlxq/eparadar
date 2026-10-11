@@ -18,6 +18,7 @@ import { enableLocationSharing } from '@/lib/location-sharing';
 import { stopLocationSharing, stopLocationSharingQuietly } from '@/lib/location-task';
 import { queryKeys } from '@/lib/query-keys';
 import { useMyLocation } from '@/features/map/hooks';
+import { BlockedSection } from '@/features/friends/components/blocked-section';
 import { useUserId } from '@/hooks/use-user-id';
 
 export default function SettingsScreen() {
@@ -138,6 +139,8 @@ export default function SettingsScreen() {
             </View>
           </View>
           {error ? <ThemedText type="error">{error}</ThemedText> : null}
+
+          <BlockedSection />
 
           <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
             OM EPARADAR
