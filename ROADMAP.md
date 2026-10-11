@@ -41,7 +41,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [ ] Notification opens the right screen from a closed app
    - [x] Messages appear instantly when sent
    - [ ] Haptics on key actions
-   - [ ] Blocked users list with unblock
+   - [x] Blocked users list with unblock (Inställningar)
    - [ ] Map friend search stays above the keyboard
 5. **Bigger features**
    - [ ] Meetup list inside Karta, invite friends, share to chat
