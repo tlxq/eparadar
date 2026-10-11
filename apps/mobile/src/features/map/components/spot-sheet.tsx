@@ -11,7 +11,7 @@ import { addSpotPhoto, deleteSpot, spotTitle, type Spot } from '@/features/map/s
 import { useUserId } from '@/hooks/use-user-id';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
-import { pickImage } from '@/lib/pick-image';
+import { pickImage, type ImageSource } from '@/lib/pick-image';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
 
@@ -26,9 +26,9 @@ export function SpotSheet({ spot, hereNow, onClose }: SpotSheetProps) {
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
 
-  async function handleAddPhoto(spotId: string) {
+  async function handleAddPhoto(spotId: string, source: ImageSource) {
     if (!userId) return;
-    const uri = await pickImage({ aspect: [4, 3], quality: 0.7 });
+    const uri = await pickImage({ aspect: [4, 3], quality: 0.7, source });
     if (!uri) return;
     setUploading(true);
     try {
@@ -61,13 +61,21 @@ export function SpotSheet({ spot, hereNow, onClose }: SpotSheetProps) {
 
   const actions: SheetAction[] = [];
   if (spot?.kind === 'ragg') {
-    actions.push({
-      label: uploading ? 'Laddar upp bild …' : 'Lägg till bild',
-      icon: 'image-outline',
-      disabled: uploading,
-      hint: 'Syns i 24 timmar',
-      onPress: () => handleAddPhoto(spot.id),
-    });
+    actions.push(
+      {
+        label: uploading ? 'Laddar upp bild …' : 'Ta bild',
+        icon: 'camera-outline',
+        disabled: uploading,
+        hint: 'Syns i 24 timmar',
+        onPress: () => handleAddPhoto(spot.id, 'camera'),
+      },
+      {
+        label: 'Välj från bilder',
+        icon: 'image-outline',
+        disabled: uploading,
+        onPress: () => handleAddPhoto(spot.id, 'library'),
+      },
+    );
   }
   if (spot && spot.creator_id === userId) {
     actions.push({

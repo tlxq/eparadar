@@ -37,7 +37,7 @@ import { activeTypists, TYPING_TTL_MS, typingLabel, useTypingStore } from '@/sto
 import { useProfile } from '@/features/profile/hooks';
 import { useConversation } from '@/features/chat/hooks';
 import { useUserId } from '@/hooks/use-user-id';
-import { pickImage } from '@/lib/pick-image';
+import { pickImage, type ImageSource } from '@/lib/pick-image';
 import {
   MessageBubble,
   REACTIONS,
@@ -165,9 +165,9 @@ export default function ConversationScreen() {
     }
   }
 
-  async function handlePickImage() {
+  async function handlePickImage(source: ImageSource) {
     if (!id || !userId) return;
-    const uri = await pickImage({ quality: 0.7 });
+    const uri = await pickImage({ quality: 0.7, source });
     if (!uri) return;
     setSending(true);
     try {
@@ -367,10 +367,17 @@ export default function ConversationScreen() {
           />
           <View style={styles.composer}>
             <IconButton
+              icon="camera-outline"
+              size={44}
+              accessibilityLabel="Ta en bild"
+              onPress={() => handlePickImage('camera')}
+              disabled={sending}
+            />
+            <IconButton
               icon="image-outline"
               size={44}
               accessibilityLabel="Skicka en bild"
-              onPress={handlePickImage}
+              onPress={() => handlePickImage('library')}
               disabled={sending}
             />
             <TextInput
