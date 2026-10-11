@@ -1,8 +1,6 @@
 import { supabase } from '@/lib/supabase';
-import type { Database } from '@/lib/database.types';
 import type { Profile } from '@/lib/api';
-
-type DbTables = Database['public']['Tables'];
+import type { DbTables } from '@/lib/db-types';
 
 const HERE_NOW_WINDOW_MINUTES = 30;
 const RECENT_PAST_HOURS = 3;

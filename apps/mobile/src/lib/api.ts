@@ -1,15 +1,14 @@
 import { supabase } from '@/lib/supabase';
 import { lastActivity } from '@/lib/chat-state';
 import { uploadFile } from '@/lib/image-upload';
-import type { Database } from '@/lib/database.types';
+import type { DbRow, DbTables } from '@/lib/db-types';
 
-type DbTables = Database['public']['Tables'];
+export type Profile = DbRow<'profiles'>;
+export type Car = DbRow<'cars'>;
+export type ProfileSummary = Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
 
-export type Profile = DbTables['profiles']['Row'];
-export type Car = DbTables['cars']['Row'];
-
-export type Post = DbTables['posts']['Row'] & {
-  author: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'> | null;
+export type Post = DbRow<'posts'> & {
+  author: ProfileSummary | null;
   car: Pick<Car, 'id' | 'make' | 'model' | 'nickname' | 'photo_url'> | null;
 };
 
@@ -202,27 +201,16 @@ export type ConversationMember = {
   last_read_at: string | null;
   role: 'admin' | 'member';
   joined_at?: string;
-  profiles: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
+  profiles: ProfileSummary;
 };
 
-export type Conversation = {
-  id: string;
-  is_group: boolean;
-  name: string | null;
-  avatar_path: string | null;
-  created_at: string;
+export type Conversation = DbRow<'conversations'> & {
   conversation_members: ConversationMember[];
   messages?: { body: string; created_at: string; sender_id: string; image_path: string | null }[];
 };
 
-export type Message = {
-  id: string;
-  conversation_id: string;
-  sender_id: string;
-  body: string;
-  image_path: string | null;
-  created_at: string;
-  sender: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'> | null;
+export type Message = DbRow<'messages'> & {
+  sender: ProfileSummary | null;
   reactions: { user_id: string; emoji: string }[];
 };
 
@@ -381,13 +369,13 @@ export async function chatImageUrl(path: string): Promise<string> {
 
 type FriendshipStatus = 'pending' | 'accepted';
 
-type FriendshipRow = Omit<DbTables['friendships']['Row'], 'status'> & {
+type FriendshipRow = Omit<DbRow<'friendships'>, 'status'> & {
   status: FriendshipStatus;
 };
 
 export type Friendship = FriendshipRow & {
-  requester: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
-  addressee: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
+  requester: ProfileSummary;
+  addressee: ProfileSummary;
 };
 
 export function friendProfile(friendship: Friendship, myUserId: string) {
@@ -451,10 +439,10 @@ export async function removeFriend(friendshipId: string): Promise<void> {
   if (error) throw error;
 }
 
-type LocationRow = DbTables['locations']['Row'];
+type LocationRow = DbRow<'locations'>;
 
 export type FriendLocation = LocationRow & {
-  profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'> & {
+  profile: ProfileSummary & {
     cars: Pick<Car, 'color' | 'created_at'>[];
   };
 };

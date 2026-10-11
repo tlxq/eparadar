@@ -1,34 +1,20 @@
+import type { RpcRow } from '@/lib/db-types';
 import { supabase } from '@/lib/supabase';
 
-export type MeetupSuggestion = {
-  user_id: string;
-  username: string;
-  display_name: string;
-  avatar_url: string | null;
-  shared_meetup_count: number;
-  last_meetup_id: string;
-  last_meetup_title: string;
-  last_checked_in_at: string;
-};
+export type MeetupSuggestion = RpcRow<'suggested_friends_from_meetups'>;
 
-export type MutualSuggestion = {
-  user_id: string;
-  username: string;
-  display_name: string;
-  avatar_url: string | null;
-  mutual_friend_count: number;
-};
+export type MutualSuggestion = RpcRow<'suggested_friends_mutual'>;
 
 export async function fetchMeetupSuggestions(): Promise<MeetupSuggestion[]> {
   const { data, error } = await supabase.rpc('suggested_friends_from_meetups');
   if (error) throw error;
-  return (data ?? []) as unknown as MeetupSuggestion[];
+  return data ?? [];
 }
 
 export async function fetchMutualSuggestions(): Promise<MutualSuggestion[]> {
   const { data, error } = await supabase.rpc('suggested_friends_mutual');
   if (error) throw error;
-  return (data ?? []) as unknown as MutualSuggestion[];
+  return data ?? [];
 }
 
 export async function blockUser(targetUserId: string): Promise<void> {
