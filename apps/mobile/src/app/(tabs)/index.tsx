@@ -1,23 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import {
-  FlatList,
-  Image,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-
-import { ActionSheet } from '@/components/action-sheet';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { Avatar } from '@/components/avatar';
 import { EmptyState } from '@/components/empty-state';
 import { Fab } from '@/components/fab';
-import { IconButton } from '@/components/icon-button';
 import { ScreenBackground } from '@/components/screen-background';
 import { ScreenHeader } from '@/components/screen-header';
 import { Skeleton } from '@/components/skeleton';
@@ -25,18 +13,13 @@ import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
-import { deletePost, fetchPosts, POSTS_PAGE_SIZE, type FriendLocation, type Post } from '@/lib/api';
-import { confirmDestructive } from '@/lib/confirm';
-import { getErrorMessage } from '@/lib/errors';
+import { fetchPosts, POSTS_PAGE_SIZE, type FriendLocation, type Post } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
-import { formatPostAge } from '@/lib/relative-time';
-import { openPerson } from '@/store/person-sheet';
-import { showToast } from '@/store/toast';
 import { useFriendLocations } from '@/features/map/hooks';
 import { useUserId } from '@/hooks/use-user-id';
 import { useQueryErrorToast } from '@/hooks/use-query-error-toast';
-import { Common } from '@/constants/strings';
-
+import { PostItem } from '@/features/feed/components/post-item';
+import { PostActionsSheet } from '@/features/feed/components/post-actions-sheet';
 const ON_MAP_AVATAR = 56;
 
 function OnMapNow({ friends }: { friends: FriendLocation[] }) {
@@ -79,61 +62,6 @@ function OnMapNow({ friends }: { friends: FriendLocation[] }) {
   );
 }
 
-function PostItem({ post, onMore }: { post: Post; onMore?: () => void }) {
-  const theme = useTheme();
-  const authorName = post.author?.display_name ?? 'Okänd användare';
-  const carLabel = post.car ? (post.car.nickname ?? `${post.car.make} ${post.car.model}`) : null;
-
-  return (
-    <View style={[styles.post, { borderBottomColor: theme.separator }]}>
-      <View style={styles.postHeader}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Visa ${authorName}`}
-          disabled={!post.author}
-          onPress={() => post.author && openPerson(post.author.id)}
-          style={({ pressed }) => [styles.postAuthor, pressed && styles.pressed]}
-        >
-          <Avatar name={authorName} imageUrl={post.author?.avatar_url} size={40} />
-          <View style={styles.postHeaderText}>
-            <ThemedText type="headline" numberOfLines={1}>
-              {authorName}
-            </ThemedText>
-            {carLabel ? (
-              <View style={[styles.carChip, { backgroundColor: theme.backgroundElement }]}>
-                <Ionicons name="car-sport" size={12} color={theme.textSecondary} />
-                <ThemedText type="caption" themeColor="textSecondary" numberOfLines={1}>
-                  {carLabel}
-                </ThemedText>
-              </View>
-            ) : null}
-          </View>
-        </Pressable>
-        <ThemedText type="caption" themeColor="textSecondary">
-          {formatPostAge(post.created_at)}
-        </ThemedText>
-        {onMore ? (
-          <IconButton
-            icon="ellipsis-horizontal"
-            variant="plain"
-            size={32}
-            accessibilityLabel="Fler val för inlägget"
-            onPress={onMore}
-          />
-        ) : null}
-      </View>
-      {post.body ? <ThemedText>{post.body}</ThemedText> : null}
-      {post.image_url ? (
-        <Image
-          source={{ uri: post.image_url }}
-          style={[styles.postImage, { backgroundColor: theme.backgroundElement }]}
-          accessibilityLabel={`Bild från ${authorName}`}
-        />
-      ) : null}
-    </View>
-  );
-}
-
 function FeedSkeleton() {
   return (
     <View style={styles.skeleton}>
@@ -157,7 +85,6 @@ function FeedSkeleton() {
 export default function FeedScreen() {
   const userId = useUserId();
   const tabBarInset = useTabBarInset();
-  const queryClient = useQueryClient();
   const [selected, setSelected] = useState<Post | null>(null);
   const { data, isLoading, isError, refetch, isRefetching, fetchNextPage, hasNextPage } =
     useInfiniteQuery({
@@ -174,22 +101,6 @@ export default function FeedScreen() {
   useQueryErrorToast(isError, 'Kunde inte ladda flödet.', refetch);
 
   const onMap = friendLocations ?? [];
-
-  async function handleDelete(post: Post) {
-    const ok = await confirmDestructive({
-      title: 'Ta bort inlägget?',
-      message: 'Inlägget och dess bild tas bort för alla. Det går inte att ångra.',
-      confirmLabel: Common.remove,
-    });
-    if (!ok) return;
-    try {
-      await deletePost(post);
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts() });
-      showToast({ message: 'Inlägget är borttaget.' });
-    } catch (error) {
-      showToast({ tone: 'error', message: getErrorMessage(error) });
-    }
-  }
 
   return (
     <ScreenBackground style={styles.container}>
@@ -233,23 +144,7 @@ export default function FeedScreen() {
           }
         />
       </SafeAreaView>
-      <ActionSheet
-        visible={!!selected}
-        title="Ditt inlägg"
-        onClose={() => setSelected(null)}
-        actions={
-          selected
-            ? [
-                {
-                  label: 'Ta bort inlägg',
-                  icon: 'trash-outline',
-                  destructive: true,
-                  onPress: () => handleDelete(selected),
-                },
-              ]
-            : []
-        }
-      />
+      <PostActionsSheet post={selected} onClose={() => setSelected(null)} />
       <Fab
         icon="create-outline"
         accessibilityLabel="Ny post"
@@ -270,25 +165,7 @@ const styles = StyleSheet.create({
   onMapName: { maxWidth: ON_MAP_AVATAR + 8 },
   ring: { borderWidth: 2, borderRadius: (ON_MAP_AVATAR + 8) / 2, padding: 2 },
   pressed: { opacity: 0.7 },
-  post: {
-    gap: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.three,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
   postHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  postAuthor: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  postHeaderText: { flex: 1, gap: Spacing.half, alignItems: 'flex-start' },
-  carChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.one,
-    paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.half,
-    borderRadius: Radius.pill,
-    maxWidth: '100%',
-  },
-  postImage: { width: '100%', aspectRatio: 4 / 3, borderRadius: Radius.lg },
   skeleton: { paddingHorizontal: Spacing.three, gap: Spacing.five, paddingTop: Spacing.two },
   skeletonPost: { gap: Spacing.three },
   skeletonLines: { flex: 1, gap: Spacing.two },
