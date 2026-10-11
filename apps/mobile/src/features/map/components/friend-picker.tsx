@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/avatar';
 import { TextField } from '@/components/text-field';
@@ -18,6 +19,7 @@ type FriendPickerProps = {
 
 export function FriendPicker({ mode, bottom, friends, onPick, onClose }: FriendPickerProps) {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
 
   const results = useMemo(() => {
@@ -33,7 +35,8 @@ export function FriendPicker({ mode, bottom, friends, onPick, onClose }: FriendP
       <View
         style={[
           styles.panel,
-          { bottom, backgroundColor: theme.backgroundElement, borderColor: theme.border },
+          mode === 'search' ? { top: insets.top + Spacing.three } : { bottom },
+          { backgroundColor: theme.backgroundElement, borderColor: theme.border },
         ]}
       >
         {mode === 'search' && (

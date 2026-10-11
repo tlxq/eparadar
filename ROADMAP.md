@@ -42,7 +42,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [x] Messages appear instantly when sent
    - [x] Haptics on key actions
    - [x] Blocked users list with unblock (Inställningar)
-   - [ ] Map friend search stays above the keyboard
+   - [x] Map friend search stays above the keyboard (panel moves to the top)
 5. **Bigger features**
    - [ ] Meetup list inside Karta, invite friends, share to chat
    - [ ] Likes, comments and photo zoom in the feed
