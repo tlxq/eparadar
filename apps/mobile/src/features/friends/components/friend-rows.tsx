@@ -13,6 +13,7 @@ import { useBlockUser } from '@/features/friends/hooks';
 import { friendProfile, removeFriend, respondToFriendRequest, type Friendship } from '@/lib/api';
 import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
+import { openPerson } from '@/store/person-sheet';
 import { showToast } from '@/store/toast';
 import { confirmDestructive } from '@/lib/confirm';
 import { Common } from '@/constants/strings';
@@ -163,6 +164,7 @@ export function FriendRow({ friendship, myUserId }: { friendship: Friendship; my
       <ListRow
         title={friend.display_name}
         subtitle={`@${friend.username}`}
+        onPress={() => openPerson(friend.id)}
         leading={<Avatar name={friend.display_name} imageUrl={friend.avatar_url} size={52} />}
         trailing={
           <IconButton

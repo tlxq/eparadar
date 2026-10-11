@@ -33,7 +33,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [x] Split `karta.tsx` into hooks and parts (855 → 336 lines)
    - [x] Common Swedish words in one place
 4. **Fewer taps**
-   - [ ] Person sheet from map, feed, friends and chat (Chatta, Visa på kartan)
+   - [x] Person sheet from map, feed, friends and chat (Chatta, Visa på kartan)
    - [ ] Ghost mode toggle on Karta
    - [ ] Code entry directly on Lägg till vän
    - [ ] Own posts on Profil

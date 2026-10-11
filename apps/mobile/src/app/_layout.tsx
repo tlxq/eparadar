@@ -17,6 +17,7 @@ import '@/lib/location-task';
 
 import { ErrorFallback } from '@/components/error-fallback';
 import { ToastHost } from '@/components/toast-host';
+import { PersonSheetHost } from '@/features/people/person-sheet';
 import { Colors, Typography } from '@/constants/theme';
 import { trackEvent } from '@/lib/analytics';
 import { queryClient } from '@/lib/queryClient';
@@ -146,6 +147,7 @@ function RootLayout() {
             />
           </Stack.Protected>
         </Stack>
+        {session ? <PersonSheetHost /> : null}
         <ToastHost />
       </ThemeProvider>
     </QueryClientProvider>

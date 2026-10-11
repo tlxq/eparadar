@@ -4,7 +4,7 @@ import { Platform, StyleSheet, Vibration } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 import { ActionSheet } from '@/components/action-sheet';
 import { EmptyState } from '@/components/empty-state';
@@ -25,6 +25,7 @@ import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useUserId } from '@/hooks/use-user-id';
 import { type FriendLocation } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
+import { openPerson } from '@/store/person-sheet';
 import { showToast } from '@/store/toast';
 
 type LatLng = { lat: number; lng: number };
@@ -37,7 +38,8 @@ export default function MapScreen() {
   const { devicePosition, friendLocations, myLocation, myProfile, spots, heat, layers } =
     useMapLayers();
 
-  const hasCentered = useRef(false);
+  const { focus } = useLocalSearchParams<{ focus?: string }>();
+  const hasCentered = useRef(!!focus);
   const wantFollowRef = useRef(false);
   const [meSheetOpen, setMeSheetOpen] = useState(false);
   const [addSheetOpen, setAddSheetOpen] = useState(false);
@@ -49,6 +51,7 @@ export default function MapScreen() {
   const [draftPin, setDraftPin] = useState<LatLng | null>(null);
   const [locating, setLocating] = useState(false);
   const [following, setFollowing] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
 
   const postToMap = useCallback((message: object) => {
     webviewRef.current?.postMessage(JSON.stringify(message));
@@ -110,6 +113,14 @@ export default function MapScreen() {
   useEffect(() => {
     postToMap({ type: 'SET_HEAT', cells: heat });
   }, [postToMap, heat]);
+
+  useEffect(() => {
+    if (!focus || !mapReady) return;
+    const friend = friendLocations?.find((f) => f.user_id === focus);
+    if (!friend) return;
+    postToMap({ type: 'CENTER_ON', lat: friend.lat, lng: friend.lng, zoom: 15.5 });
+    router.setParams({ focus: undefined });
+  }, [focus, mapReady, friendLocations, postToMap]);
 
   const sendAll = () => {
     postToMap({ type: 'SET_FRIENDS', friends: layers.friends });
@@ -173,11 +184,14 @@ export default function MapScreen() {
     try {
       const msg = JSON.parse(event.nativeEvent.data);
       if (msg.type === 'MAP_READY') {
+        setMapReady(true);
         sendAll();
         if (wantFollowRef.current) postToMap({ type: 'FOLLOW_ME' });
       } else if (msg.type === 'FOLLOW_CHANGED') {
         wantFollowRef.current = !!msg.following;
         setFollowing(!!msg.following);
+      } else if (msg.type === 'FRIEND_TAP') {
+        openPerson(msg.id);
       } else if (msg.type === 'ME_TAP') {
         setMeSheetOpen(true);
       } else if (msg.type === 'SPOT_TAP') {

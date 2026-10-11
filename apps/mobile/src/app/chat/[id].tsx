@@ -29,6 +29,7 @@ import { uploadChatImage } from '@/lib/image-upload';
 import { readersOf } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
 import { sendStoppedTyping, sendTyping } from '@/lib/typing';
+import { openPerson } from '@/store/person-sheet';
 import { showToast } from '@/store/toast';
 import { activeTypists, TYPING_TTL_MS, typingLabel, useTypingStore } from '@/store/typing';
 import { useProfile } from '@/features/profile/hooks';
@@ -236,6 +237,9 @@ export default function ConversationScreen() {
   const title = conversation && userId ? conversationTitle(conversation, userId) : 'Chatt';
   const isGroup = !!conversation?.is_group;
   const memberCount = conversation?.conversation_members.length ?? 0;
+  const otherMemberId = conversation?.conversation_members.find(
+    (member) => member.user_id !== userId,
+  )?.user_id;
   const list = messages ?? [];
   const canSend = !!body.trim() && !sending;
   const typing = typingLabel(activeTypists(typists, userId, now), isGroup);
@@ -252,10 +256,12 @@ export default function ConversationScreen() {
             onPress={() => router.back()}
           />
           <Pressable
-            disabled={!isGroup}
-            accessibilityRole={isGroup ? 'button' : undefined}
-            accessibilityHint={isGroup ? 'Öppnar gruppinfo' : undefined}
-            onPress={() => router.push(`/group/${id}`)}
+            disabled={!isGroup && !otherMemberId}
+            accessibilityRole="button"
+            accessibilityHint={isGroup ? 'Öppnar gruppinfo' : 'Visar profilen'}
+            onPress={() =>
+              isGroup ? router.push(`/group/${id}`) : otherMemberId && openPerson(otherMemberId)
+            }
             style={({ pressed }) => [styles.navTitle, pressed && styles.bubblePressed]}
           >
             {conversation && userId ? (
