@@ -39,15 +39,12 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-example
-
 # generated native folders
 apps/mobile/ios
 apps/mobile/android
 
 # env
 .env
-.env.local
 
 # supabase local
 supabase/.branches

@@ -1,6 +1,6 @@
-export const SWEDEN_CENTER = { lat: 62.0, lng: 15.0, zoom: 4 };
-export const LONG_PRESS_MS = 450;
-export const MOVING_FRESH_MS = 3 * 60 * 1000;
+const SWEDEN_CENTER = { lat: 62.0, lng: 15.0, zoom: 4 };
+const LONG_PRESS_MS = 450;
+const MOVING_FRESH_MS = 3 * 60 * 1000;
 
 const MAPLIBRE_VERSION = '5.24.0';
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/dark';

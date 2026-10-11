@@ -34,7 +34,7 @@ devices() {
   }'
 }
 
-while read -r _ type addr; do
+while IFS=$'\t' read -r _ type addr; do
   if [ "$type" = "_adb-tls-connect._tcp" ]; then
     adb connect "$addr" >/dev/null 2>&1 || true
   fi

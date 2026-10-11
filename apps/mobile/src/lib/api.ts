@@ -377,9 +377,9 @@ export async function chatImageUrl(path: string): Promise<string> {
   return data.signedUrl;
 }
 
-export type FriendshipStatus = 'pending' | 'accepted';
+type FriendshipStatus = 'pending' | 'accepted';
 
-export type FriendshipRow = Omit<DbTables['friendships']['Row'], 'status'> & {
+type FriendshipRow = Omit<DbTables['friendships']['Row'], 'status'> & {
   status: FriendshipStatus;
 };
 
@@ -449,7 +449,7 @@ export async function removeFriend(friendshipId: string): Promise<void> {
   if (error) throw error;
 }
 
-export type LocationRow = DbTables['locations']['Row'];
+type LocationRow = DbTables['locations']['Row'];
 
 export type FriendLocation = LocationRow & {
   profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'> & {
