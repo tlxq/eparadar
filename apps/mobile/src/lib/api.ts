@@ -7,11 +7,24 @@ export type Profile = DbRow<'profiles'>;
 export type Car = DbRow<'cars'>;
 export type ProfileSummary = Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
 
+export type PostReaction = {
+  user_id: string;
+  emoji: string;
+  profile: Pick<Profile, 'id' | 'display_name' | 'avatar_url'> | null;
+};
+
+export type PostPlace = Pick<DbRow<'post_places'>, 'lat' | 'lng' | 'expires_at'>;
+
 export type Post = DbRow<'posts'> & {
   image_signed_url?: string | null;
   author: ProfileSummary | null;
   car: Pick<Car, 'id' | 'make' | 'model' | 'nickname' | 'photo_url'> | null;
+  reactions: PostReaction[];
+  place: PostPlace | null;
 };
+
+const POST_SELECT =
+  '*, author:profiles!posts_author_id_fkey(id, username, display_name, avatar_url), car:cars(id, make, model, nickname, photo_url), reactions:post_reactions(user_id, emoji, profile:profiles!post_reactions_user_id_fkey(id, display_name, avatar_url)), place:post_places(lat, lng, expires_at)';
 
 export async function signIn(email: string, password: string) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -38,9 +51,7 @@ export async function fetchPosts(page = 0, authorId?: string, carId?: string): P
   const from = page * POSTS_PAGE_SIZE;
   let query = supabase
     .from('posts')
-    .select(
-      '*, author:profiles!posts_author_id_fkey(id, username, display_name, avatar_url), car:cars(id, make, model, nickname, photo_url)',
-    )
+    .select(POST_SELECT)
     .order('created_at', { ascending: false })
     .range(from, from + POSTS_PAGE_SIZE - 1);
   if (authorId) query = query.eq('author_id', authorId);
@@ -50,9 +61,23 @@ export async function fetchPosts(page = 0, authorId?: string, carId?: string): P
   return signPostImages((data ?? []) as unknown as Post[]);
 }
 
+export async function fetchPost(postId: string): Promise<Post | null> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select(POST_SELECT)
+    .eq('id', postId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  const [post] = await signPostImages([data as unknown as Post]);
+  return post;
+}
+
 const POST_IMAGE_URL_TTL_S = 60 * 60;
 
-async function signPostImages(posts: Post[]): Promise<Post[]> {
+export async function signPostImages<T extends { image_url: string | null }>(
+  posts: T[],
+): Promise<(T & { image_signed_url?: string | null })[]> {
   const paths = posts.map((post) => post.image_url).filter((path): path is string => !!path);
   if (paths.length === 0) return posts;
   const { data, error } = await supabase.storage
@@ -79,19 +104,24 @@ export async function createPost(input: {
   body: string;
   carId: string | null;
   imageUrl?: string | null;
-}) {
+}): Promise<string> {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError) throw userError;
   const authorId = userData.user?.id;
   if (!authorId) throw new Error('Du måste vara inloggad.');
 
-  const { error } = await supabase.from('posts').insert({
-    author_id: authorId,
-    car_id: input.carId,
-    body: input.body,
-    image_url: input.imageUrl ?? null,
-  });
+  const { data, error } = await supabase
+    .from('posts')
+    .insert({
+      author_id: authorId,
+      car_id: input.carId,
+      body: input.body || null,
+      image_url: input.imageUrl ?? null,
+    })
+    .select('id')
+    .single();
   if (error) throw error;
+  return data.id;
 }
 
 export async function fetchMyCars(userId: string): Promise<Car[]> {
@@ -249,7 +279,13 @@ export type ConversationMember = {
 
 export type Conversation = DbRow<'conversations'> & {
   conversation_members: ConversationMember[];
-  messages?: { body: string; created_at: string; sender_id: string; image_path: string | null }[];
+  messages?: {
+    body: string;
+    created_at: string;
+    sender_id: string;
+    image_path: string | null;
+    post_id: string | null;
+  }[];
 };
 
 export type Message = DbRow<'messages'> & {
@@ -337,7 +373,7 @@ export async function fetchConversations(): Promise<Conversation[]> {
   const { data, error } = await supabase
     .from('conversations')
     .select(
-      '*, conversation_members(user_id, last_read_at, role, profiles(id, username, display_name, avatar_url)), messages(body, created_at, sender_id, image_path)',
+      '*, conversation_members(user_id, last_read_at, role, profiles(id, username, display_name, avatar_url)), messages(body, created_at, sender_id, image_path, post_id)',
     )
     .order('created_at', { foreignTable: 'messages', ascending: false })
     .limit(1, { foreignTable: 'messages' });
@@ -388,6 +424,7 @@ export async function sendMessage(input: {
   senderId: string;
   body: string;
   imagePath?: string | null;
+  postId?: string | null;
 }) {
   const { error } = await supabase.from('messages').insert({
     id: input.id,
@@ -395,6 +432,7 @@ export async function sendMessage(input: {
     sender_id: input.senderId,
     body: input.body,
     image_path: input.imagePath ?? null,
+    post_id: input.postId ?? null,
   });
   if (error) throw error;
 }

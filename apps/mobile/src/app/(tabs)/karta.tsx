@@ -57,8 +57,12 @@ export default function MapScreen() {
   } = useMapLayers();
   const heatHint = useHeatHint();
 
-  const { focus } = useLocalSearchParams<{ focus?: string }>();
-  const hasCentered = useRef(!!focus);
+  const { focus, focusLat, focusLng } = useLocalSearchParams<{
+    focus?: string;
+    focusLat?: string;
+    focusLng?: string;
+  }>();
+  const hasCentered = useRef(!!focus || !!focusLat);
   const wantFollowRef = useRef(false);
   const [meSheetOpen, setMeSheetOpen] = useState(false);
   const [addSheetOpen, setAddSheetOpen] = useState(false);
@@ -141,6 +145,20 @@ export default function MapScreen() {
   }, [postToMap, heat]);
 
   useEffect(() => {
+    postToMap({ type: 'SET_POSTS', posts: layers.posts });
+  }, [postToMap, layers.posts]);
+
+  useEffect(() => {
+    if (!focusLat || !focusLng || !mapReady) return;
+    const lat = Number(focusLat);
+    const lng = Number(focusLng);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      postToMap({ type: 'CENTER_ON', lat, lng, zoom: 16 });
+    }
+    router.setParams({ focusLat: undefined, focusLng: undefined });
+  }, [focusLat, focusLng, mapReady, postToMap]);
+
+  useEffect(() => {
     if (!focus || !mapReady) return;
     const friend = friendLocations?.find((f) => f.user_id === focus);
     if (!friend) return;
@@ -154,6 +172,7 @@ export default function MapScreen() {
     postToMap({ type: 'SET_MEETUPS', meetups: layers.meetups });
     postToMap({ type: 'SET_SPOTS', spots: layers.spots });
     postToMap({ type: 'SET_HEAT', cells: heat });
+    postToMap({ type: 'SET_POSTS', posts: layers.posts });
   };
 
   const openComposer = (at: LatLng, kind: SpotKind) => {
@@ -220,6 +239,8 @@ export default function MapScreen() {
         openPerson(msg.id);
       } else if (msg.type === 'ME_TAP') {
         setMeSheetOpen(true);
+      } else if (msg.type === 'POST_TAP') {
+        router.push(`/post/${msg.id}`);
       } else if (msg.type === 'SPOT_TAP') {
         setSelectedSpotId(msg.id);
       } else if (msg.type === 'MAP_LONG_PRESS') {

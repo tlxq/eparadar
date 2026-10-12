@@ -28,7 +28,7 @@ function conversation(
     avatar_path: null,
     created_at: '2026-10-01T10:00:00+00:00',
     conversation_members: members,
-    messages: lastMessage ? [{ body: 'hej', image_path: null, ...lastMessage }] : [],
+    messages: lastMessage ? [{ body: 'hej', image_path: null, post_id: null, ...lastMessage }] : [],
   };
 }
 

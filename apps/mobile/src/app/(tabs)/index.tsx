@@ -1,77 +1,29 @@
 import { useMemo, useState } from 'react';
 import { router } from 'expo-router';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { Avatar } from '@/components/avatar';
 import { EmptyState } from '@/components/empty-state';
 import { Fab } from '@/components/fab';
 import { ScreenBackground } from '@/components/screen-background';
 import { ScreenHeader } from '@/components/screen-header';
 import { Skeleton } from '@/components/skeleton';
-import { SectionLabel } from '@/components/section-label';
-import { ThemedText } from '@/components/themed-text';
 import { Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
-import { fetchPosts, POSTS_PAGE_SIZE, type FriendLocation, type Post } from '@/lib/api';
+import { fetchPosts, POSTS_PAGE_SIZE, type Post } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { useFriendLocations } from '@/features/map/hooks';
 import { ErrorState } from '@/components/error-state';
 import { useQueryErrorToast } from '@/hooks/use-query-error-toast';
 import { PostItem } from '@/features/feed/components/post-item';
 import { PostActionsSheet } from '@/features/feed/components/post-actions-sheet';
+import { OnMapRow } from '@/features/feed/components/on-map-row';
+import { EveningCard } from '@/features/feed/components/evening-card';
+import { useFriends } from '@/features/friends/hooks';
 import { SIGNED_URL_REFRESH_MS } from '@/lib/queryClient';
 import { usePullRefresh } from '@/hooks/use-pull-refresh';
-const ON_MAP_AVATAR = 56;
-
-function OnMapNow({ friends }: { friends: FriendLocation[] }) {
-  const theme = useTheme();
-
-  return (
-    <View style={styles.onMap}>
-      <SectionLabel>På kartan nu</SectionLabel>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.onMapRow}
-      >
-        {friends.map((friend) => (
-          <Pressable
-            key={friend.user_id}
-            accessibilityRole="button"
-            accessibilityLabel={`${friend.profile.display_name} är på kartan`}
-            onPress={() =>
-              router.navigate({ pathname: '/karta', params: { focus: friend.user_id } })
-            }
-            style={({ pressed }) => [styles.onMapItem, pressed && styles.pressed]}
-          >
-            <View style={[styles.ring, { borderColor: theme.brand }]}>
-              <Avatar
-                name={friend.profile.display_name}
-                imageUrl={friend.profile.avatar_url}
-                size={ON_MAP_AVATAR}
-              />
-            </View>
-            <ThemedText type="caption" numberOfLines={1} style={styles.onMapName}>
-              {friend.profile.display_name.split(' ')[0]}
-            </ThemedText>
-          </Pressable>
-        ))}
-      </ScrollView>
-    </View>
-  );
-}
-
 function FeedSkeleton() {
   return (
     <View style={styles.skeleton}>
@@ -108,6 +60,8 @@ export default function FeedScreen() {
   const posts = useMemo(() => data?.pages.flat() ?? [], [data]);
 
   const { data: friendLocations } = useFriendLocations();
+  const { data: friends, isLoading: friendsLoading } = useFriends();
+  const hasFriends = (friends?.length ?? 0) > 0;
 
   const pull = usePullRefresh(refetch);
 
@@ -142,24 +96,36 @@ export default function FeedScreen() {
           ListHeaderComponent={
             <View style={styles.headerBlock}>
               <ScreenHeader title="Flöde" />
-              {onMap.length > 0 ? <OnMapNow friends={onMap} /> : null}
+              {onMap.length > 0 ? <OnMapRow friends={onMap} /> : null}
+              {hasFriends ? <EveningCard friendsOut={onMap} /> : null}
             </View>
           }
           ListEmptyComponent={
-            isLoading ? (
+            isLoading || friendsLoading ? (
               <FeedSkeleton />
             ) : isError ? (
               <ErrorState
                 message="Flödet gick inte att ladda. Kolla nätet och testa igen."
                 onRetry={refetch}
               />
+            ) : !hasFriends ? (
+              <EmptyState
+                icon="people-outline"
+                title="Flödet är tomt utan kompisar"
+                message="Här ser du poster från dina kompisar. Lägg till några så fylls det på!"
+                action={{
+                  label: Words.addFriend,
+                  icon: 'person-add-outline',
+                  onPress: () => router.push('/friends/add'),
+                }}
+              />
             ) : (
               <EmptyState
                 icon="newspaper-outline"
                 title="Inga poster än"
-                message="Här ser du poster från dina kompisar. Visa upp kärran eller dela en bild från helgens tur!"
+                message="Dina kompisar har inte postat något än. Visa upp kärran eller dela en bild från helgens tur!"
                 action={{
-                  label: 'Skriv en post',
+                  label: 'Skriv första posten',
                   icon: 'create-outline',
                   onPress: () => router.push('/post/new'),
                 }}
@@ -182,12 +148,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   headerBlock: { paddingHorizontal: Spacing.three },
-  onMap: { gap: Spacing.two, paddingBottom: Spacing.two },
-  onMapRow: { gap: Spacing.three, paddingRight: Spacing.three },
-  onMapItem: { alignItems: 'center', gap: Spacing.one, width: ON_MAP_AVATAR + 8 },
-  onMapName: { maxWidth: ON_MAP_AVATAR + 8 },
-  ring: { borderWidth: 2, borderRadius: (ON_MAP_AVATAR + 8) / 2, padding: 2 },
-  pressed: { opacity: 0.7 },
   postHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   skeleton: { paddingHorizontal: Spacing.three, gap: Spacing.five, paddingTop: Spacing.two },
   skeletonPost: { gap: Spacing.three },
