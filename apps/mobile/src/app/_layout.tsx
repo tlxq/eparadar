@@ -18,6 +18,7 @@ import '@/lib/location-task';
 import { ConfirmSheetHost } from '@/components/confirm-sheet';
 import { ErrorFallback } from '@/components/error-fallback';
 import { ToastHost } from '@/components/toast-host';
+import { useAuthLinks } from '@/features/auth/use-auth-links';
 import { ReportSheetHost } from '@/features/moderation/report-sheet';
 import { PersonSheetHost } from '@/features/people/person-sheet';
 import { Words } from '@/constants/strings';
@@ -69,6 +70,8 @@ function RootLayout() {
   }, []);
 
   useEffect(() => setupNotificationResponseListener(), []);
+
+  useAuthLinks();
 
   const ready = !initializing && fontsLoaded && !!session;
   useEffect(() => {
@@ -152,6 +155,10 @@ function RootLayout() {
               options={{ presentation: 'modal', headerShown: false }}
             />
           </Stack.Protected>
+          <Stack.Screen
+            name="reset-password"
+            options={{ gestureEnabled: false, animation: 'fade' }}
+          />
           <Stack.Screen
             name="privacy"
             options={{ headerShown: true, title: 'Integritetspolicy' }}

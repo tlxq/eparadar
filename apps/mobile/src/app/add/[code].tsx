@@ -19,6 +19,7 @@ import {
 } from '@/features/friends/friend-code';
 import { useTheme } from '@/hooks/use-theme';
 import { getErrorMessage } from '@/lib/errors';
+import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
 import { useUserId } from '@/hooks/use-user-id';
 import { successHaptic } from '@/lib/haptics';
@@ -93,6 +94,12 @@ export default function RedeemFriendCodeScreen() {
         queryClient.invalidateQueries({ queryKey: queryKeys.friends(userId) });
         queryClient.invalidateQueries({ queryKey: queryKeys.friendRequests(userId) });
         queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(userId) });
+        if (userId) {
+          maybeRequestNotificationPermission(
+            userId,
+            result.outcome === 'accepted' ? 'friend_accepted' : 'friend_request',
+          );
+        }
       }
     },
   });

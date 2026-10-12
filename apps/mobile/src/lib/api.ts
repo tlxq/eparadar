@@ -13,30 +13,6 @@ export type Post = DbRow<'posts'> & {
   car: Pick<Car, 'id' | 'make' | 'model' | 'nickname' | 'photo_url'> | null;
 };
 
-export async function signUpWithProfile(input: {
-  email: string;
-  password: string;
-  username: string;
-  displayName: string;
-  birthYear: number;
-}) {
-  const { data, error } = await supabase.auth.signUp({
-    email: input.email,
-    password: input.password,
-    options: {
-      data: {
-        username: input.username,
-        display_name: input.displayName,
-        birth_year: String(input.birthYear),
-      },
-    },
-  });
-  if (error) throw error;
-  if (!data.session) {
-    throw new Error('Bekräfta din e-post och logga in för att slutföra registreringen.');
-  }
-}
-
 export async function signIn(email: string, password: string) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;

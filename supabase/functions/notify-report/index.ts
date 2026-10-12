@@ -10,6 +10,7 @@ const REASONS: Record<string, string> = {
   mobbning: 'Mobbning',
   spam: 'Spam eller bedrägeri',
   farligt: 'Farligt beteende',
+  under15: 'Verkar vara under 15 år',
   annat: 'Annat',
 };
 

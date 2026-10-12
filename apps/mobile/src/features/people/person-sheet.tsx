@@ -23,6 +23,7 @@ import {
   type FriendLocation,
 } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
+import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
 import { usePersonSheetStore } from '@/store/person-sheet';
 import { openReport } from '@/store/report-sheet';
@@ -68,6 +69,7 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
       const conversationId = await createConversation({ otherUserIds: [personId] });
       queryClient.invalidateQueries({ queryKey: queryKeys.conversations(myUserId) });
       router.navigate(`/chat/${conversationId}`);
+      if (myUserId) maybeRequestNotificationPermission(myUserId, 'chat');
     } catch (error) {
       showToast({ tone: 'error', message: getErrorMessage(error) });
     } finally {
@@ -81,6 +83,7 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
       successHaptic();
       queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(myUserId) });
       showToast({ tone: 'success', message: `Förfrågan skickad till ${name}!` });
+      if (myUserId) maybeRequestNotificationPermission(myUserId, 'friend_request');
     } catch (error) {
       showToast({ tone: 'error', message: getErrorMessage(error) });
     }

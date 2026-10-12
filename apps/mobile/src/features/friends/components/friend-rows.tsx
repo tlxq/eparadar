@@ -38,7 +38,7 @@ export function RequestRow({ request, myUserId }: { request: Friendship; myUserI
       if (accepted) {
         successHaptic();
         showToast({ tone: 'success', message: `Du och ${requester.display_name} är kompisar nu!` });
-        maybeRequestNotificationPermission(myUserId);
+        maybeRequestNotificationPermission(myUserId, 'friend_accepted');
       }
     },
     onError: () =>

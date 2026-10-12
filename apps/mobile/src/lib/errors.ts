@@ -3,10 +3,10 @@ export const networkError = 'Ingen kontakt med servern. Kolla nätet och försö
 
 const authCodes: Record<string, string> = {
   invalid_credentials: 'Fel e-post eller lösenord.',
-  email_not_confirmed: 'Bekräfta din e-post först. Kolla inkorgen.',
+  email_not_confirmed: 'Du behöver bekräfta din e-post först. Kolla inkorgen och skräpposten.',
   user_already_exists: 'Det finns redan ett konto med den e-posten.',
   email_exists: 'Det finns redan ett konto med den e-posten.',
-  weak_password: 'Lösenordet är för kort. Välj minst 6 tecken.',
+  weak_password: 'Lösenordet är för svagt. Välj minst 8 tecken.',
   email_address_invalid: 'Den e-postadressen funkar inte.',
   validation_failed: 'Kolla att e-post och lösenord stämmer.',
   over_email_send_rate_limit: 'För många mejl på kort tid. Vänta en stund och försök igen.',

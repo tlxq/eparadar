@@ -19,6 +19,7 @@ import { useNearbyRadar } from '@/features/friends/use-nearby-radar';
 import { useTheme } from '@/hooks/use-theme';
 import { sendFriendRequest } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
+import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
 import { useUserId } from '@/hooks/use-user-id';
@@ -76,6 +77,10 @@ function PersonRow({ person, myUserId }: { person: NearbyPerson; myUserId: strin
             ? `Du och ${person.display_name} är kompisar nu!`
             : `Förfrågan skickad till ${person.display_name}!`,
       });
+      maybeRequestNotificationPermission(
+        myUserId,
+        row.status === 'accepted' ? 'friend_accepted' : 'friend_request',
+      );
     },
     onError: (error) => showToast({ tone: 'error', message: getErrorMessage(error) }),
   });

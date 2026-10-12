@@ -80,7 +80,7 @@ export function useToggleInterest(meetupId: string, myUserId: string | undefined
     onSuccess: (_data, interested) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.meetupDetail(meetupId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.meetups() });
-      if (interested && myUserId) maybeRequestNotificationPermission(myUserId);
+      if (interested && myUserId) maybeRequestNotificationPermission(myUserId, 'meetup');
     },
   });
 }

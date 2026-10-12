@@ -18,6 +18,7 @@ import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { createConversation, friendProfile } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
+import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
 import { useFriends } from '@/features/friends/hooks';
 import { useUserId } from '@/hooks/use-user-id';
@@ -70,6 +71,7 @@ export default function NewChatScreen() {
     onSuccess: (conversationId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });
       router.replace(`/chat/${conversationId}`);
+      if (userId) maybeRequestNotificationPermission(userId, 'chat');
     },
     onError: (err) => setError(getErrorMessage(err)),
   });
