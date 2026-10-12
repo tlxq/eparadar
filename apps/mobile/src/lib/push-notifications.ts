@@ -83,7 +83,7 @@ export function setupNotificationResponseListener(): () => void {
 
 export function setNotificationNavigationReady(ready: boolean): void {
   navigationReady = ready;
-  if (!ready) return;
+  if (!ready || Platform.OS === 'web') return;
   const response = pendingResponse ?? Notifications.getLastNotificationResponse();
   pendingResponse = null;
   if (response) handleNotificationResponse(response);

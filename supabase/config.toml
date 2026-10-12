@@ -431,6 +431,12 @@ verify_jwt = false
 import_map = "./functions/purge-storage/deno.json"
 entrypoint = "./functions/purge-storage/index.ts"
 
+[functions.notify-report]
+enabled = true
+verify_jwt = false
+import_map = "./functions/notify-report/deno.json"
+entrypoint = "./functions/notify-report/index.ts"
+
 [functions.delete-account]
 enabled = true
 verify_jwt = true
