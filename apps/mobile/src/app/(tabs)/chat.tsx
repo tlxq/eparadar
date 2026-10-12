@@ -13,6 +13,7 @@ import { ScreenBackground } from '@/components/screen-background';
 import { ScreenHeader } from '@/components/screen-header';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
+import { Words } from '@/constants/strings';
 import { Fonts, Radius, Spacing, Typography } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
@@ -27,9 +28,9 @@ import { useQueryErrorToast } from '@/hooks/use-query-error-toast';
 function previewText(conversation: Conversation, myUserId: string) {
   const lastMessage = conversation.messages?.[0];
   if (!lastMessage) return conversation.is_group ? 'Gruppen är skapad' : 'Säg hej!';
-  const text = lastMessage.body.trim() || 'skickade en bild';
+  const text = lastMessage.body.trim() || Words.photo;
   if (lastMessage.sender_id === myUserId) return `Du: ${text}`;
-  if (!conversation.is_group) return lastMessage.body.trim() || 'Skickade en bild';
+  if (!conversation.is_group) return text;
   const sender = conversation.conversation_members.find(
     (member) => member.user_id === lastMessage.sender_id,
   );
@@ -187,7 +188,7 @@ export default function ChatListScreen() {
               <EmptyState
                 icon="chatbubbles-outline"
                 title="Inga chattar än"
-                message="Skriv till en vän eller starta en grupp inför nästa träff."
+                message="Skriv till en kompis eller starta en grupp inför nästa meet."
                 action={{ label: 'Ny chatt', icon: 'add', onPress: () => router.push('/chat/new') }}
               />
             )

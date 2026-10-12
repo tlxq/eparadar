@@ -99,7 +99,7 @@ export async function maybeRequestNotificationPermission(userId: string): Promis
 
   Alert.alert(
     'Aktivera aviseringar?',
-    'Få en avisering när du får ett nytt meddelande, en vänförfrågan eller när någon är intresserad av din träff.',
+    'Få en avisering när du får ett nytt meddelande, en kompisförfrågan eller när någon vill med på din meet.',
     [
       { text: 'Inte nu', style: 'cancel' },
       {

@@ -48,7 +48,7 @@ export async function requestLocationPermissions(): Promise<PermissionResult> {
     return {
       granted: false,
       reason:
-        'epaRadar behöver bakgrundsåtkomst till din plats för att dela den med dina vänner även när appen är stängd. Öppna telefonens inställningar och välj "Tillåt alltid" för epaRadar.',
+        'epaRadar behöver bakgrundsåtkomst till din plats för att dela den med dina kompisar även när appen är stängd. Öppna telefonens inställningar och välj "Tillåt alltid" för epaRadar.',
     };
   }
   return { granted: true };
@@ -66,7 +66,7 @@ export async function startLocationSharing(): Promise<void> {
     foregroundService: {
       notificationTitle: 'epaRadar delar din plats',
       notificationBody:
-        'Dina vänner kan se var du är just nu. Stäng av i Inställningar när du vill.',
+        'Dina kompisar kan se var du är just nu. Stäng av i Inställningar när du vill.',
       notificationColor: Colors.dark.brand,
     },
   });

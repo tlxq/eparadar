@@ -53,7 +53,7 @@ export default function NewCarScreen() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.cars(userId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.friendLocations(userId) });
-      showToast({ tone: 'success', message: 'Bilen är tillagd.' });
+      showToast({ tone: 'success', message: 'Kärran är tillagd!' });
       router.back();
     },
     onError: (err) => setError(getErrorMessage(err)),
@@ -67,7 +67,7 @@ export default function NewCarScreen() {
         <>
           {error ? <ThemedText type="error">{error}</ThemedText> : null}
           <Button
-            label="Spara bil"
+            label="Spara EPA"
             onPress={() => mutation.mutate()}
             loading={mutation.isPending}
             disabled={!make.trim() || !model.trim() || !yearValid}

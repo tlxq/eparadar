@@ -1,4 +1,5 @@
 import { ActionSheet } from '@/components/action-sheet';
+import { reportThanks } from '@/constants/strings';
 import { REPORT_REASONS, reportContent, type ReportReason } from '@/features/moderation/api';
 import { useBlockPerson } from '@/features/moderation/use-block-person';
 import { getErrorMessage } from '@/lib/errors';
@@ -7,12 +8,12 @@ import { useReportSheetStore, type ReportTarget } from '@/store/report-sheet';
 import { showToast } from '@/store/toast';
 
 const TITLES: Record<ReportTarget['type'], string> = {
-  post: 'Varför rapporterar du inlägget?',
+  post: 'Varför rapporterar du posten?',
   message: 'Varför rapporterar du meddelandet?',
   profile: 'Varför rapporterar du personen?',
-  spot: 'Varför rapporterar du platsen?',
+  spot: 'Varför rapporterar du spotten?',
   spot_photo: 'Varför rapporterar du bilden?',
-  meetup: 'Varför rapporterar du träffen?',
+  meetup: 'Varför rapporterar du meeten?',
 };
 
 export function ReportSheetHost() {
@@ -26,7 +27,7 @@ export function ReportSheetHost() {
       successHaptic();
       showToast({
         tone: 'success',
-        message: 'Tack! Vi har fått din rapport och tittar på den.',
+        message: reportThanks(reported.type === 'spot' ? null : reported.name),
       });
     } catch (error) {
       showToast({ tone: 'error', message: getErrorMessage(error) });

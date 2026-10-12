@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
+import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useBlockedUsers, useUnblockUser } from '@/features/friends/hooks';
@@ -21,9 +22,7 @@ export function BlockedSection() {
 
   return (
     <>
-      <ThemedText type="caption" themeColor="textSecondary" style={styles.label}>
-        BLOCKERADE
-      </ThemedText>
+      <SectionLabel style={styles.label}>Blockerade</SectionLabel>
       <View style={[styles.group, { backgroundColor: theme.backgroundElement }]}>
         {blocked.map((row, index) => {
           const person = friendProfile(row, userId);
@@ -62,15 +61,15 @@ export function BlockedSection() {
         })}
       </View>
       <ThemedText type="caption" themeColor="textSecondary" style={styles.note}>
-        Blockerade kan inte skicka vänförfrågningar eller meddelanden till dig. Om du avblockerar
-        någon blir ni inte vänner igen av sig själv.
+        Blockerade kan inte se dig eller skriva till dig. Avblockerar du någon blir ni inte kompisar
+        igen av sig själv.
       </ThemedText>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  label: { letterSpacing: 0.6, paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
+  label: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
   note: { paddingHorizontal: Spacing.three },
   group: { borderRadius: Radius.lg, overflow: 'hidden' },
   row: {

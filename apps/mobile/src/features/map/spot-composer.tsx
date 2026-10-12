@@ -5,6 +5,7 @@ import { SvgXml } from 'react-native-svg';
 import { Button } from '@/components/button';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
+import { Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { SPOT_ICONS } from '@/features/map/map-icons';
 import { createSpot, WARNING_TYPES, type SpotKind, type WarningType } from '@/features/map/spots';
@@ -39,7 +40,7 @@ export function SpotComposer({
 
   async function handleSubmit() {
     if (nameMissing) {
-      setError('Ge stället ett namn, t.ex. Max-rondellen.');
+      setError('Ge spotten ett namn, t.ex. Max-rondellen.');
       return;
     }
     setSaving(true);
@@ -70,7 +71,7 @@ export function SpotComposer({
   ];
 
   return (
-    <FormSheet title="Släpp spot" onClose={onClose} gap="four">
+    <FormSheet title="Placera spot" onClose={onClose} gap="four">
       <View style={styles.kinds}>
         <Pressable
           accessibilityRole="radio"
@@ -80,7 +81,7 @@ export function SpotComposer({
         >
           <SvgXml xml={SPOT_ICONS.ragg} width={32} height={32} />
           <View style={styles.optionText}>
-            <ThemedText type="smallBold">Raggställe</ThemedText>
+            <ThemedText type="smallBold">{Words.ragga}</ThemedText>
             <ThemedText type="caption" themeColor="textSecondary">
               Ligger kvar i 24 timmar
             </ThemedText>
@@ -94,7 +95,7 @@ export function SpotComposer({
         >
           <SvgXml xml={SPOT_ICONS.vagarbete} width={32} height={32} />
           <View style={styles.optionText}>
-            <ThemedText type="smallBold">Varning</ThemedText>
+            <ThemedText type="smallBold">{Words.warning}</ThemedText>
             <ThemedText type="caption" themeColor="textSecondary">
               Försvinner efter 2 timmar
             </ThemedText>
@@ -133,15 +134,10 @@ export function SpotComposer({
       )}
 
       <ThemedText type="caption" themeColor="textSecondary">
-        Bara dina vänner ser den. Du kan ta bort den när du vill.
+        Bara dina kompisar ser den. Du kan ta bort den när du vill.
       </ThemedText>
 
-      <Button
-        label={kind === 'ragg' ? 'Släpp raggställe' : 'Släpp varning'}
-        onPress={handleSubmit}
-        loading={saving}
-        disabled={nameMissing}
-      />
+      <Button label={Words.place} onPress={handleSubmit} loading={saving} disabled={nameMissing} />
     </FormSheet>
   );
 }

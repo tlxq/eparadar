@@ -66,7 +66,8 @@ export function StatusSheet({ userId, current, onClose, onSaved }: StatusSheetPr
         error={error}
       />
       <ThemedText type="caption" themeColor="textSecondary">
-        Syns i en bubbla vid din avatar för vänner som ser dig på kartan. Försvinner efter en timme.
+        Syns i en bubbla vid din avatar för kompisar som ser dig på kartan. Försvinner efter en
+        timme.
       </ThemedText>
       {current ? (
         <Button

@@ -9,7 +9,9 @@ import { Button } from '@/components/button';
 import { EmptyState } from '@/components/empty-state';
 import { ListRow } from '@/components/list-row';
 import { ScreenBackground } from '@/components/screen-background';
+import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
+import { Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { RadarHero } from '@/features/friends/components/radar-hero';
 import type { NearbyPerson } from '@/features/friends/nearby';
@@ -71,8 +73,8 @@ function PersonRow({ person, myUserId }: { person: NearbyPerson; myUserId: strin
         tone: 'success',
         message:
           row.status === 'accepted'
-            ? `Du och ${person.display_name} är nu vänner.`
-            : `Förfrågan skickad till ${person.display_name}.`,
+            ? `Du och ${person.display_name} är kompisar nu!`
+            : `Förfrågan skickad till ${person.display_name}!`,
       });
     },
     onError: (error) => showToast({ tone: 'error', message: getErrorMessage(error) }),
@@ -84,7 +86,7 @@ function PersonRow({ person, myUserId }: { person: NearbyPerson; myUserId: strin
   return (
     <ListRow
       title={person.display_name}
-      subtitle={person.request_state === 'received' ? 'Vill bli din vän' : `@${person.username}`}
+      subtitle={person.request_state === 'received' ? 'Vill bli din kompis' : `@${person.username}`}
       leading={<Avatar name={person.display_name} imageUrl={person.avatar_url} size={48} />}
       trailing={
         sent ? (
@@ -138,7 +140,7 @@ export default function NearbyRadarScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <ModalHeader title="I närheten" />
+        <ModalHeader title={Words.radar} />
 
         {needsPermission ? (
           <PermissionPrompt blocked={permission === 'blocked'} onAllow={requestPermission} />
@@ -157,9 +159,9 @@ export default function NearbyRadarScreen() {
 
             {people.length > 0 ? (
               <View style={styles.list} accessibilityLiveRegion="polite">
-                <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
-                  {`${people.length} I NÄRHETEN`}
-                </ThemedText>
+                <SectionLabel
+                  style={styles.sectionLabel}
+                >{`${people.length} i närheten`}</SectionLabel>
                 {people.map((person) => (
                   <PersonRow key={person.user_id} person={person} myUserId={userId!} />
                 ))}
@@ -170,7 +172,7 @@ export default function NearbyRadarScreen() {
                   {locating ? 'Hittar din position…' : 'Söker efter folk i närheten…'}
                 </ThemedText>
                 <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
-                  Be kompisen öppna I närheten samtidigt. Ni behöver vara inom ungefär 100 meter.
+                  Be kompisen starta radarn samtidigt. Ni behöver vara inom ungefär 100 meter.
                 </ThemedText>
                 {isError ? (
                   <ThemedText type="error" style={styles.center}>
@@ -225,7 +227,6 @@ const styles = StyleSheet.create({
   dot: { width: 8, height: 8, borderRadius: 4 },
   list: { marginTop: Spacing.two },
   sectionLabel: {
-    letterSpacing: 0.6,
     paddingHorizontal: Spacing.three,
     paddingBottom: Spacing.one,
   },

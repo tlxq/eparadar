@@ -19,6 +19,7 @@ import { ErrorFallback } from '@/components/error-fallback';
 import { ToastHost } from '@/components/toast-host';
 import { ReportSheetHost } from '@/features/moderation/report-sheet';
 import { PersonSheetHost } from '@/features/people/person-sheet';
+import { Words } from '@/constants/strings';
 import { Colors, Typography } from '@/constants/theme';
 import { trackEvent } from '@/lib/analytics';
 import { queryClient } from '@/lib/queryClient';
@@ -112,11 +113,11 @@ function RootLayout() {
             />
             <Stack.Screen
               name="post/new"
-              options={{ presentation: 'modal', headerShown: true, title: 'Ny post' }}
+              options={{ presentation: 'modal', headerShown: true, title: Words.newPost }}
             />
             <Stack.Screen
               name="cars/new"
-              options={{ presentation: 'modal', headerShown: true, title: 'Lägg till bil' }}
+              options={{ presentation: 'modal', headerShown: true, title: Words.addVehicle }}
             />
             <Stack.Screen
               name="chat/new"
@@ -125,7 +126,7 @@ function RootLayout() {
             <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
             <Stack.Screen
               name="friends/add"
-              options={{ presentation: 'modal', headerShown: true, title: 'Lägg till vän' }}
+              options={{ presentation: 'modal', headerShown: true, title: Words.addFriend }}
             />
             <Stack.Screen name="friends/code" options={{ presentation: 'modal' }} />
             <Stack.Screen name="friends/nearby" options={{ presentation: 'modal' }} />

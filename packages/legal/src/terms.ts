@@ -16,7 +16,7 @@ export const termsOfUse: LegalDocument = {
     {
       heading: 'Ditt innehåll',
       blocks: [
-        'Du äger det du lägger upp, till exempel inlägg, bilder och meddelanden. Du ger oss rätt att lagra och visa det för dem du delar det med, så länge det finns kvar i appen. Lägg bara upp sådant du har rätt att dela, och bilder på andra bara om de är okej med det.',
+        'Du äger det du lägger upp, till exempel poster, bilder och meddelanden. Du ger oss rätt att lagra och visa det för dem du delar det med, så länge det finns kvar i appen. Lägg bara upp sådant du har rätt att dela, och bilder på andra bara om de är okej med det.',
       ],
     },
     {

@@ -23,7 +23,7 @@ function warningLabel(type: string | null): string {
 }
 
 export function spotTitle(spot: Pick<Spot, 'kind' | 'name' | 'warning_type'>): string {
-  return spot.kind === 'ragg' ? (spot.name ?? 'Raggställe') : warningLabel(spot.warning_type);
+  return spot.kind === 'ragg' ? (spot.name ?? 'Ragga') : warningLabel(spot.warning_type);
 }
 
 export function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {

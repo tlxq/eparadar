@@ -18,11 +18,11 @@ import { stopLocationSharingQuietly } from '@/lib/location-task';
 import { showToast } from '@/store/toast';
 
 const WHAT_GOES = [
-  'Din profil, profilbild och dina bilar',
-  'Alla dina inlägg och bilder',
-  'Dina vänskaper och din plats på kartan',
+  'Din profil, profilbild och dina EPA:or',
+  'Alla dina poster och bilder',
+  'Dina kompisar och din plats på kartan',
   'Dina 1:1-chattar, och du lämnar alla gruppchattar',
-  'Träffar du har skapat',
+  'Meets du har skapat',
 ];
 
 export default function DeleteAccountScreen() {

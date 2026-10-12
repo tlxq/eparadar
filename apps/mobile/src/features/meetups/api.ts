@@ -119,7 +119,7 @@ export async function createMeetup(input: {
 export async function deleteMeetup(meetupId: string): Promise<void> {
   const { data, error } = await supabase.from('meetups').delete().eq('id', meetupId).select('id');
   if (error) throw error;
-  if (!data?.length) throw new Error('Bara den som skapade träffen kan ta bort den.');
+  if (!data?.length) throw new Error('Bara den som skapade meeten kan ta bort den.');
 }
 
 export async function setInterested(

@@ -42,7 +42,7 @@ export default function AgeScreen() {
   return (
     <AuthShell
       title="Hur gammal är du?"
-      subtitle="epaRadar är för dig som är 15 år eller äldre. Bara du ser ditt födelseår, och det går inte att ändra i efterhand."
+      subtitle="Vi frågar för att hålla epaRadar tryggt. Bara du ser ditt födelseår."
       footer={
         <>
           <Button label="Fortsätt" onPress={handleSave} loading={saving} />
@@ -57,6 +57,7 @@ export default function AgeScreen() {
         maxLength={4}
         value={birthYear}
         onChangeText={setBirthYear}
+        hint="Går inte att ändra senare."
         error={error}
         autoFocus
       />

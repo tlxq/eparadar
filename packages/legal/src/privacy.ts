@@ -4,7 +4,7 @@ export const privacyPolicy: LegalDocument = {
   title: 'Integritetspolicy',
   updated: '12 oktober 2026',
   intro: [
-    'Den här policyn beskriver hur epaRadar hanterar personuppgifter i mobilappen och på eparadar.se. epaRadar är en app för dig med EPA-traktor: du kan skapa en profil, visa upp din bil, hitta vänner, chatta, ordna träffar och dela din plats med vänner.',
+    'Den här policyn beskriver hur epaRadar hanterar personuppgifter i mobilappen och på eparadar.se. epaRadar är en app för dig med EPA-traktor: du kan skapa en profil, visa upp din EPA, hitta kompisar, chatta, ordna meets och dela din plats med kompisar.',
   ],
   sections: [
     {
@@ -16,7 +16,7 @@ export const privacyPolicy: LegalDocument = {
     {
       heading: 'Vem appen är till för',
       blocks: [
-        `Du måste vara minst ${MINIMUM_AGE} år för att använda epaRadar. Vi frågar efter ditt födelseår när du skapar konto och sparar bara året. Många som använder appen är minderåriga, så allt som visar var du är är privat från början och delas bara med dina vänner.`,
+        `Du måste vara minst ${MINIMUM_AGE} år för att använda epaRadar. Vi frågar efter ditt födelseår när du skapar konto och sparar bara året. Många som använder appen är minderåriga, så allt som visar var du är är privat från början och delas bara med dina kompisar.`,
       ],
     },
     {
@@ -24,11 +24,11 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         [
           'Konto: e-postadress, lösenord (krypterat) och födelseår. Födelseåret syns bara för dig.',
-          'Profil: visningsnamn, användarnamn, profiltext, profilbild och dina bilar med bilder.',
-          'Vänner: vänskaper, vänförfrågningar, blockeringar och tillfälliga vänkoder (QR).',
-          'Innehåll: inlägg med bilder, chattmeddelanden, bilder i chatten, reaktioner och gruppchattar.',
-          'Karta: din position, riktning och om du rör dig när platsdelning är på, din status, platser du släpper (Raggställen och varningar) med bilder, träffar du skapar, intresse och incheckningar.',
-          'Hitta vänner i närheten: din position i ungefär 20 sekunder medan du själv letar.',
+          'Profil: visningsnamn, användarnamn, profiltext, profilbild och dina EPA:or med bilder.',
+          'Kompisar: vilka du är kompis med, kompisförfrågningar, blockeringar och tillfälliga kompiskoder (QR).',
+          'Innehåll: poster med bilder, chattmeddelanden, bilder i chatten, reaktioner och gruppchattar.',
+          'Karta: din position, riktning och om du rör dig när platsdelning är på, din status, spots du placerar (Ragga och Varning) med bilder, meets du skapar, intresse och incheckningar.',
+          'Radarn: din position i ungefär 20 sekunder medan du själv letar.',
           'Rapporter: när du rapporterar något sparar vi en kopia av innehållet och din anledning.',
           'Teknik: en token för aviseringar, när du öppnar appen, och felrapporter om appen kraschar.',
         ],
@@ -38,7 +38,7 @@ export const privacyPolicy: LegalDocument = {
     {
       heading: 'Varför vi behandlar uppgifterna',
       blocks: [
-        'För att driva ditt konto, visa ditt och dina vänners innehåll, leverera chatt, karta och träffar, skicka aviseringar, hålla appen säker, hantera rapporter och hitta fel.',
+        'För att driva ditt konto, visa ditt och dina kompisars innehåll, leverera chatt, karta och meets, skicka aviseringar, hålla appen säker, hantera rapporter och hitta fel.',
       ],
     },
     {
@@ -52,9 +52,9 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         [
           'Platsdelning är av från början och slås bara på om du själv väljer det.',
-          'När den är på ser bara dina vänner var du är, med exakt position. Du kan välja ungefärlig position i Inställningar.',
+          'När den är på ser bara dina kompisar var du är, med exakt position. Du kan välja ungefärlig position i Inställningar.',
           'Bakgrundsplats används bara om du har gett telefonen den behörigheten och har platsdelning på. Telefonen visar då en avisering.',
-          'Platser och träffar du lägger på kartan syns bara för dina vänner.',
+          'Spots och meets du placerar på kartan syns bara för dina kompisar.',
           'Du stänger av delningen genom att trycka på dig själv på kartan eller i Inställningar.',
         ],
       ],
@@ -64,10 +64,10 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         [
           'Din position: raderas efter 12 timmar utan uppdatering.',
-          'Status: 1 timme. Varningar: 2 timmar. Raggställen och bilder på dem: 24 timmar.',
+          'Status: 1 timme. Varningar: 2 timmar. Ragga-spots och bilder på dem: 24 timmar.',
           'Träffar raderas ett dygn efter att de började, tillsammans med intresse och incheckningar.',
-          'Hitta vänner i närheten: 2 minuter.',
-          'Konto, profil, inlägg och meddelanden: tills du tar bort dem eller raderar kontot.',
+          'Radarn: 2 minuter.',
+          'Konto, profil, poster och meddelanden: tills du tar bort dem eller raderar kontot.',
           'Rapporter: så länge vi behöver dem för att hantera ärendet.',
           'Väntelistan: tills lanseringsbeskedet har skickats eller du ber oss radera adressen.',
         ],
@@ -76,7 +76,7 @@ export const privacyPolicy: LegalDocument = {
     {
       heading: 'Vem som ser vad',
       blocks: [
-        'Inlägg, platser, träffar och din position syns bara för dina vänner. Nya chattar kan bara startas mellan vänner. Din profil (namn, användarnamn, profilbild och bilar) syns för andra inloggade användare så att ni kan hitta varandra. Ingenting syns för den som inte är inloggad. Vi säljer inte personuppgifter och använder dem inte för reklam.',
+        'Poster, spots, meets och din position syns bara för dina kompisar. Nya chattar kan bara startas mellan kompisar. Din profil (namn, användarnamn, profilbild och EPA:or) syns för andra inloggade användare så att ni kan hitta varandra. Ingenting syns för den som inte är inloggad. Vi säljer inte personuppgifter och använder dem inte för reklam.',
       ],
     },
     {
@@ -84,7 +84,7 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         [
           'Supabase lagrar databas, bilder och inloggning i EU (Irland).',
-          'Expo skickar aviseringar vidare till Google (Android) och Apple (iOS). Aviseringar för meddelanden innehåller bara avsändarens namn, aldrig texten.',
+          'Expo skickar aviseringar vidare till Google (Android) och Apple (iOS). Aviseringar för meddelanden innehåller bara avsändarens namn och, i grupper, gruppens namn, aldrig texten.',
           'Resend skickar e-post från väntelistan och skickar rapporter till oss.',
           'Sentry tar emot felrapporter när appen eller webbplatsen kraschar.',
           'Kartan använder MapLibre (laddas från unpkg) och kartbilder från OpenFreeMap. De ser din IP-adress men inte vem du är.',
@@ -108,9 +108,7 @@ export const privacyPolicy: LegalDocument = {
     },
     {
       heading: 'Webbplatsen',
-      blocks: [
-        'eparadar.se använder inga cookies och ingen spårning för reklam.',
-      ],
+      blocks: ['eparadar.se använder inga cookies och ingen spårning för reklam.'],
     },
     {
       heading: 'Ändringar',

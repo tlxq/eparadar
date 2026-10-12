@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -39,7 +40,7 @@ export function MapActionBar({
         onPress={() => toggle('search')}
         style={styles.button}
         hitSlop={8}
-        accessibilityLabel="Sök vän"
+        accessibilityLabel="Sök kompis"
       >
         <Ionicons name="search" size={22} color={picker === 'search' ? theme.brand : theme.text} />
       </Pressable>
@@ -47,7 +48,7 @@ export function MapActionBar({
         onPress={() => toggle('friends')}
         style={styles.button}
         hitSlop={8}
-        accessibilityLabel="Vänner på kartan"
+        accessibilityLabel="Kompisar på kartan"
       >
         <Ionicons name="people" size={22} color={picker === 'friends' ? theme.brand : theme.text} />
       </Pressable>
@@ -55,7 +56,7 @@ export function MapActionBar({
         onPress={onAdd}
         style={styles.button}
         hitSlop={8}
-        accessibilityLabel="Släpp spot eller skapa träff"
+        accessibilityLabel={Words.placeOnMap}
       >
         <Ionicons name="add-circle" size={26} color={theme.brand} />
       </Pressable>

@@ -14,6 +14,7 @@ import { ListRow } from '@/components/list-row';
 import { ScreenBackground } from '@/components/screen-background';
 import { Skeleton } from '@/components/skeleton';
 import { TextField } from '@/components/text-field';
+import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useRealtimeTable } from '@/hooks/use-realtime-table';
@@ -274,9 +275,7 @@ export default function GroupInfoScreen() {
                 )}
 
                 <View style={styles.members}>
-                  <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
-                    MEDLEMMAR
-                  </ThemedText>
+                  <SectionLabel style={styles.sectionLabel}>Medlemmar</SectionLabel>
                   {members.map((member) => {
                     const isMe = member.user_id === userId;
                     return (
@@ -376,7 +375,6 @@ const styles = StyleSheet.create({
   editActions: { flexDirection: 'row', gap: Spacing.two },
   members: { marginHorizontal: -Spacing.three },
   sectionLabel: {
-    letterSpacing: 0.6,
     paddingBottom: Spacing.one,
     paddingHorizontal: Spacing.three,
   },

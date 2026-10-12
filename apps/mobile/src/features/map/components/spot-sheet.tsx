@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { ActionSheet, type SheetAction } from '@/components/action-sheet';
 import { ThemedText } from '@/components/themed-text';
-import { Common } from '@/constants/strings';
+import { Common, Words } from '@/constants/strings';
 import { Spacing } from '@/constants/theme';
 import { SpotPhotoStrip } from '@/features/map/spot-photo-strip';
 import { addSpotPhoto, deleteSpot, spotTitle, type Spot } from '@/features/map/spots';
@@ -36,7 +36,7 @@ export function SpotSheet({ spot, hereNow, onClose }: SpotSheetProps) {
       await addSpotPhoto(spotId, userId, uri);
       queryClient.invalidateQueries({ queryKey: queryKeys.spotPhotos(spotId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.spotPhotoCounts() });
-      showToast({ tone: 'success', message: 'Bilden ligger på spotten i 24 timmar.' });
+      showToast({ tone: 'success', message: 'Bilden ligger på spotten i 24 timmar!' });
     } catch (error) {
       showToast({ tone: 'error', message: getErrorMessage(error) });
     } finally {
@@ -104,8 +104,8 @@ export function SpotSheet({ spot, hereNow, onClose }: SpotSheetProps) {
             <ThemedText type="small" themeColor="textSecondary">
               {spot.kind === 'ragg'
                 ? `${hereNow > 0 ? `${hereNow} här nu` : 'Ingen här just nu'} · försvinner efter 24 timmar`
-                : 'Varning · försvinner efter 2 timmar'}
-              {' · syns för vänner'}
+                : `${Words.warning} · försvinner efter 2 timmar`}
+              {' · syns för kompisar'}
             </ThemedText>
             {spot.kind === 'ragg' && userId ? (
               <SpotPhotoStrip spotId={spot.id} userId={userId} spotCreatorId={spot.creator_id} />

@@ -57,7 +57,7 @@ export default function SignUpScreen() {
   return (
     <AuthShell
       title="Skapa konto"
-      subtitle="Hitta gänget, visa upp bilen och ses på träffar."
+      subtitle="Hitta kompisarna, visa upp kärran och ses på meets."
       footer={
         <>
           <ThemedText type="caption" themeColor="textSecondary" style={styles.consent}>
@@ -109,7 +109,7 @@ export default function SignUpScreen() {
         maxLength={4}
         value={birthYear}
         onChangeText={setBirthYear}
-        hint="Du måste vara minst 15 år. Bara du ser ditt födelseår."
+        hint="Vi frågar för att hålla epaRadar tryggt. Bara du ser ditt födelseår."
       />
       <TextField
         label="E-post"

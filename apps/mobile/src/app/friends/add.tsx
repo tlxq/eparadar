@@ -7,7 +7,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/button';
 import { ScreenBackground } from '@/components/screen-background';
+import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
+import { Words } from '@/constants/strings';
 import { CandidateRow } from '@/features/friends/components/candidate-row';
 import { CodeEntry } from '@/features/friends/components/code-entry';
 import { RadarHero } from '@/features/friends/components/radar-hero';
@@ -68,10 +70,10 @@ export default function AddFriendScreen() {
           <CodeEntry />
 
           <SuggestionSection
-            title="Möttes vid en träff"
+            title="Möttes på en meet"
             isLoading={meetupSuggestions.isLoading}
             isEmpty={!meetupSuggestions.data?.length}
-            emptyText="Inga träffar än. Gå på en träff eller skanna någons kod för att lägga till dem."
+            emptyText="Inga meets än. Gå på en meet eller skanna någons kod för att lägga till dem."
           >
             {meetupSuggestions.data?.map((candidate) => (
               <CandidateRow
@@ -89,17 +91,17 @@ export default function AddFriendScreen() {
           </SuggestionSection>
 
           <SuggestionSection
-            title="Gemensamma vänner"
+            title="Gemensamma kompisar"
             isLoading={mutualSuggestions.isLoading}
             isEmpty={!mutualSuggestions.data?.length}
-            emptyText="Inga gemensamma vänner att visa än."
+            emptyText="Inga gemensamma kompisar att visa än."
           >
             {mutualSuggestions.data?.map((candidate) => (
               <CandidateRow
                 key={candidate.user_id}
                 displayName={candidate.display_name}
                 avatarUrl={candidate.avatar_url}
-                subLine={`${candidate.mutual_friend_count} ${candidate.mutual_friend_count === 1 ? 'gemensam vän' : 'gemensamma vänner'}`}
+                subLine={`${candidate.mutual_friend_count} ${candidate.mutual_friend_count === 1 ? 'gemensam kompis' : 'gemensamma kompisar'}`}
                 onAdd={() => mutation.mutate(candidate.user_id)}
                 sending={sendingId === candidate.user_id}
                 sent={sentIds.has(candidate.user_id)}
@@ -108,9 +110,7 @@ export default function AddFriendScreen() {
           </SuggestionSection>
 
           <View style={styles.nearbySection}>
-            <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
-              I NÄRHETEN NU
-            </ThemedText>
+            <SectionLabel>{Words.radar}</SectionLabel>
             <Pressable
               accessibilityRole="button"
               onPress={() => router.push('/friends/nearby')}
@@ -123,7 +123,7 @@ export default function AddFriendScreen() {
                 <Ionicons name="radio-outline" size={22} color={theme.brandText} />
               </View>
               <View style={styles.nearbyText}>
-                <ThemedText type="headline">Starta radarn</ThemedText>
+                <ThemedText type="headline">{Words.startRadar}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
                   Hitta folk inom 100 m som också har radarn öppen.
                 </ThemedText>
@@ -181,7 +181,6 @@ const styles = StyleSheet.create({
   },
   actionButton: { flex: 1 },
   nearbySection: { gap: Spacing.two },
-  sectionLabel: { letterSpacing: 0.6 },
   nearbyCard: {
     flexDirection: 'row',
     alignItems: 'center',

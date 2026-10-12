@@ -58,7 +58,7 @@ export function SpotPhotoStrip({ spotId, userId, spotCreatorId }: SpotPhotoStrip
   if (!photos?.length) {
     return (
       <ThemedText type="caption" themeColor="textSecondary">
-        Inga bilder ännu. Lägg upp en på bilen här, den syns i 24 timmar.
+        Inga bilder ännu. Lägg upp en på kärran här, den syns i 24 timmar.
       </ThemedText>
     );
   }

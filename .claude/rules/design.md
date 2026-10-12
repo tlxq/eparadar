@@ -28,7 +28,8 @@ Use what exists in `apps/mobile/src/components` before building something new:
 - Actions: `Button` (`variant` primary, secondary, ghost; `tone` brand, success,
   danger), `IconButton`, `Fab`, `Chip`, `Switch`
 - Forms: `TextField`, `FormScreen`, `FormSheet`, `KeyboardAvoider`
-- Layout: `ScreenBackground`, `ScreenHeader`, `ModalHeader`, `ListRow`, `ActionSheet`
+- Layout: `ScreenBackground`, `ScreenHeader`, `ModalHeader`, `ListRow`, `ActionSheet`,
+  `SectionLabel` for the small-caps headings above a group
 - People: `Avatar`, `ConversationAvatar`
 - States: `Skeleton` while loading, `EmptyState` when there is nothing to show,
   `showToast` for results and `useQueryErrorToast` for failed queries
@@ -40,7 +41,11 @@ Icons are Ionicons.
 
 - All app text is Swedish, informal and short. Address the user as "du".
 - Shared words (`Avbryt`, `Spara`, `Ta bort`) come from `Common` in
-  `apps/mobile/src/constants/strings.ts`.
+  `apps/mobile/src/constants/strings.ts`, app words from `Words` in the same file.
+- Word list: friends are "kompisar", posts are "poster" ("Posta"), the nearby feature is
+  "Radarn", anything on the map is a "spot" (kinds "Ragga", "Meet", "Varning"), putting it there
+  is "Placera", the vehicle is "EPA" in labels and "kärra"/"traktor" in playful copy.
+- Toasts are playful and always end with "." or "!".
 - Text about location says who can see the position and how to turn it off.
 
 ## Accessibility and motion

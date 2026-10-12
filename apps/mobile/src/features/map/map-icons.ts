@@ -52,7 +52,7 @@ export const MEETUP_VIBES = [
   {
     key: 'hang',
     label: 'Häng',
-    hint: 'Stå och snacka bil',
+    hint: 'Stå och snacka EPA',
     icon: duo(
       `<circle cx="17" cy="16" r="7.5" fill="${BLUE}" fill-opacity=".5"/><circle cx="32" cy="17" r="6.5" fill="${BLUE}" fill-opacity=".5"/>`,
       `<circle cx="17" cy="16" r="6.5" stroke="${WHITE}" stroke-width="3"/><circle cx="32" cy="17" r="5.5" stroke="${WHITE}" stroke-width="3"/><path d="M5 41c1-7.5 5.8-12 12-12s11 4.5 12 12" stroke="${WHITE}" stroke-width="3" stroke-linecap="round"/><path d="M27 30.5c1.4-.9 3-1.4 5-1.4 5.3 0 9 3.7 10 10.4" stroke="${BLUE_SOFT}" stroke-width="3" stroke-linecap="round"/>`,

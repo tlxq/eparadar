@@ -9,6 +9,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ActionSheet } from '@/components/action-sheet';
 import { EmptyState } from '@/components/empty-state';
 import { ScreenBackground } from '@/components/screen-background';
+import { Words } from '@/constants/strings';
 import { Spacing } from '@/constants/theme';
 import { FriendPicker } from '@/features/map/components/friend-picker';
 import { MapActionBar, type PickerMode } from '@/features/map/components/map-action-bar';
@@ -224,7 +225,7 @@ export default function MapScreen() {
           <EmptyState
             icon="map-outline"
             title="Kartan finns i appen"
-            message="Öppna epaRadar på din telefon för att se vänner och träffar på kartan."
+            message="Öppna epaRadar på din telefon för att se kompisar och meets på kartan."
           />
         </SafeAreaView>
       </ScreenBackground>
@@ -276,21 +277,21 @@ export default function MapScreen() {
         )}
         <ActionSheet
           visible={addSheetOpen}
-          title="Lägg till på kartan"
+          title={Words.placeOnMap}
           onClose={() => setAddSheetOpen(false)}
           actions={[
             {
-              label: 'Raggställe där jag är',
+              label: `${Words.ragga} där jag är`,
               icon: 'flag-outline',
               hint: 'Eller håll in var som helst på kartan',
               onPress: () => dropHere('ragg'),
             },
             {
-              label: 'Varning där jag är',
+              label: `${Words.warning} där jag är`,
               icon: 'warning-outline',
               onPress: () => dropHere('varning'),
             },
-            { label: 'Skapa träff', icon: 'calendar-outline', onPress: startPlacing },
+            { label: `${Words.meet} på kartan`, icon: 'calendar-outline', onPress: startPlacing },
           ]}
         />
         <SpotSheet
@@ -308,7 +309,7 @@ export default function MapScreen() {
               queryClient.invalidateQueries({ queryKey: queryKeys.myLocation(userId) });
               showToast({
                 tone: 'success',
-                message: text ? 'Statusen syns i en timme.' : 'Statusen är borttagen.',
+                message: text ? 'Statusen är ute! Den syns i en timme.' : 'Statusen är borttagen.',
               });
             }}
           />
@@ -326,8 +327,8 @@ export default function MapScreen() {
                 tone: 'success',
                 message:
                   kind === 'ragg'
-                    ? 'Raggstället ligger på kartan.'
-                    : 'Varningen ligger ute i 2 timmar.',
+                    ? 'Spotten ligger på kartan!'
+                    : 'Varningen är ute i 2 timmar. Tack!',
               });
             }}
           />

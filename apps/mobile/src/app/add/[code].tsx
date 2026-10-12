@@ -35,13 +35,13 @@ function copyFor(outcome: RedeemOutcome, name: string): Copy {
     case 'sent':
       return {
         title: `Förfrågan skickad till ${name}`,
-        message: `Ni blir vänner när ${name} accepterar.`,
+        message: `Ni blir kompisar när ${name} accepterar.`,
         icon: 'checkmark',
         tone: 'success',
       };
     case 'accepted':
       return {
-        title: `Du och ${name} är nu vänner`,
+        title: `Du och ${name} är kompisar nu`,
         message: `${name} hade redan skickat en förfrågan till dig.`,
         icon: 'people',
         tone: 'success',
@@ -49,14 +49,14 @@ function copyFor(outcome: RedeemOutcome, name: string): Copy {
     case 'already_sent':
       return {
         title: 'Förfrågan är redan skickad',
-        message: `Ni blir vänner när ${name} accepterar.`,
+        message: `Ni blir kompisar när ${name} accepterar.`,
         icon: 'time-outline',
         tone: 'info',
       };
     case 'already_friends':
       return {
-        title: `Du och ${name} är redan vänner`,
-        message: 'Ni hittar varandra under Vänner.',
+        title: `Du och ${name} är redan kompisar`,
+        message: 'Ni hittar varandra under Kompisar.',
         icon: 'people',
         tone: 'info',
       };

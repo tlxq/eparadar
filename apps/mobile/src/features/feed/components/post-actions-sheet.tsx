@@ -18,15 +18,15 @@ export function PostActionsSheet({ post, onClose }: { post: Post | null; onClose
 
   async function handleDelete(target: Post) {
     const ok = await confirmDestructive({
-      title: 'Ta bort inlägget?',
-      message: 'Inlägget och dess bild tas bort för alla. Det går inte att ångra.',
+      title: 'Ta bort posten?',
+      message: 'Posten och dess bild tas bort för alla. Det går inte att ångra.',
       confirmLabel: Common.remove,
     });
     if (!ok) return;
     try {
       await deletePost(target);
       queryClient.invalidateQueries({ queryKey: queryKeys.posts() });
-      showToast({ message: 'Inlägget är borttaget.' });
+      showToast({ message: 'Posten är borttagen.' });
     } catch (error) {
       showToast({ tone: 'error', message: getErrorMessage(error) });
     }
@@ -36,7 +36,7 @@ export function PostActionsSheet({ post, onClose }: { post: Post | null; onClose
     if (target.author_id === userId) {
       return [
         {
-          label: 'Ta bort inlägg',
+          label: 'Ta bort post',
           icon: 'trash-outline',
           destructive: true,
           onPress: () => handleDelete(target),
@@ -46,7 +46,7 @@ export function PostActionsSheet({ post, onClose }: { post: Post | null; onClose
     const name = target.author?.display_name ?? 'personen';
     return [
       {
-        label: 'Rapportera inlägg',
+        label: 'Rapportera post',
         icon: 'flag-outline',
         onPress: () => openReport({ type: 'post', id: target.id, userId: target.author_id, name }),
       },
@@ -62,7 +62,7 @@ export function PostActionsSheet({ post, onClose }: { post: Post | null; onClose
   return (
     <ActionSheet
       visible={!!post}
-      title={post && post.author_id === userId ? 'Ditt inlägg' : 'Inlägg'}
+      title={post && post.author_id === userId ? 'Din post' : 'Post'}
       onClose={onClose}
       actions={post ? actionsFor(post) : []}
     />
