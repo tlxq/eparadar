@@ -148,6 +148,7 @@ function RootLayout() {
             <Stack.Screen name="add/[code]" options={{ presentation: 'modal' }} />
             <Stack.Screen name="group/[id]" />
             <Stack.Screen name="settings" options={{ headerShown: true, title: 'Inställningar' }} />
+            <Stack.Screen name="admin" options={{ headerShown: true, title: 'Admin' }} />
             <Stack.Screen
               name="delete-account"
               options={{ headerShown: true, title: 'Radera konto' }}

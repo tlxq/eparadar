@@ -29,6 +29,7 @@ import {
   SettingsGroup,
   SwitchRow,
 } from '@/features/profile/components/settings-rows';
+import { useIsAdmin } from '@/features/moderation/admin';
 import { showToast } from '@/store/toast';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '–';
@@ -47,6 +48,7 @@ export default function SettingsScreen() {
   const userId = useUserId();
   const queryClient = useQueryClient();
   const { setSharing, busy } = useSharingToggle();
+  const { data: isAdmin } = useIsAdmin();
   const [error, setError] = useState<string | null>(null);
 
   const { data: location, refetch, isPending: locationLoading } = useMyLocation();
@@ -147,6 +149,20 @@ export default function SettingsScreen() {
 
           <SectionLabel style={styles.sectionLabel}>Aviseringar</SectionLabel>
           <NotificationSection />
+
+          {isAdmin ? (
+            <>
+              <SectionLabel style={styles.sectionLabel}>Admin</SectionLabel>
+              <SettingsGroup>
+                <LinkRow
+                  icon="shield-half-outline"
+                  label="Rapporter"
+                  chevron
+                  onPress={() => router.push('/admin')}
+                />
+              </SettingsGroup>
+            </>
+          ) : null}
 
           <SectionLabel style={styles.sectionLabel}>Sekretess</SectionLabel>
           <BlockedSection>

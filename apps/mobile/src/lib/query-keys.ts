@@ -33,4 +33,6 @@ export const queryKeys = {
     ['nearby', userId, lat, lng] as const,
   spotPhotoCounts: () => ['spotPhotoCounts'] as const,
   eveningHeat: (userId: string | undefined) => ['eveningHeat', userId] as const,
+  isAdmin: (userId: string | undefined) => ['isAdmin', userId] as const,
+  adminReports: () => ['adminReports'] as const,
 };
