@@ -19,6 +19,15 @@ import { showToast } from '@/store/toast';
 import { useUserId } from '@/hooks/use-user-id';
 import { pickImage } from '@/lib/pick-image';
 
+function checkYear(year: string): string | null {
+  if (!year) return null;
+  const maxYear = new Date().getFullYear() + 1;
+  if (!/^\d{4}$/.test(year)) return 'Skriv året med fyra siffror, t.ex. 1988.';
+  const value = Number(year);
+  if (value < 1900 || value > maxYear) return `Året måste vara mellan 1900 och ${maxYear}.`;
+  return null;
+}
+
 export default function NewCarScreen() {
   const theme = useTheme();
   const userId = useUserId();
@@ -30,6 +39,9 @@ export default function NewCarScreen() {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [color, setColor] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [makeError, setMakeError] = useState<string | null>(null);
+  const [modelError, setModelError] = useState<string | null>(null);
+  const [yearError, setYearError] = useState<string | null>(null);
 
   async function handlePickPhoto() {
     const uri = await pickImage({ aspect: [4, 3] });
@@ -59,19 +71,23 @@ export default function NewCarScreen() {
     onError: (err) => setError(getErrorMessage(err)),
   });
 
-  const yearValid = !year || (/^\d{4}$/.test(year) && Number(year) >= 1900);
+  function handleSave() {
+    const nextMakeError = make.trim() ? null : 'Skriv vilket märke det är.';
+    const nextModelError = model.trim() ? null : 'Skriv vilken modell det är.';
+    const nextYearError = checkYear(year);
+    setMakeError(nextMakeError);
+    setModelError(nextModelError);
+    setYearError(nextYearError);
+    if (nextMakeError || nextModelError || nextYearError) return;
+    mutation.mutate();
+  }
 
   return (
     <FormScreen
       footer={
         <>
           {error ? <ThemedText type="error">{error}</ThemedText> : null}
-          <Button
-            label="Spara EPA"
-            onPress={() => mutation.mutate()}
-            loading={mutation.isPending}
-            disabled={!make.trim() || !model.trim() || !yearValid}
-          />
+          <Button label="Spara EPA" onPress={handleSave} loading={mutation.isPending} />
         </>
       }
     >
@@ -100,20 +116,42 @@ export default function NewCarScreen() {
       </Pressable>
       <View style={styles.row}>
         <View style={styles.flex}>
-          <TextField label="Märke" placeholder="Volvo" value={make} onChangeText={setMake} />
+          <TextField
+            label="Märke"
+            placeholder="Volvo"
+            value={make}
+            onChangeText={(text) => {
+              setMake(text);
+              if (makeError) setMakeError(null);
+            }}
+            error={makeError}
+          />
         </View>
         <View style={styles.flex}>
-          <TextField label="Modell" placeholder="240" value={model} onChangeText={setModel} />
+          <TextField
+            label="Modell"
+            placeholder="240"
+            value={model}
+            onChangeText={(text) => {
+              setModel(text);
+              if (modelError) setModelError(null);
+            }}
+            error={modelError}
+          />
         </View>
       </View>
       <TextField
         label="Årsmodell"
         placeholder="1988"
         value={year}
-        onChangeText={setYear}
+        onChangeText={(text) => {
+          setYear(text);
+          if (yearError) setYearError(null);
+        }}
+        onBlur={() => setYearError(checkYear(year))}
         keyboardType="number-pad"
         maxLength={4}
-        error={yearValid ? null : 'Skriv året med fyra siffror, t.ex. 1988.'}
+        error={yearError}
       />
       <TextField
         label="Smeknamn (valfritt)"

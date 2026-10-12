@@ -18,16 +18,19 @@ import {
   OutgoingRequestRow,
   RequestRow,
 } from '@/features/friends/components/friend-rows';
+import { usePullRefresh } from '@/hooks/use-pull-refresh';
 
 export default function FriendsScreen() {
   const userId = useUserId();
   const tabBarInset = useTabBarInset();
 
-  const { data: friends, isLoading: friendsLoading, isError, refetch, isRefetching } = useFriends();
+  const { data: friends, isLoading: friendsLoading, isError, refetch } = useFriends();
 
   const { data: requests } = useFriendRequests();
 
   const { data: outgoingRequests } = useOutgoingRequests();
+
+  const pull = usePullRefresh(refetch);
 
   useQueryErrorToast(isError, 'Kunde inte ladda dina kompisar.', refetch);
 
@@ -41,7 +44,9 @@ export default function FriendsScreen() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <FriendRow friendship={item} myUserId={userId!} />}
           contentContainerStyle={{ paddingBottom: tabBarInset }}
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+          refreshControl={
+            <RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} />
+          }
           ListHeaderComponent={
             <>
               <View style={styles.headerBlock}>

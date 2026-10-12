@@ -1,6 +1,13 @@
 import { useMemo, useState } from 'react';
 import { router } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +23,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
+import { usePullRefresh } from '@/hooks/use-pull-refresh';
 import {
   deleteCar,
   removeAvatar,
@@ -55,15 +63,28 @@ export default function ProfileScreen() {
   const [avatarSheet, setAvatarSheet] = useState(false);
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
 
-  const { data: profile, isLoading: profileLoading } = useProfile();
+  const profileQuery = useProfile();
+  const { data: profile, isLoading: profileLoading, isError: profileError } = profileQuery;
 
-  const { data: cars } = useMyCars();
+  const carsQuery = useMyCars();
+  const { data: cars } = carsQuery;
 
-  const { data: friends } = useFriends();
+  const friendsQuery = useFriends();
+  const { data: friends } = friendsQuery;
 
-  const { data: postCount } = useMyPostCount();
+  const postCountQuery = useMyPostCount();
+  const { data: postCount } = postCountQuery;
 
   const myPosts = useMyPosts();
+  const pull = usePullRefresh(() =>
+    Promise.all([
+      profileQuery.refetch(),
+      carsQuery.refetch(),
+      friendsQuery.refetch(),
+      postCountQuery.refetch(),
+      myPosts.refetch(),
+    ]),
+  );
   const posts = useMemo(() => myPosts.data?.pages.flat() ?? [], [myPosts.data]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
@@ -84,8 +105,7 @@ export default function ProfileScreen() {
     } catch (error) {
       showToast({
         tone: 'error',
-        message:
-          error instanceof Error ? error.message : 'Bilden kunde inte laddas upp. Testa igen!',
+        message: `Bilden kunde inte laddas upp. ${getErrorMessage(error)}`,
       });
     } finally {
       setUploadingAvatar(false);
@@ -153,7 +173,12 @@ export default function ProfileScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top']}>
-        <ScrollView contentContainerStyle={{ paddingBottom: tabBarInset }}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: tabBarInset }}
+          refreshControl={
+            <RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} />
+          }
+        >
           <View style={styles.padded}>
             <ScreenHeader
               title="Profil"
@@ -180,6 +205,10 @@ export default function ProfileScreen() {
                       imageUrl={profile.avatar_url}
                       size={AVATAR_SIZE}
                     />
+                  ) : profileError ? (
+                    <View
+                      style={[styles.avatarEmpty, { backgroundColor: theme.backgroundElement }]}
+                    />
                   ) : (
                     <Skeleton width={AVATAR_SIZE} height={AVATAR_SIZE} radius={AVATAR_SIZE / 2} />
                   )}
@@ -197,7 +226,21 @@ export default function ProfileScreen() {
                   )}
                 </View>
               </Pressable>
-              {profileLoading || !profile ? (
+              {profileError && !profile ? (
+                <View style={styles.heroError}>
+                  <ThemedText style={styles.center}>
+                    Profilen gick inte att hämta. Kolla nätet och försök igen.
+                  </ThemedText>
+                  <Button
+                    label={Common.retry}
+                    icon="refresh"
+                    variant="secondary"
+                    size="sm"
+                    loading={profileQuery.isFetching}
+                    onPress={() => profileQuery.refetch()}
+                  />
+                </View>
+              ) : profileLoading || !profile ? (
                 <View style={styles.heroSkeleton}>
                   <Skeleton width={160} height={22} />
                   <Skeleton width={100} />
@@ -366,6 +409,8 @@ const styles = StyleSheet.create({
   padded: { paddingHorizontal: Spacing.three, gap: Spacing.three },
   hero: { alignItems: 'center', gap: Spacing.one },
   heroSkeleton: { alignItems: 'center', gap: Spacing.two, paddingTop: Spacing.two },
+  heroError: { alignItems: 'center', gap: Spacing.three, paddingTop: Spacing.two },
+  avatarEmpty: { width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2 },
   ring: {
     borderWidth: 2.5,
     borderRadius: (AVATAR_SIZE + 10) / 2,

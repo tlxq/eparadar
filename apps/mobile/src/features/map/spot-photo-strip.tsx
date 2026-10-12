@@ -12,6 +12,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
 import { Common } from '@/constants/strings';
+import { SIGNED_URL_REFRESH_MS } from '@/lib/queryClient';
 
 const THUMB_W = 132;
 const THUMB_H = 99;
@@ -28,6 +29,7 @@ export function SpotPhotoStrip({ spotId, userId, spotCreatorId }: SpotPhotoStrip
   const { data: photos, isLoading } = useQuery({
     queryKey: queryKeys.spotPhotos(spotId),
     queryFn: () => fetchSpotPhotos(spotId),
+    refetchInterval: SIGNED_URL_REFRESH_MS,
   });
 
   async function handleRemove(photo: SpotPhoto) {

@@ -24,6 +24,7 @@ import { activeTypists, typingLabel, useTypingStore } from '@/store/typing';
 import { useConversations } from '@/features/chat/hooks';
 import { useUserId } from '@/hooks/use-user-id';
 import { useQueryErrorToast } from '@/hooks/use-query-error-toast';
+import { usePullRefresh } from '@/hooks/use-pull-refresh';
 
 function previewText(conversation: Conversation, myUserId: string) {
   const lastMessage = conversation.messages?.[0];
@@ -114,7 +115,9 @@ export default function ChatListScreen() {
   const tabBarInset = useTabBarInset();
   const [query, setQuery] = useState('');
 
-  const { data, isLoading, isError, refetch, isRefetching } = useConversations();
+  const { data, isLoading, isError, refetch } = useConversations();
+
+  const pull = usePullRefresh(refetch);
 
   useQueryErrorToast(isError, 'Kunde inte ladda chattarna.', refetch);
 
@@ -157,7 +160,9 @@ export default function ChatListScreen() {
             );
           }}
           contentContainerStyle={{ paddingBottom: tabBarInset + Spacing.six }}
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+          refreshControl={
+            <RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} />
+          }
           ListHeaderComponent={
             <View style={styles.headerBlock}>
               <ScreenHeader title="Chatt" />

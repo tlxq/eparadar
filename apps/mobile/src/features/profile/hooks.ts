@@ -3,6 +3,7 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useUserId } from '@/hooks/use-user-id';
 import { countMyPosts, fetchMyCars, fetchPosts, fetchProfile, POSTS_PAGE_SIZE } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
+import { SIGNED_URL_REFRESH_MS } from '@/lib/queryClient';
 
 export function useProfile() {
   const userId = useUserId();
@@ -36,6 +37,7 @@ export function useMyPosts() {
   return useInfiniteQuery({
     queryKey: queryKeys.authorPosts(userId),
     queryFn: ({ pageParam }) => fetchPosts(pageParam, userId),
+    refetchInterval: SIGNED_URL_REFRESH_MS,
     initialPageParam: 0,
     getNextPageParam: (lastPage, pages) =>
       lastPage.length === POSTS_PAGE_SIZE ? pages.length : undefined,

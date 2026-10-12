@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
 import { router } from 'expo-router';
 import { Linking, StyleSheet, View } from 'react-native';
@@ -12,28 +12,38 @@ import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { parseScannedFriendCode } from '@/features/friends/friend-code';
 import { Common } from '@/constants/strings';
+import { useTheme } from '@/hooks/use-theme';
 
 const FRAME_SIZE = 240;
 const CORNER = 44;
-const OVERLAY_TEXT = '#FFFFFF';
-const OVERLAY_SURFACE = 'rgba(11, 14, 20, 0.72)';
+const DEFAULT_HINT = 'Rikta kameran mot kompisens kod';
+const HINT_RESET_MS = 3000;
 
 function Viewfinder() {
+  const theme = useTheme();
+  const cornerColor = { borderColor: theme.onScrim };
   return (
     <View style={styles.frame} pointerEvents="none">
-      <View style={[styles.corner, styles.topLeft]} />
-      <View style={[styles.corner, styles.topRight]} />
-      <View style={[styles.corner, styles.bottomLeft]} />
-      <View style={[styles.corner, styles.bottomRight]} />
+      <View style={[styles.corner, styles.topLeft, cornerColor]} />
+      <View style={[styles.corner, styles.topRight, cornerColor]} />
+      <View style={[styles.corner, styles.bottomLeft, cornerColor]} />
+      <View style={[styles.corner, styles.bottomRight, cornerColor]} />
     </View>
   );
 }
 
 export default function ScanFriendCodeScreen() {
+  const theme = useTheme();
   const [permission, requestPermission] = useCameraPermissions();
   const [torch, setTorch] = useState(false);
-  const [hint, setHint] = useState('Rikta kameran mot kompisens kod');
+  const [hint, setHint] = useState(DEFAULT_HINT);
   const handled = useRef(false);
+
+  useEffect(() => {
+    if (hint === DEFAULT_HINT) return;
+    const timer = setTimeout(() => setHint(DEFAULT_HINT), HINT_RESET_MS);
+    return () => clearTimeout(timer);
+  }, [hint]);
 
   function handleScan({ data }: BarcodeScanningResult) {
     if (handled.current) return;
@@ -91,7 +101,7 @@ export default function ScanFriendCodeScreen() {
   }
 
   return (
-    <View style={styles.camera}>
+    <View style={[styles.camera, { backgroundColor: theme.scrim }]}>
       <CameraView
         style={StyleSheet.absoluteFill}
         facing="back"
@@ -106,7 +116,7 @@ export default function ScanFriendCodeScreen() {
             accessibilityLabel={Common.close}
             onPress={() => router.back()}
           />
-          <ThemedText type="headline" style={styles.overlayText} accessibilityRole="header">
+          <ThemedText type="headline" style={{ color: theme.onScrim }} accessibilityRole="header">
             Skanna kod
           </ThemedText>
           <IconButton
@@ -115,8 +125,11 @@ export default function ScanFriendCodeScreen() {
             onPress={() => setTorch((on) => !on)}
           />
         </View>
-        <View style={styles.hintPill} accessibilityLiveRegion="polite">
-          <ThemedText type="smallBold" style={styles.overlayText}>
+        <View
+          style={[styles.hintPill, { backgroundColor: theme.scrimSurface }]}
+          accessibilityLiveRegion="polite"
+        >
+          <ThemedText type="smallBold" style={{ color: theme.onScrim }}>
             {hint}
           </ThemedText>
         </View>
@@ -138,9 +151,8 @@ export default function ScanFriendCodeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  camera: { flex: 1, backgroundColor: '#000000' },
+  camera: { flex: 1 },
   overlay: { flex: 1 },
-  overlayText: { color: OVERLAY_TEXT },
   cameraNav: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -150,14 +162,13 @@ const styles = StyleSheet.create({
   },
   hintPill: {
     alignSelf: 'center',
-    backgroundColor: OVERLAY_SURFACE,
     borderRadius: Radius.pill,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
   },
   frameArea: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   frame: { width: FRAME_SIZE, height: FRAME_SIZE },
-  corner: { position: 'absolute', width: CORNER, height: CORNER, borderColor: OVERLAY_TEXT },
+  corner: { position: 'absolute', width: CORNER, height: CORNER },
   topLeft: {
     top: 0,
     left: 0,

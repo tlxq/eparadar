@@ -1,6 +1,11 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { formatChatTimestamp, formatDayDivider, formatPostAge } from '@/lib/relative-time';
+import {
+  formatChatTimestamp,
+  formatDayDivider,
+  formatPostAge,
+  formatTimeLeft,
+} from '@/lib/relative-time';
 
 const now = new Date(2026, 9, 8, 15, 0);
 
@@ -41,5 +46,21 @@ describe('formatDayDivider', () => {
   it('labels today and yesterday', () => {
     expect(formatDayDivider(at(0, 13, 2), now)).toBe('Idag 13:02');
     expect(formatDayDivider(at(1, 8), now)).toBe('Igår 08:00');
+  });
+});
+
+describe('formatTimeLeft', () => {
+  it('shows hours and minutes left', () => {
+    const in200 = new Date(now.getTime() + 200 * 60000).toISOString();
+    expect(formatTimeLeft(in200, now)).toBe('Försvinner om 3 h 20 min');
+  });
+
+  it('shows minutes under an hour and whole hours', () => {
+    expect(formatTimeLeft(new Date(now.getTime() + 45 * 60000).toISOString(), now)).toBe(
+      'Försvinner om 45 min',
+    );
+    expect(formatTimeLeft(new Date(now.getTime() + 120 * 60000).toISOString(), now)).toBe(
+      'Försvinner om 2 h',
+    );
   });
 });

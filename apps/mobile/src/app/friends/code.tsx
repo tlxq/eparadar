@@ -31,9 +31,6 @@ const RING_SIZE = 22;
 const RING_STROKE = 3;
 const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
-const CARD_TOP = '#2F6FED';
-const CARD_TEXT = '#FFFFFF';
-const QR_INK = '#0B0E14';
 
 function useNow() {
   const [now, setNow] = useState(() => Date.now());
@@ -52,13 +49,14 @@ function formatRemaining(ms: number) {
 }
 
 function CountdownRing({ fraction }: { fraction: number }) {
+  const theme = useTheme();
   return (
     <Svg width={RING_SIZE} height={RING_SIZE}>
       <Circle
         cx={RING_SIZE / 2}
         cy={RING_SIZE / 2}
         r={RING_RADIUS}
-        stroke="rgba(255, 255, 255, 0.3)"
+        stroke={`${theme.brandText}4D`}
         strokeWidth={RING_STROKE}
         fill="none"
       />
@@ -66,7 +64,7 @@ function CountdownRing({ fraction }: { fraction: number }) {
         cx={RING_SIZE / 2}
         cy={RING_SIZE / 2}
         r={RING_RADIUS}
-        stroke={CARD_TEXT}
+        stroke={theme.brandText}
         strokeWidth={RING_STROKE}
         fill="none"
         strokeLinecap="round"
@@ -120,20 +118,20 @@ export default function MyFriendCodeScreen() {
         <ModalHeader title="Min kod" />
 
         <View style={styles.body}>
-          <View style={[styles.card, { backgroundColor: CARD_TOP }]}>
-            <View style={styles.qrFrame}>
+          <View style={[styles.card, { backgroundColor: theme.brand }]}>
+            <View style={[styles.qrFrame, { backgroundColor: theme.qrPaper }]}>
               {ready ? (
                 <View accessible accessibilityLabel={`QR-kod för ${name}`}>
                   <QRCode
                     value={friendCodeLink(friendCode.code)}
                     size={QR_SIZE}
-                    color={QR_INK}
-                    backgroundColor="#FFFFFF"
+                    color={theme.qrInk}
+                    backgroundColor={theme.qrPaper}
                     ecl="H"
                     quietZone={0}
                   />
                   <View style={styles.qrAvatar}>
-                    <View style={styles.qrAvatarBorder}>
+                    <View style={[styles.qrAvatarBorder, { borderColor: theme.qrPaper }]}>
                       <Avatar
                         name={name || '?'}
                         imageUrl={profile?.avatar_url}
@@ -146,14 +144,14 @@ export default function MyFriendCodeScreen() {
                 <Skeleton width={QR_SIZE} height={QR_SIZE} radius={Radius.md} />
               )}
             </View>
-            <ThemedText type="subtitle" style={styles.cardText}>
+            <ThemedText type="subtitle" style={{ color: theme.brandText }}>
               {name}
             </ThemedText>
             {ready ? (
               <>
-                <View style={styles.codeChip}>
+                <View style={[styles.codeChip, { backgroundColor: `${theme.brandText}29` }]}>
                   <ThemedText
-                    style={styles.code}
+                    style={[styles.code, { color: theme.brandText }]}
                     accessibilityLabel={`Kod ${friendCode.code.split('').join(' ')}`}
                   >
                     {formatFriendCode(friendCode.code)}
@@ -161,7 +159,7 @@ export default function MyFriendCodeScreen() {
                 </View>
                 <View style={styles.timer}>
                   <CountdownRing fraction={Math.min(1, remainingMs / LIFETIME_MS)} />
-                  <ThemedText type="caption" style={styles.cardText}>
+                  <ThemedText type="caption" style={{ color: theme.brandText }}>
                     Giltig i {formatRemaining(remainingMs)}
                   </ThemedText>
                 </View>
@@ -210,22 +208,19 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.four,
     paddingHorizontal: Spacing.three,
   },
-  qrFrame: { backgroundColor: '#FFFFFF', borderRadius: Radius.lg, padding: Spacing.three },
+  qrFrame: { borderRadius: Radius.lg, padding: Spacing.three },
   qrAvatar: {
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  qrAvatarBorder: { borderRadius: AVATAR_SIZE, borderWidth: 4, borderColor: '#FFFFFF' },
-  cardText: { color: CARD_TEXT },
+  qrAvatarBorder: { borderRadius: AVATAR_SIZE, borderWidth: 4 },
   codeChip: {
-    backgroundColor: 'rgba(255, 255, 255, 0.16)',
     borderRadius: Radius.md,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.one,
   },
   code: {
-    color: CARD_TEXT,
     fontFamily: Fonts.mono,
     fontSize: 22,
     lineHeight: 30,

@@ -80,16 +80,27 @@ function PersonRow({ person, myUserId }: { person: NearbyPerson; myUserId: strin
     onError: (error) => showToast({ tone: 'error', message: getErrorMessage(error) }),
   });
 
-  const sent =
-    person.request_state === 'sent' || (add.isSuccess && person.request_state === 'none');
+  const accepted = add.data?.status === 'accepted';
+  const sent = !accepted && (person.request_state === 'sent' || add.isSuccess);
 
   return (
     <ListRow
       title={person.display_name}
-      subtitle={person.request_state === 'received' ? 'Vill bli din kompis' : `@${person.username}`}
+      subtitle={
+        person.request_state === 'received' && !accepted
+          ? 'Vill bli din kompis'
+          : `@${person.username}`
+      }
       leading={<Avatar name={person.display_name} imageUrl={person.avatar_url} size={48} />}
       trailing={
-        sent ? (
+        accepted ? (
+          <View style={styles.sent}>
+            <Ionicons name="checkmark" size={16} color={theme.success} />
+            <ThemedText type="smallBold" themeColor="success">
+              {Words.friends}
+            </ThemedText>
+          </View>
+        ) : sent ? (
           <View style={styles.sent}>
             <Ionicons name="checkmark" size={16} color={theme.success} />
             <ThemedText type="smallBold" themeColor="success">

@@ -19,7 +19,7 @@ export default function EnterFriendCodeScreen() {
   const complete = code.length === FRIEND_CODE_LENGTH;
 
   function submit() {
-    if (complete) router.replace(`/add/${code}`);
+    if (complete) router.replace(`/add/${code}?via=typed`);
   }
 
   return (

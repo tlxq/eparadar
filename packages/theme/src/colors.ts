@@ -16,6 +16,11 @@ export const Colors = {
     onAccent: '#FFFFFF',
     success: '#15803D',
     danger: '#C22F35',
+    scrim: '#000000',
+    scrimSurface: 'rgba(11, 14, 20, 0.72)',
+    onScrim: '#FFFFFF',
+    qrInk: '#0B0E14',
+    qrPaper: '#FFFFFF',
   },
   dark: {
     background: '#0B0E14',
@@ -34,5 +39,10 @@ export const Colors = {
     onAccent: '#0B0E14',
     success: '#22C55E',
     danger: '#FF6B6B',
+    scrim: '#000000',
+    scrimSurface: 'rgba(11, 14, 20, 0.72)',
+    onScrim: '#FFFFFF',
+    qrInk: '#0B0E14',
+    qrPaper: '#FFFFFF',
   },
 } as const;

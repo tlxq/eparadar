@@ -11,6 +11,7 @@ import { addSpotPhoto, deleteSpot, spotTitle, type Spot } from '@/features/map/s
 import { useUserId } from '@/hooks/use-user-id';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
+import { formatTimeLeft } from '@/lib/relative-time';
 import { pickImage, type ImageSource } from '@/lib/pick-image';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
@@ -102,11 +103,20 @@ export function SpotSheet({ spot, hereNow, onClose }: SpotSheetProps) {
         spot ? (
           <View style={styles.header}>
             <ThemedText type="small" themeColor="textSecondary">
-              {spot.kind === 'ragg'
-                ? `${hereNow > 0 ? `${hereNow} här nu` : 'Ingen här just nu'} · försvinner efter 24 timmar`
-                : `${Words.warning} · försvinner efter 2 timmar`}
-              {' · syns för kompisar'}
+              {[
+                spot.kind === 'ragg'
+                  ? hereNow > 0
+                    ? `${hereNow} här nu`
+                    : 'Ingen här just nu'
+                  : Words.warning,
+                'syns för kompisar',
+              ].join(' · ')}
             </ThemedText>
+            {spot.creator_id === userId ? (
+              <ThemedText type="smallBold" themeColor="textSecondary">
+                {formatTimeLeft(spot.expires_at)}
+              </ThemedText>
+            ) : null}
             {spot.kind === 'ragg' && userId ? (
               <SpotPhotoStrip spotId={spot.id} userId={userId} spotCreatorId={spot.creator_id} />
             ) : null}

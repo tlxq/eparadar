@@ -64,3 +64,12 @@ export function formatDayDivider(iso: string, now = new Date()): string {
   if (days < 7) return `${WEEKDAYS[date.getDay()]} ${time}`;
   return `${shortDate(date, now)} ${time}`;
 }
+
+export function formatTimeLeft(iso: string, now = new Date()): string {
+  const minutes = Math.ceil((new Date(iso).getTime() - now.getTime()) / 60000);
+  if (minutes <= 0) return 'Försvinner nu';
+  if (minutes < 60) return `Försvinner om ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest > 0 ? `Försvinner om ${hours} h ${rest} min` : `Försvinner om ${hours} h`;
+}

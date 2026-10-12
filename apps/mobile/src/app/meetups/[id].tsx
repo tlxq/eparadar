@@ -31,7 +31,7 @@ export default function MeetupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const userId = useUserId();
 
-  const { data: meetup, isLoading, isError, error } = useMeetupDetail(id, userId);
+  const { data: meetup, isLoading, isError, isRefetching, refetch } = useMeetupDetail(id, userId);
   const toggleInterest = useToggleInterest(id, userId);
   const deleteMeetup = useDeleteMeetup();
   useAutoCheckIn(id);
@@ -65,22 +65,16 @@ export default function MeetupDetailScreen() {
             onPress={() => router.back()}
           />
         </View>
-        <ThemedText themeColor="danger" style={styles.errorText}>
-          Kunde inte hämta meeten.{'\n'}
-          {(() => {
-            if (error instanceof Error) return error.message;
-            if (error && typeof error === 'object') {
-              const err = error as {
-                message?: string;
-                details?: string;
-                hint?: string;
-                code?: string;
-              };
-              return [err.code, err.message, err.details, err.hint].filter(Boolean).join(' — ');
-            }
-            return String(error);
-          })()}
+        <ThemedText style={styles.errorText}>
+          Meeten gick inte att hämta. Den kan ha tagits bort, eller så strular nätet.
         </ThemedText>
+        <Button
+          label={Common.retry}
+          icon="refresh"
+          variant="secondary"
+          loading={isRefetching}
+          onPress={() => refetch()}
+        />
       </ScreenBackground>
     );
   }
@@ -241,7 +235,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   errorClose: { position: 'absolute', top: Spacing.five, right: Spacing.three },
-  errorText: { textAlign: 'center', paddingHorizontal: Spacing.four },
+  errorText: { textAlign: 'center', paddingHorizontal: Spacing.four, marginBottom: Spacing.three },
   safeArea: { flex: 1 },
   header: {
     flexDirection: 'row',
