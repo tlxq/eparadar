@@ -65,8 +65,8 @@ select is(
 
 select is(
   (select count(*)::int from public.spots where id = 'a3000000-0000-0000-0000-0000000000a2'),
-  1,
-  'Carol sees a Raggställe shared with everyone'
+  0,
+  'a Raggställe asked to be shared with everyone is still friends-only'
 );
 
 set local request.jwt.claim.sub = 'd3000000-0000-0000-0000-000000000034';

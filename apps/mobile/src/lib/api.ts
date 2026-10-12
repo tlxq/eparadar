@@ -457,7 +457,9 @@ export async function removeFriend(friendshipId: string): Promise<void> {
 
 type LocationRow = DbRow<'locations'>;
 
-export type FriendLocation = LocationRow & {
+export type FriendLocation = Omit<LocationRow, 'lat' | 'lng'> & {
+  lat: number;
+  lng: number;
   profile: ProfileSummary & {
     cars: Pick<Car, 'color' | 'created_at'>[];
   };
@@ -517,6 +519,7 @@ export async function fetchFriendLocations(userId: string): Promise<FriendLocati
     .from('locations')
     .select('*, profile:profiles(id, username, display_name, avatar_url, cars(color, created_at))')
     .eq('sharing_enabled', true)
+    .not('lat', 'is', null)
     .neq('user_id', userId);
   if (error) throw error;
   return (data ?? []) as unknown as FriendLocation[];

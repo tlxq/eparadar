@@ -73,7 +73,7 @@ describe('spotMarkers', () => {
     lng: 18.0,
     name: 'Max',
     warning_type: null,
-    expires_at: null,
+    expires_at: '2026-10-13T00:00:00Z',
   } as Spot;
 
   it('counts me as here unless I am a ghost', () => {

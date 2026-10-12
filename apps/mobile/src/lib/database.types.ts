@@ -323,8 +323,8 @@ export type Database = {
         Row: {
           approximate_enabled: boolean;
           heading: number | null;
-          lat: number;
-          lng: number;
+          lat: number | null;
+          lng: number | null;
           moving: boolean;
           sharing_enabled: boolean;
           status_expires_at: string | null;
@@ -335,8 +335,8 @@ export type Database = {
         Insert: {
           approximate_enabled?: boolean;
           heading?: number | null;
-          lat: number;
-          lng: number;
+          lat?: number | null;
+          lng?: number | null;
           moving?: boolean;
           sharing_enabled?: boolean;
           status_expires_at?: string | null;
@@ -347,8 +347,8 @@ export type Database = {
         Update: {
           approximate_enabled?: boolean;
           heading?: number | null;
-          lat?: number;
-          lng?: number;
+          lat?: number | null;
+          lng?: number | null;
           moving?: boolean;
           sharing_enabled?: boolean;
           status_expires_at?: string | null;
@@ -744,7 +744,7 @@ export type Database = {
         Row: {
           created_at: string;
           creator_id: string;
-          expires_at: string | null;
+          expires_at: string;
           id: string;
           kind: string;
           lat: number;
@@ -756,7 +756,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           creator_id: string;
-          expires_at?: string | null;
+          expires_at?: string;
           id?: string;
           kind: string;
           lat: number;
@@ -768,7 +768,7 @@ export type Database = {
         Update: {
           created_at?: string;
           creator_id?: string;
-          expires_at?: string | null;
+          expires_at?: string;
           id?: string;
           kind?: string;
           lat?: number;
@@ -786,6 +786,24 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
+      };
+      storage_cleanup: {
+        Row: {
+          bucket: string;
+          path: string;
+          queued_at: string;
+        };
+        Insert: {
+          bucket: string;
+          path: string;
+          queued_at?: string;
+        };
+        Update: {
+          bucket?: string;
+          path?: string;
+          queued_at?: string;
+        };
+        Relationships: [];
       };
       waitlist: {
         Row: {
@@ -819,6 +837,30 @@ export type Database = {
           starts_at: string | null;
           title: string | null;
           vibe: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          creator_id?: string | null;
+          here_now_count?: never;
+          id?: string | null;
+          interest_count?: never;
+          lat?: number | null;
+          lng?: number | null;
+          starts_at?: string | null;
+          title?: string | null;
+          vibe?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          creator_id?: string | null;
+          here_now_count?: never;
+          id?: string | null;
+          interest_count?: never;
+          lat?: number | null;
+          lng?: number | null;
+          starts_at?: string | null;
+          title?: string | null;
+          vibe?: string | null;
         };
         Relationships: [
           {
@@ -874,20 +916,28 @@ export type Database = {
           isSetofReturn: false;
         };
       };
-      generate_friend_code: { Args: never; Returns: string };
       evening_heat: {
         Args: never;
-        Returns: { lat: number; lng: number; people: number }[];
+        Returns: {
+          lat: number;
+          lng: number;
+          people: number;
+        }[];
       };
+      generate_friend_code: { Args: never; Returns: string };
       has_any_friendship_row: {
         Args: { a: string; b: string };
+        Returns: boolean;
+      };
+      is_blocked_between: { Args: { a: string; b: string }; Returns: boolean };
+      is_blocked_direct_chat: {
+        Args: { p_conversation_id: string; p_user_id: string };
         Returns: boolean;
       };
       is_conversation_member: {
         Args: { conversation_id: string; user_id: string };
         Returns: boolean;
       };
-      is_blocked_between: { Args: { a: string; b: string }; Returns: boolean };
       is_friend: { Args: { a: string; b: string }; Returns: boolean };
       is_group_member: {
         Args: { p_conversation_id: string; p_user_id: string };
@@ -902,6 +952,8 @@ export type Database = {
         Args: { p_conversation_id: string };
         Returns: string;
       };
+      meetup_here_now_count: { Args: { p_meetup_id: string }; Returns: number };
+      meetup_interest_count: { Args: { p_meetup_id: string }; Returns: number };
       prepare_account_deletion: {
         Args: { p_user_id: string };
         Returns: {
@@ -909,6 +961,7 @@ export type Database = {
           path: string;
         }[];
       };
+      purge_expired_map_data: { Args: never; Returns: undefined };
       redeem_friend_code: {
         Args: { friend_code: string };
         Returns: {
@@ -926,6 +979,7 @@ export type Database = {
         Args: { p_conversation_id: string; p_name: string };
         Returns: undefined;
       };
+      request_storage_cleanup: { Args: never; Returns: undefined };
       respond_to_friend_request: {
         Args: { accept: boolean; request_id: string };
         Returns: undefined;
@@ -985,6 +1039,13 @@ export type Database = {
           mutual_friend_count: number;
           user_id: string;
           username: string;
+        }[];
+      };
+      take_storage_cleanup: {
+        Args: never;
+        Returns: {
+          bucket: string;
+          path: string;
         }[];
       };
       toggle_reaction: {

@@ -95,11 +95,9 @@ export function SpotSheet({ spot, hereNow, onClose }: SpotSheetProps) {
           <View style={styles.header}>
             <ThemedText type="small" themeColor="textSecondary">
               {spot.kind === 'ragg'
-                ? hereNow > 0
-                  ? `${hereNow} här nu`
-                  : 'Ingen här just nu'
-                : 'Varning · försvinner av sig själv efter 2 timmar'}
-              {spot.visibility === 'all' ? ' · syns för alla' : ' · syns för vänner'}
+                ? `${hereNow > 0 ? `${hereNow} här nu` : 'Ingen här just nu'} · försvinner efter 24 timmar`
+                : 'Varning · försvinner efter 2 timmar'}
+              {' · syns för vänner'}
             </ThemedText>
             {spot.kind === 'ragg' && userId ? (
               <SpotPhotoStrip spotId={spot.id} userId={userId} spotCreatorId={spot.creator_id} />

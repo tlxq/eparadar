@@ -8,7 +8,6 @@ export type SpotPhoto = SpotPhotoRow & { url: string | null };
 
 export type SpotKind = 'ragg' | 'varning';
 export type WarningType = 'vagarbete' | 'halka' | 'grop' | 'avstangt';
-export type SpotVisibility = 'friends' | 'all';
 
 export const WARNING_TYPES: { key: WarningType; label: string }[] = [
   { key: 'vagarbete', label: 'Vägarbete' },
@@ -58,7 +57,6 @@ export async function createSpot(input: {
   kind: SpotKind;
   lat: number;
   lng: number;
-  visibility: SpotVisibility;
   name?: string;
   warningType?: WarningType;
 }): Promise<void> {
@@ -67,7 +65,6 @@ export async function createSpot(input: {
     kind: input.kind,
     lat: input.lat,
     lng: input.lng,
-    visibility: input.visibility,
     name: input.kind === 'ragg' ? (input.name?.trim() ?? null) : null,
     warning_type: input.kind === 'varning' ? (input.warningType ?? null) : null,
   });

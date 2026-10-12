@@ -50,7 +50,9 @@ export function meMarker({
   profile: Profile | null | undefined;
   cars: Car[] | undefined;
 }) {
-  const position = devicePosition ?? (location ? { lat: location.lat, lng: location.lng } : null);
+  const stored =
+    location?.lat != null && location.lng != null ? { lat: location.lat, lng: location.lng } : null;
+  const position = devicePosition ?? stored;
   if (!position || !profile) return null;
   const ghost = !location?.sharing_enabled;
   return {
@@ -100,6 +102,6 @@ export function spotMarkers(
     icon: SPOT_ICONS[spotIconKey(spot)],
     hereNow: spot.kind === 'ragg' ? countHereNow(spot, present) : 0,
     photoCount: photoCounts?.[spot.id] ?? 0,
-    expiresAt: spot.expires_at ? new Date(spot.expires_at).getTime() : null,
+    expiresAt: new Date(spot.expires_at).getTime(),
   }));
 }
