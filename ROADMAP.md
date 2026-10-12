@@ -19,7 +19,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
 
 1. **Cleanup**
    - [x] Unused dependencies, dead exports, duplicate assets, short README, this roadmap
-   - [ ] Delete merged and superseded branches
+   - [x] Delete merged and superseded branches
 2. **Safety (friends only)**
    - [x] New chats only between friends (database check + friends-first new-chat screen)
    - [x] Feed shows friends' posts and your own, with paging
@@ -43,7 +43,19 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [x] Haptics on key actions
    - [x] Blocked users list with unblock (Inställningar)
    - [x] Map friend search stays above the keyboard (panel moves to the top)
-5. **Bigger features**
+7. **Launch safety (before 6 and 5, agreed 2026-10-12)**
+   - [x] Rules in `CLAUDE.md` and `.claude/rules`, policies only for logged-in users (#125)
+   - [ ] 7a Everything on the map is friends-only and deleted on a schedule (pg_cron)
+   - [ ] 7b Storage: post images private, every bucket logged-in only, size and type limits
+   - [ ] 7c Report and block on posts, messages, profiles, spots and meetups
+   - [ ] 7d Age 15+ checked at sign-up, on the server
+   - [ ] 7e Push notifications without message text, skip blocked users
+   - [ ] 7f One privacy policy for web and app, terms, community rules, web delete-account page,
+         data export
+   - [ ] 7g Small hardening (function defaults, waitlist without service key, meetup check-in
+         distance on the server)
+
+5. **Bigger features** (each also needs report, block and expiry where it applies)
    - [ ] Meetup list inside Karta, invite friends, share to chat
    - [ ] Likes, comments and photo zoom in the feed
    - [ ] Realtime feed
@@ -54,7 +66,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [ ] Marker look: avatar vs icon, drop the small car badge on each marker
    - [ ] Full profile page for other users (their cars and posts), opened from the person sheet
    - [ ] Feed: something unique for epaRadar (ideas to pitch: car tags, meetup recaps, spot check-ins)
-   - [ ] Everything added to the map expires on its own (spots, meetups, statuses)
+   - [ ] Show how long things on the map have left (the expiry itself is 7a)
    - [ ] UX pass on delete buttons and overall polish (design skills)
 
 ## Later
@@ -75,5 +87,6 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
 - [x] App icon, splash, privacy policy, store screenshots and copy, background-location
       declaration draft
 - [ ] Apple Developer enrollment, App Store Connect record, `eas.json` iOS submit credentials
+- [ ] Play Data Safety form, content rating 15+, Apple UGC answers
 - [ ] First manual Play and App Store submission
 - [ ] Optional: EAS build and submit in GitHub Actions
