@@ -473,6 +473,7 @@ export type Database = {
         Row: {
           created_at: string;
           creator_id: string;
+          description: string | null;
           id: string;
           lat: number;
           lng: number;
@@ -483,6 +484,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           creator_id: string;
+          description?: string | null;
           id?: string;
           lat: number;
           lng: number;
@@ -493,6 +495,7 @@ export type Database = {
         Update: {
           created_at?: string;
           creator_id?: string;
+          description?: string | null;
           id?: string;
           lat?: number;
           lng?: number;
@@ -553,6 +556,7 @@ export type Database = {
           created_at: string;
           id: string;
           image_path: string | null;
+          meetup_id: string | null;
           post_id: string | null;
           sender_id: string;
         };
@@ -562,6 +566,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           image_path?: string | null;
+          meetup_id?: string | null;
           post_id?: string | null;
           sender_id: string;
         };
@@ -571,6 +576,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           image_path?: string | null;
+          meetup_id?: string | null;
           post_id?: string | null;
           sender_id?: string;
         };
@@ -580,6 +586,20 @@ export type Database = {
             columns: ['conversation_id'];
             isOneToOne: false;
             referencedRelation: 'conversations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'messages_meetup_id_fkey';
+            columns: ['meetup_id'];
+            isOneToOne: false;
+            referencedRelation: 'meetups';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'messages_meetup_id_fkey';
+            columns: ['meetup_id'];
+            isOneToOne: false;
+            referencedRelation: 'meetups_with_stats';
             referencedColumns: ['id'];
           },
           {
@@ -930,6 +950,42 @@ export type Database = {
           },
         ];
       };
+      spot_votes: {
+        Row: {
+          created_at: string;
+          gone: boolean;
+          spot_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          gone: boolean;
+          spot_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          gone?: boolean;
+          spot_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'spot_votes_spot_id_fkey';
+            columns: ['spot_id'];
+            isOneToOne: false;
+            referencedRelation: 'spots';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'spot_votes_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       spots: {
         Row: {
           created_at: string;
@@ -1045,6 +1101,7 @@ export type Database = {
         Row: {
           created_at: string | null;
           creator_id: string | null;
+          description: string | null;
           here_now_count: number | null;
           id: string | null;
           interest_count: number | null;
@@ -1057,6 +1114,7 @@ export type Database = {
         Insert: {
           created_at?: string | null;
           creator_id?: string | null;
+          description?: string | null;
           here_now_count?: never;
           id?: string | null;
           interest_count?: never;
@@ -1069,6 +1127,7 @@ export type Database = {
         Update: {
           created_at?: string | null;
           creator_id?: string | null;
+          description?: string | null;
           here_now_count?: never;
           id?: string | null;
           interest_count?: never;
@@ -1314,6 +1373,22 @@ export type Database = {
       };
       unblock_user: { Args: { target_user_id: string }; Returns: undefined };
       unsend_message: { Args: { p_message_id: string }; Returns: undefined };
+      vote_on_warning: {
+        Args: { p_gone: boolean; p_spot_id: string };
+        Returns: {
+          cleared: boolean;
+          gone: number;
+          still_there: number;
+        }[];
+      };
+      warning_votes: {
+        Args: { p_spot_id: string };
+        Returns: {
+          gone: number;
+          my_vote: boolean;
+          still_there: number;
+        }[];
+      };
     };
     Enums: {
       [_ in never]: never;

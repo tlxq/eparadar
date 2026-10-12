@@ -1,22 +1,55 @@
 export type QuickTimeOption = 'tonight' | 'tomorrow' | 'weekend';
 
-export function quickTimeToDate(option: QuickTimeOption, now = new Date()): Date {
+const HALF_HOUR_MS = 30 * 60 * 1000;
+const LATEST_TONIGHT_HOUR = 23;
+const EVENING_HOUR = 19;
+
+function roundUpToHalfHour(date: Date): Date {
+  const result = new Date(Math.ceil(date.getTime() / HALF_HOUR_MS) * HALF_HOUR_MS);
+  result.setSeconds(0, 0);
+  return result;
+}
+
+export function quickTimeToDate(option: QuickTimeOption, now = new Date()): Date | null {
   const result = new Date(now);
   if (option === 'tonight') {
-    result.setHours(19, 0, 0, 0);
-    if (result <= now) result.setDate(result.getDate() + 1);
-    return result;
+    if (now.getHours() >= LATEST_TONIGHT_HOUR) return null;
+    result.setHours(EVENING_HOUR, 0, 0, 0);
+    if (result.getTime() - now.getTime() >= HALF_HOUR_MS) return result;
+    return roundUpToHalfHour(new Date(now.getTime() + HALF_HOUR_MS));
   }
   if (option === 'tomorrow') {
     result.setDate(result.getDate() + 1);
-    result.setHours(18, 0, 0, 0);
+    result.setHours(EVENING_HOUR, 0, 0, 0);
     return result;
   }
-  // weekend: upcoming Saturday, or today if it's already Saturday
   const daysUntilSaturday = (6 - result.getDay() + 7) % 7;
   result.setDate(result.getDate() + daysUntilSaturday);
   result.setHours(14, 0, 0, 0);
+  if (result.getTime() - now.getTime() < HALF_HOUR_MS) result.setDate(result.getDate() + 1);
+  if (result.getTime() - now.getTime() < HALF_HOUR_MS) result.setDate(result.getDate() + 6);
   return result;
+}
+
+const LONG_WEEKDAYS = ['Sön', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör'];
+
+export function clockText(date: Date): string {
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
+export function shortDayText(date: Date): string {
+  return `${LONG_WEEKDAYS[date.getDay()]} ${date.getDate()}/${date.getMonth() + 1}`;
+}
+
+export function exactTimeText(date: Date): string {
+  return `${shortDayText(date)} · ${clockText(date)}`;
+}
+
+export const MAX_DAYS_AHEAD = 60;
+
+export function isPickableTime(date: Date, now = new Date()): boolean {
+  const ahead = date.getTime() - now.getTime();
+  return ahead > 0 && ahead < MAX_DAYS_AHEAD * 24 * 3_600_000;
 }
 
 const WEEKDAYS = ['sön', 'mån', 'tis', 'ons', 'tors', 'fre', 'lör'];

@@ -163,6 +163,10 @@ function RootLayout() {
               name="meetups/[id]"
               options={{ presentation: 'modal', headerShown: false }}
             />
+            <Stack.Screen
+              name="meetups/edit"
+              options={{ presentation: 'modal', headerShown: false }}
+            />
           </Stack.Protected>
           <Stack.Screen
             name="reset-password"

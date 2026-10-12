@@ -34,6 +34,8 @@ export const queryKeys = {
   nearby: (userId: string | undefined, lat: string | undefined, lng: string | undefined) =>
     ['nearby', userId, lat, lng] as const,
   spotPhotoCounts: () => ['spotPhotoCounts'] as const,
+  warningVotes: (spotId: string | undefined) => ['warningVotes', spotId] as const,
+  sharedMeetup: (meetupId: string) => ['sharedMeetup', meetupId] as const,
   eveningHeat: (userId: string | undefined) => ['eveningHeat', userId] as const,
   isAdmin: (userId: string | undefined) => ['isAdmin', userId] as const,
   adminReports: () => ['adminReports'] as const,

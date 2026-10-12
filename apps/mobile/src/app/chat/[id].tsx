@@ -228,6 +228,7 @@ export default function ConversationScreen() {
       body: text,
       image_path: null,
       post_id: null,
+      meetup_id: null,
       created_at: new Date().toISOString(),
       sender: myProfile
         ? {

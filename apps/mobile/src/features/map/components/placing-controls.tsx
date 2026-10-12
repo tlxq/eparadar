@@ -9,11 +9,18 @@ import { useTheme } from '@/hooks/use-theme';
 type PlacingControlsProps = {
   step: 'placing' | 'confirming';
   bottom: number;
+  moving?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 };
 
-export function PlacingControls({ step, bottom, onCancel, onConfirm }: PlacingControlsProps) {
+export function PlacingControls({
+  step,
+  bottom,
+  moving,
+  onCancel,
+  onConfirm,
+}: PlacingControlsProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -26,7 +33,11 @@ export function PlacingControls({ step, bottom, onCancel, onConfirm }: PlacingCo
         ]}
       >
         <ThemedText type="smallBold">
-          {step === 'placing' ? 'Tryck där meeten ska vara' : 'Dra pinnen för att justera'}
+          {step === 'placing'
+            ? 'Tryck där meeten ska vara'
+            : moving
+              ? 'Dra pinnen dit meeten ska flytta'
+              : 'Dra pinnen för att justera'}
         </ThemedText>
       </View>
       <View style={[styles.bar, { bottom }]}>
@@ -46,7 +57,7 @@ export function PlacingControls({ step, bottom, onCancel, onConfirm }: PlacingCo
             style={[styles.button, styles.primary, { backgroundColor: theme.brand }]}
           >
             <ThemedText type="smallBold" style={{ color: theme.brandText }}>
-              {`${Words.place} här`}
+              {moving ? 'Flytta hit' : `${Words.place} här`}
             </ThemedText>
           </Pressable>
         )}

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Image } from 'expo-image';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -8,6 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Common } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { deleteSpotPhoto, fetchSpotPhotos, type SpotPhoto } from '@/features/map/spots';
+import { SpotPhotoViewer } from '@/features/map/spot-photo-viewer';
 import { useTheme } from '@/hooks/use-theme';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
@@ -27,6 +29,7 @@ type SpotPhotoStripProps = {
 export function SpotPhotoStrip({ spotId, userId, spotCreatorId, onReport }: SpotPhotoStripProps) {
   const theme = useTheme();
   const queryClient = useQueryClient();
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const { data: photos, isLoading } = useQuery({
     queryKey: queryKeys.spotPhotos(spotId),
     queryFn: () => fetchSpotPhotos(spotId),
@@ -39,6 +42,7 @@ export function SpotPhotoStrip({ spotId, userId, spotCreatorId, onReport }: Spot
   }
 
   function handleRemove(photo: SpotPhoto) {
+    if ((photos?.length ?? 0) <= 1) setViewerIndex(null);
     queryClient.setQueryData<SpotPhoto[]>(queryKeys.spotPhotos(spotId), (current) =>
       current?.filter((item) => item.id !== photo.id),
     );
@@ -74,20 +78,18 @@ export function SpotPhotoStrip({ spotId, userId, spotCreatorId, onReport }: Spot
   }
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.row}
-    >
-      {photos.map((photo) => {
-        const canRemove = photo.author_id === userId || spotCreatorId === userId;
-        return (
+    <>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.row}
+      >
+        {photos.map((photo, index) => (
           <Pressable
             key={photo.id}
-            accessibilityRole="image"
-            accessibilityLabel="Bild från spotten"
-            accessibilityHint={canRemove ? 'Håll in för att ta bort' : undefined}
-            onLongPress={canRemove ? () => handleRemove(photo) : undefined}
+            accessibilityRole="imagebutton"
+            accessibilityLabel="Bild från spotten, tryck för att visa stort"
+            onPress={() => setViewerIndex(index)}
             style={[styles.thumb, { backgroundColor: theme.backgroundElement }]}
           >
             {photo.url ? (
@@ -113,9 +115,23 @@ export function SpotPhotoStrip({ spotId, userId, spotCreatorId, onReport }: Spot
               </View>
             ) : null}
           </Pressable>
-        );
-      })}
-    </ScrollView>
+        ))}
+      </ScrollView>
+      {viewerIndex !== null ? (
+        <SpotPhotoViewer
+          photos={photos}
+          startIndex={viewerIndex}
+          userId={userId}
+          spotCreatorId={spotCreatorId}
+          onClose={() => setViewerIndex(null)}
+          onRemove={handleRemove}
+          onReport={(photo) => {
+            setViewerIndex(null);
+            onReport(photo);
+          }}
+        />
+      ) : null}
+    </>
   );
 }
 
