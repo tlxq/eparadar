@@ -18,7 +18,7 @@ new_users as (
     '00000000-0000-0000-0000-000000000000', id, 'authenticated', 'authenticated', email,
     extensions.crypt('testtest', extensions.gen_salt('bf')), now(),
     '{"provider":"email","providers":["email"]}',
-    jsonb_build_object('username', username, 'display_name', display_name),
+    jsonb_build_object('username', username, 'display_name', display_name, 'birth_year', '2008'),
     now(), now(), '', '', '', ''
   from seed_users
   returning id, email
