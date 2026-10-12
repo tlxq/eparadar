@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import {
   ActivityIndicator,
@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-import { ActionSheet, type SheetAction } from '@/components/action-sheet';
+import { ActionSheet } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { IconButton } from '@/components/icon-button';
@@ -43,14 +43,16 @@ import { PostItem } from '@/features/feed/components/post-item';
 import { PostActionsSheet } from '@/features/feed/components/post-actions-sheet';
 import { useFriends } from '@/features/friends/hooks';
 import { useUserId } from '@/hooks/use-user-id';
-import { pickImage } from '@/lib/pick-image';
+import { pickImage, type ImageSource } from '@/lib/pick-image';
+import { PhotoSourceSheet } from '@/features/profile/components/photo-source-sheet';
+import { openCar } from '@/store/person-sheet';
 import {
   CAR_CARD_WIDTH,
   CarCard,
   EditProfileSheet,
   Stat,
 } from '@/features/profile/components/profile-parts';
-import { Common, Words } from '@/constants/strings';
+import { Common, Counts, Words } from '@/constants/strings';
 const AVATAR_SIZE = 96;
 
 export default function ProfileScreen() {
@@ -62,6 +64,8 @@ export default function ProfileScreen() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarSheet, setAvatarSheet] = useState(false);
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  const offsets = useRef({ cars: 0, posts: 0 });
 
   const profileQuery = useProfile();
   const { data: profile, isLoading: profileLoading, isError: profileError } = profileQuery;
@@ -88,9 +92,13 @@ export default function ProfileScreen() {
   const posts = useMemo(() => myPosts.data?.pages.flat() ?? [], [myPosts.data]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
-  async function handlePickAvatar() {
+  function scrollTo(section: 'cars' | 'posts') {
+    scrollRef.current?.scrollTo({ y: Math.max(0, offsets.current[section] - Spacing.three) });
+  }
+
+  async function handlePickAvatar(source: ImageSource) {
     if (!userId || !profile) return;
-    const uri = await pickImage({ aspect: [1, 1] });
+    const uri = await pickImage({ aspect: [1, 1], source });
     if (!uri) return;
 
     setUploadingAvatar(true);
@@ -162,20 +170,11 @@ export default function ProfileScreen() {
     }
   }
 
-  const avatarActions: SheetAction[] = [
-    { label: 'Välj ny bild', icon: 'image-outline', onPress: handlePickAvatar },
-    {
-      label: 'Ta bort bild',
-      icon: 'trash-outline',
-      destructive: true,
-      onPress: handleRemoveAvatar,
-    },
-  ];
-
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top']}>
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={{ paddingBottom: tabBarInset }}
           refreshControl={
             <RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} />
@@ -196,7 +195,7 @@ export default function ProfileScreen() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Byt profilbild"
-                onPress={() => (profile?.avatar_url ? setAvatarSheet(true) : handlePickAvatar())}
+                onPress={() => setAvatarSheet(true)}
                 disabled={uploadingAvatar || !profile}
                 style={({ pressed }) => [pressed && styles.pressed]}
               >
@@ -263,9 +262,24 @@ export default function ProfileScreen() {
             </View>
 
             <View style={styles.stats}>
-              <Stat value={cars?.length} label={Words.vehicle} />
-              <Stat value={friends?.length} label="kompisar" />
-              <Stat value={postCount} label="poster" />
+              <Stat
+                value={cars?.length}
+                label={Counts.vehicles}
+                hint="Visar dina EPA:or"
+                onPress={() => scrollTo('cars')}
+              />
+              <Stat
+                value={friends?.length}
+                label={Counts.friends}
+                hint="Öppnar Kompisar"
+                onPress={() => router.navigate('/friends')}
+              />
+              <Stat
+                value={postCount}
+                label={Counts.posts}
+                hint="Visar dina poster"
+                onPress={() => scrollTo('posts')}
+              />
             </View>
 
             <Button
@@ -276,7 +290,12 @@ export default function ProfileScreen() {
               onPress={() => setEditing(true)}
             />
 
-            <View style={styles.sectionHeader}>
+            <View
+              style={styles.sectionHeader}
+              onLayout={(event) => {
+                offsets.current.cars = event.nativeEvent.layout.y;
+              }}
+            >
               <SectionLabel>{`Mina ${Words.vehicles}`}</SectionLabel>
               <Button
                 label="Lägg till"
@@ -295,7 +314,12 @@ export default function ProfileScreen() {
               contentContainerStyle={styles.carRow}
             >
               {cars.map((car) => (
-                <CarCard key={car.id} car={car} onMore={() => setSelectedCar(car)} />
+                <CarCard
+                  key={car.id}
+                  car={car}
+                  onPress={() => openCar(car.id)}
+                  onMore={() => setSelectedCar(car)}
+                />
               ))}
             </ScrollView>
           ) : cars ? (
@@ -321,7 +345,12 @@ export default function ProfileScreen() {
             </View>
           )}
 
-          <View style={[styles.padded, styles.postsHeader]}>
+          <View
+            style={[styles.padded, styles.postsHeader]}
+            onLayout={(event) => {
+              offsets.current.posts = event.nativeEvent.layout.y;
+            }}
+          >
             <SectionLabel>{Words.myPosts}</SectionLabel>
             <Button
               label="Skriv"
@@ -355,11 +384,12 @@ export default function ProfileScreen() {
           ) : null}
         </ScrollView>
       </SafeAreaView>
-      <ActionSheet
+      <PhotoSourceSheet
         visible={avatarSheet}
         title="Profilbild"
         onClose={() => setAvatarSheet(false)}
-        actions={avatarActions}
+        onPick={handlePickAvatar}
+        onRemove={profile?.avatar_url ? handleRemoveAvatar : undefined}
       />
       <ActionSheet
         visible={!!selectedCar}
@@ -382,6 +412,17 @@ export default function ProfileScreen() {
         actions={
           selectedCar
             ? [
+                {
+                  label: 'Visa EPA',
+                  icon: 'car-sport-outline',
+                  onPress: () => openCar(selectedCar.id),
+                },
+                {
+                  label: 'Redigera EPA',
+                  icon: 'create-outline',
+                  onPress: () =>
+                    router.push({ pathname: '/cars/[id]/edit', params: { id: selectedCar.id } }),
+                },
                 {
                   label: 'Ta bort EPA',
                   icon: 'trash-outline',

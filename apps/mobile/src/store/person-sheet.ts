@@ -20,3 +20,16 @@ export function openPerson(userId: string) {
   }
   usePersonSheetStore.setState({ userId });
 }
+
+export function openProfile(userId: string) {
+  usePersonSheetStore.setState({ userId: null });
+  if (userId === useAuthStore.getState().session?.user.id) {
+    router.navigate('/profile');
+    return;
+  }
+  router.push({ pathname: '/person/[id]', params: { id: userId } });
+}
+
+export function openCar(carId: string) {
+  router.push({ pathname: '/cars/[id]', params: { id: carId } });
+}

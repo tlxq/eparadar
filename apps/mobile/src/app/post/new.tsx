@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Image, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -31,7 +31,8 @@ export default function NewPostScreen() {
   const userId = useUserId();
   const queryClient = useQueryClient();
   const [body, setBody] = useState('');
-  const [carId, setCarId] = useState<string | null>(null);
+  const params = useLocalSearchParams<{ carId?: string }>();
+  const [carId, setCarId] = useState<string | null>(params.carId ?? null);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 

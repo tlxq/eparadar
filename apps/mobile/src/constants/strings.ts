@@ -30,6 +30,16 @@ export const Words = {
   photo: '📷 Bild',
 } as const;
 
+export function plural(count: number, one: string, many: string) {
+  return count === 1 ? one : many;
+}
+
+export const Counts = {
+  vehicles: (count: number) => plural(count, 'EPA', 'EPA:or'),
+  friends: (count: number) => plural(count, 'kompis', 'kompisar'),
+  posts: (count: number) => plural(count, 'post', 'poster'),
+} as const;
+
 export function blockedText(name: string | null) {
   return `${name ?? 'Hen'} kan inte längre se dig eller skriva till dig.`;
 }

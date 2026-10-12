@@ -34,7 +34,7 @@ export async function deleteAccount(password: string): Promise<void> {
 
 export const POSTS_PAGE_SIZE = 20;
 
-export async function fetchPosts(page = 0, authorId?: string): Promise<Post[]> {
+export async function fetchPosts(page = 0, authorId?: string, carId?: string): Promise<Post[]> {
   const from = page * POSTS_PAGE_SIZE;
   let query = supabase
     .from('posts')
@@ -44,6 +44,7 @@ export async function fetchPosts(page = 0, authorId?: string): Promise<Post[]> {
     .order('created_at', { ascending: false })
     .range(from, from + POSTS_PAGE_SIZE - 1);
   if (authorId) query = query.eq('author_id', authorId);
+  if (carId) query = query.eq('car_id', carId);
   const { data, error } = await query;
   if (error) throw error;
   return signPostImages((data ?? []) as unknown as Post[]);
@@ -122,6 +123,51 @@ export async function createCar(input: {
     color: input.color ?? null,
   });
   if (error) throw error;
+}
+
+export async function fetchCar(carId: string): Promise<Car | null> {
+  const { data, error } = await supabase.from('cars').select('*').eq('id', carId).maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateCar(
+  carId: string,
+  input: {
+    make: string;
+    model: string;
+    year: number | null;
+    nickname: string | null;
+    photoUrl: string | null;
+    color: string | null;
+  },
+): Promise<void> {
+  const { data, error } = await supabase
+    .from('cars')
+    .update({
+      make: input.make,
+      model: input.model,
+      year: input.year,
+      nickname: input.nickname,
+      photo_url: input.photoUrl,
+      color: input.color,
+    })
+    .eq('id', carId)
+    .select('id');
+  if (error) throw error;
+  if (!data?.length) throw new Error('Det gick inte att spara. Är det din EPA?');
+}
+
+export async function removeCarPhoto(url: string | null): Promise<void> {
+  await removeStoredFile('car-photos', url);
+}
+
+export type MutualFriend = Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
+
+export async function fetchMutualFriends(userId: string): Promise<MutualFriend[]> {
+  const { data, error } = await supabase.rpc('mutual_friends', { p_user_id: userId });
+  if (error) throw error;
+  return data ?? [];
 }
 
 export async function setCarColor(carId: string, color: string | null): Promise<void> {

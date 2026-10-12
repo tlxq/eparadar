@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
@@ -9,9 +10,10 @@ import { Common } from '@/constants/strings';
 type ModalHeaderProps = {
   title: string;
   variant?: 'close' | 'back';
+  actions?: ReactNode;
 };
 
-export function ModalHeader({ title, variant = 'close' }: ModalHeaderProps) {
+export function ModalHeader({ title, variant = 'close', actions }: ModalHeaderProps) {
   return (
     <View style={styles.nav}>
       {variant === 'back' ? (
@@ -27,7 +29,7 @@ export function ModalHeader({ title, variant = 'close' }: ModalHeaderProps) {
       <ThemedText type="headline" accessibilityRole="header" numberOfLines={1}>
         {title}
       </ThemedText>
-      <View style={styles.spacer} />
+      <View style={styles.spacer}>{actions}</View>
     </View>
   );
 }
@@ -40,5 +42,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
   },
-  spacer: { width: 40 },
+  spacer: { width: 40, alignItems: 'flex-end' },
 });
