@@ -47,6 +47,10 @@ Supabase client code or the web API.
 - New buckets are private, with `file_size_limit` and `allowed_mime_types` set.
 - The first folder in the object path is the id the policy checks (user id,
   conversation id or spot id).
+- `avatars` and `car-photos` are public buckets on purpose: they are shown in the
+  map WebView and on every profile, and hold no private content. Listing is still
+  logged-in only. Everything else is private and read through signed URLs.
+- Every bucket is limited to 10 MB and `image/jpeg`, `image/png`, `image/webp`.
 
 ## Tests
 

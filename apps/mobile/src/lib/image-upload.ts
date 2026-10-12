@@ -46,7 +46,7 @@ export function uploadCarPhoto(userId: string, uri: string): Promise<string> {
 }
 
 export function uploadPostImage(userId: string, uri: string): Promise<string> {
-  return uploadImage('post-images', `${userId}/${Date.now()}`, uri);
+  return uploadFile('post-images', `${userId}/${Date.now()}`, uri);
 }
 
 export function uploadChatImage(conversationId: string, uri: string): Promise<string> {

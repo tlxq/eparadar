@@ -8,6 +8,7 @@ export type Car = DbRow<'cars'>;
 export type ProfileSummary = Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
 
 export type Post = DbRow<'posts'> & {
+  image_signed_url?: string | null;
   author: ProfileSummary | null;
   car: Pick<Car, 'id' | 'make' | 'model' | 'nickname' | 'photo_url'> | null;
 };
@@ -67,7 +68,23 @@ export async function fetchPosts(page = 0, authorId?: string): Promise<Post[]> {
   if (authorId) query = query.eq('author_id', authorId);
   const { data, error } = await query;
   if (error) throw error;
-  return (data ?? []) as unknown as Post[];
+  return signPostImages((data ?? []) as unknown as Post[]);
+}
+
+const POST_IMAGE_URL_TTL_S = 60 * 60;
+
+async function signPostImages(posts: Post[]): Promise<Post[]> {
+  const paths = posts.map((post) => post.image_url).filter((path): path is string => !!path);
+  if (paths.length === 0) return posts;
+  const { data, error } = await supabase.storage
+    .from('post-images')
+    .createSignedUrls(paths, POST_IMAGE_URL_TTL_S);
+  if (error) throw error;
+  const byPath = new Map((data ?? []).map((item) => [item.path, item.signedUrl]));
+  return posts.map((post) => ({
+    ...post,
+    image_signed_url: post.image_url ? (byPath.get(post.image_url) ?? null) : null,
+  }));
 }
 
 export async function countMyPosts(userId: string): Promise<number> {
@@ -165,7 +182,7 @@ async function deleteOwnRow(table: 'posts' | 'cars', id: string) {
 
 export async function deletePost(post: Pick<Post, 'id' | 'image_url'>): Promise<void> {
   await deleteOwnRow('posts', post.id);
-  await removeStoredFile('post-images', post.image_url);
+  if (post.image_url) await supabase.storage.from('post-images').remove([post.image_url]);
 }
 
 export async function deleteCar(car: Pick<Car, 'id' | 'photo_url'>): Promise<void> {
