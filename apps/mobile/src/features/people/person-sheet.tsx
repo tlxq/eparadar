@@ -89,7 +89,18 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
     }
   }
 
+  const status = location ? activeStatus(location) : null;
   const moderation: SheetAction[] = [
+    ...(status && personId !== myUserId
+      ? [
+          {
+            label: 'Rapportera statusen',
+            icon: 'chatbox-ellipses-outline' as const,
+            hint: `”${status}”`,
+            onPress: () => openReport({ type: 'status', id: personId, userId: personId, name }),
+          },
+        ]
+      : []),
     {
       label: Common.report,
       icon: 'flag-outline',
@@ -201,12 +212,17 @@ function CarTag({ car }: { car: Car }) {
   );
 }
 
-function mapLine(location: FriendLocation) {
+function activeStatus(location: FriendLocation) {
   const active =
     location.status_text &&
     (!location.status_expires_at || new Date(location.status_expires_at).getTime() > Date.now());
+  return active ? location.status_text : null;
+}
+
+function mapLine(location: FriendLocation) {
+  const status = activeStatus(location);
   const base = location.moving ? 'Kör just nu' : 'På kartan';
-  return active ? `${base} · ${location.status_text}` : base;
+  return status ? `${base} · ${status}` : base;
 }
 
 const styles = StyleSheet.create({

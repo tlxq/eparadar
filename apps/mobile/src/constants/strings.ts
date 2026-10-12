@@ -30,8 +30,8 @@ export const Words = {
   photo: '📷 Bild',
 } as const;
 
-export function blockedText(name: string) {
-  return `${name} kan inte längre se dig eller skriva till dig.`;
+export function blockedText(name: string | null) {
+  return `${name ?? 'Hen'} kan inte längre se dig eller skriva till dig.`;
 }
 
 export function reportThanks(name?: string | null) {

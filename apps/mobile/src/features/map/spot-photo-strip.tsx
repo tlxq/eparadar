@@ -2,8 +2,10 @@ import { Image } from 'expo-image';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { DropdownButton } from '@/components/dropdown-menu';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
+import { Common } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { deleteSpotPhoto, fetchSpotPhotos, type SpotPhoto } from '@/features/map/spots';
 import { useTheme } from '@/hooks/use-theme';
@@ -19,9 +21,10 @@ type SpotPhotoStripProps = {
   spotId: string;
   userId: string;
   spotCreatorId: string;
+  onReport: (photo: SpotPhoto) => void;
 };
 
-export function SpotPhotoStrip({ spotId, userId, spotCreatorId }: SpotPhotoStripProps) {
+export function SpotPhotoStrip({ spotId, userId, spotCreatorId, onReport }: SpotPhotoStripProps) {
   const theme = useTheme();
   const queryClient = useQueryClient();
   const { data: photos, isLoading } = useQuery({
@@ -94,6 +97,21 @@ export function SpotPhotoStrip({ spotId, userId, spotCreatorId }: SpotPhotoStrip
                 contentFit="cover"
               />
             ) : null}
+            {photo.author_id !== userId ? (
+              <View style={styles.more}>
+                <DropdownButton
+                  size={28}
+                  accessibilityLabel="Fler val för bilden"
+                  items={[
+                    {
+                      label: Common.report,
+                      icon: 'flag-outline',
+                      onPress: () => onReport(photo),
+                    },
+                  ]}
+                />
+              </View>
+            ) : null}
           </Pressable>
         );
       })}
@@ -104,4 +122,5 @@ export function SpotPhotoStrip({ spotId, userId, spotCreatorId }: SpotPhotoStrip
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: Spacing.two },
   thumb: { width: THUMB_W, height: THUMB_H, borderRadius: Radius.md, overflow: 'hidden' },
+  more: { position: 'absolute', top: Spacing.one, right: Spacing.one },
 });

@@ -3,7 +3,8 @@ import type { Ionicons } from '@expo/vector-icons';
 
 import { supabase } from '@/lib/supabase';
 
-export type ReportTargetType = 'post' | 'message' | 'profile' | 'spot' | 'spot_photo' | 'meetup';
+export type ReportTargetType =
+  'post' | 'message' | 'profile' | 'spot' | 'spot_photo' | 'meetup' | 'status' | 'conversation';
 
 export type ReportReason =
   'hat' | 'sexuellt' | 'hot' | 'mobbning' | 'spam' | 'farligt' | 'under15' | 'annat';
