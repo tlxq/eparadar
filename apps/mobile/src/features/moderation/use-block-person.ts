@@ -12,6 +12,7 @@ export function useBlockPerson() {
       title,
       message: blockedText(name),
       confirmLabel: Common.block,
+      icon: 'ban-outline',
     });
     if (!ok) return false;
     try {

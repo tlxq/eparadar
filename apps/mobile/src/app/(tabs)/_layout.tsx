@@ -126,21 +126,21 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="karta"
+        options={{
+          title: 'Karta',
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons name={focused ? 'map' : 'map-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="friends"
         options={{
           title: Words.friends,
           tabBarBadge: pendingCount > 0 ? pendingCount : undefined,
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons name={focused ? 'people' : 'people-outline'} size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="karta"
-        options={{
-          title: 'Karta',
-          tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons name={focused ? 'map' : 'map-outline'} size={size} color={color} />
           ),
         }}
       />

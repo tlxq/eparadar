@@ -97,6 +97,7 @@ export default function SettingsScreen() {
       title: 'Logga ut?',
       message: 'Du kan logga in igen när du vill.',
       confirmLabel: 'Logga ut',
+      icon: 'log-out-outline',
     });
     if (!ok) return;
     await stopLocationSharingQuietly();

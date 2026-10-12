@@ -8,10 +8,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ActionSheet, type SheetAction } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
 import { ConversationAvatar } from '@/components/conversation-avatar';
-import { Button } from '@/components/button';
 import { IconButton } from '@/components/icon-button';
 import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ScreenBackground } from '@/components/screen-background';
+import { ErrorState } from '@/components/error-state';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing, Typography } from '@/constants/theme';
@@ -34,7 +34,7 @@ import { sendStoppedTyping, sendTyping } from '@/lib/typing';
 import { openPerson } from '@/store/person-sheet';
 import { pressHaptic, tapHaptic } from '@/lib/haptics';
 import { randomId } from '@/lib/random-id';
-import { showToast } from '@/store/toast';
+import { showToast, showUndoToast } from '@/store/toast';
 import { activeTypists, TYPING_TTL_MS, typingLabel, useTypingStore } from '@/store/typing';
 import { useProfile } from '@/features/profile/hooks';
 import { useConversation } from '@/features/chat/hooks';
@@ -84,7 +84,6 @@ export default function ConversationScreen() {
     data: messages,
     isError: messagesError,
     refetch: refetchMessages,
-    isFetching: messagesFetching,
   } = useQuery({
     queryKey: queryKeys.messages(id),
     queryFn: () => fetchMessages(id!),
@@ -172,12 +171,28 @@ export default function ConversationScreen() {
   async function handleReact(message: Message, emoji: string) {
     setSelected(null);
     tapHaptic();
+    const removing = message.reactions?.some(
+      (reaction) => reaction.user_id === userId && reaction.emoji === emoji,
+    );
     try {
       await toggleReaction(message.id, emoji);
       queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) });
     } catch (error) {
       showToast({ tone: 'error', message: getErrorMessage(error) });
+      return;
     }
+    if (!removing) return;
+    showUndoToast({
+      message: `${emoji} borttagen.`,
+      onUndo: async () => {
+        try {
+          await toggleReaction(message.id, emoji);
+          queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) });
+        } catch (error) {
+          showToast({ tone: 'error', message: getErrorMessage(error) });
+        }
+      },
+    });
   }
 
   async function handlePickImage(source: ImageSource) {
@@ -380,19 +395,10 @@ export default function ConversationScreen() {
             onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
             ListEmptyComponent={
               messagesError && !messages ? (
-                <View style={styles.emptyThread}>
-                  <ThemedText style={styles.center}>
-                    Meddelandena gick inte att hämta. Kolla nätet och försök igen.
-                  </ThemedText>
-                  <Button
-                    label={Common.retry}
-                    icon="refresh"
-                    variant="secondary"
-                    size="sm"
-                    loading={messagesFetching}
-                    onPress={() => refetchMessages()}
-                  />
-                </View>
+                <ErrorState
+                  message="Meddelandena gick inte att hämta. Kolla nätet och testa igen."
+                  onRetry={refetchMessages}
+                />
               ) : !messages ? (
                 <View
                   style={styles.loadingThread}

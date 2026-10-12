@@ -5,6 +5,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
+import { DropdownButton, type MenuItem } from '@/components/dropdown-menu';
+import { ErrorState } from '@/components/error-state';
 import { IconButton } from '@/components/icon-button';
 import { openReport } from '@/store/report-sheet';
 import { ScreenBackground } from '@/components/screen-background';
@@ -31,7 +33,7 @@ export default function MeetupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const userId = useUserId();
 
-  const { data: meetup, isLoading, isError, isRefetching, refetch } = useMeetupDetail(id, userId);
+  const { data: meetup, isLoading, isError, refetch } = useMeetupDetail(id, userId);
   const toggleInterest = useToggleInterest(id, userId);
   const deleteMeetup = useDeleteMeetup();
   useAutoCheckIn(id);
@@ -65,15 +67,9 @@ export default function MeetupDetailScreen() {
             onPress={() => router.back()}
           />
         </View>
-        <ThemedText style={styles.errorText}>
-          Meeten gick inte att hämta. Den kan ha tagits bort, eller så strular nätet.
-        </ThemedText>
-        <Button
-          label={Common.retry}
-          icon="refresh"
-          variant="secondary"
-          loading={isRefetching}
-          onPress={() => refetch()}
+        <ErrorState
+          message="Meeten gick inte att hämta. Den kan ha tagits bort, eller så strular nätet."
+          onRetry={refetch}
         />
       </ScreenBackground>
     );
@@ -102,11 +98,36 @@ export default function MeetupDetailScreen() {
   }
 
   const iAmHereNow = meetup.hereNow.some((p) => p.id === userId);
+  const menuItems: MenuItem[] =
+    meetup.creator_id === userId
+      ? [
+          {
+            label: 'Ta bort meeten',
+            icon: 'trash-outline',
+            destructive: true,
+            disabled: deleteMeetup.isPending,
+            onPress: handleDelete,
+          },
+        ]
+      : [
+          {
+            label: 'Rapportera meeten',
+            icon: 'flag-outline',
+            onPress: () =>
+              openReport({
+                type: 'meetup',
+                id: meetup.id,
+                userId: meetup.creator_id,
+                name: meetup.creator?.display_name ?? 'skaparen',
+              }),
+          },
+        ];
 
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
+          <DropdownButton items={menuItems} accessibilityLabel="Fler val för meeten" />
           <IconButton
             icon="close"
             accessibilityLabel={Common.close}
@@ -187,35 +208,6 @@ export default function MeetupDetailScreen() {
               </ThemedText>
             </View>
           )}
-
-          {meetup.creator_id === userId ? (
-            <View style={styles.deleteButton}>
-              <Button
-                label="Ta bort meeten"
-                icon="trash-outline"
-                variant="secondary"
-                tone="danger"
-                loading={deleteMeetup.isPending}
-                onPress={handleDelete}
-              />
-            </View>
-          ) : (
-            <View style={styles.deleteButton}>
-              <Button
-                label="Rapportera meeten"
-                icon="flag-outline"
-                variant="ghost"
-                onPress={() =>
-                  openReport({
-                    type: 'meetup',
-                    id: meetup.id,
-                    userId: meetup.creator_id,
-                    name: meetup.creator?.display_name ?? 'skaparen',
-                  })
-                }
-              />
-            </View>
-          )}
         </ScrollView>
       </SafeAreaView>
     </ScreenBackground>
@@ -235,11 +227,11 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   errorClose: { position: 'absolute', top: Spacing.five, right: Spacing.three },
-  errorText: { textAlign: 'center', paddingHorizontal: Spacing.four, marginBottom: Spacing.three },
   safeArea: { flex: 1 },
   header: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    gap: Spacing.two,
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.two,
   },
@@ -267,7 +259,6 @@ const styles = StyleSheet.create({
   avatars: { flexDirection: 'row' },
   avatarWrap: { marginLeft: -Spacing.two },
   interestedButton: { marginTop: Spacing.four },
-  deleteButton: { marginTop: Spacing.five },
   autoStatus: {
     flexDirection: 'row',
     alignItems: 'center',

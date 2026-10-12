@@ -1,31 +1,13 @@
-import { Alert, Platform } from 'react-native';
+import { useConfirmStore, type ConfirmRequest } from '@/store/confirm';
 
-type ConfirmOptions = {
-  title: string;
-  message: string;
-  confirmLabel: string;
-  cancelLabel?: string;
-};
+export type ConfirmOptions = Omit<ConfirmRequest, 'resolve'>;
 
-export function confirmDestructive({
-  title,
-  message,
-  confirmLabel,
-  cancelLabel = 'Avbryt',
-}: ConfirmOptions): Promise<boolean> {
-  if (Platform.OS === 'web') {
-    return Promise.resolve(window.confirm(`${title}\n\n${message}`));
-  }
-
+export function confirm(options: ConfirmOptions): Promise<boolean> {
   return new Promise((resolve) => {
-    Alert.alert(
-      title,
-      message,
-      [
-        { text: cancelLabel, style: 'cancel', onPress: () => resolve(false) },
-        { text: confirmLabel, style: 'destructive', onPress: () => resolve(true) },
-      ],
-      { cancelable: true, onDismiss: () => resolve(false) },
-    );
+    useConfirmStore.getState().open({ ...options, resolve });
   });
+}
+
+export function confirmDestructive(options: Omit<ConfirmOptions, 'destructive'>) {
+  return confirm({ ...options, destructive: true });
 }

@@ -38,6 +38,7 @@ export default function DeleteAccountScreen() {
       title: 'Radera kontot för alltid?',
       message: 'Det här går inte att ångra.',
       confirmLabel: 'Radera',
+      icon: 'warning-outline',
     });
     if (!ok) return;
     setBusy(true);
