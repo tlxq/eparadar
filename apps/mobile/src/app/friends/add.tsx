@@ -19,6 +19,7 @@ import { useMeetupSuggestions, useMutualSuggestions } from '@/features/friends/h
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { getErrorMessage } from '@/lib/errors';
+import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
 import { sendFriendRequest } from '@/lib/api';
 import { useUserId } from '@/hooks/use-user-id';
@@ -46,6 +47,7 @@ export default function AddFriendScreen() {
       queryClient.invalidateQueries({ queryKey: queryKeys.meetupSuggestions(userId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.mutualSuggestions(userId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(userId) });
+      if (userId) maybeRequestNotificationPermission(userId, 'friend_request');
     },
     onError: (err) => setError(getErrorMessage(err)),
     onSettled: () => setSendingId(null),

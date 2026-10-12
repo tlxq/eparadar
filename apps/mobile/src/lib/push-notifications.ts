@@ -90,19 +90,49 @@ export function setNotificationNavigationReady(ready: boolean): void {
   if (response) handleNotificationResponse(response);
 }
 
-export async function maybeRequestNotificationPermission(userId: string): Promise<void> {
+export type NotificationPromptReason = 'chat' | 'friend_request' | 'friend_accepted' | 'meetup';
+
+const PROMPT_DELAY_MS = 700;
+
+const PROMPT_COPY: Record<NotificationPromptReason, { title: string; message: string }> = {
+  chat: {
+    title: 'Vill du veta när de svarar?',
+    message:
+      'Slå på aviseringar så plingar det när du får ett meddelande. Du styr dem i Inställningar.',
+  },
+  friend_request: {
+    title: 'Vill du veta när de svarar?',
+    message:
+      'Slå på aviseringar så plingar det när någon tackar ja till din förfrågan. Du styr dem i Inställningar.',
+  },
+  friend_accepted: {
+    title: 'Missa inte när de skriver',
+    message:
+      'Slå på aviseringar så plingar det när en kompis skriver till dig. Du styr dem i Inställningar.',
+  },
+  meetup: {
+    title: 'Få koll på meeten?',
+    message:
+      'Slå på aviseringar så plingar det när det händer något på meeten. Du styr dem i Inställningar.',
+  },
+};
+
+export async function maybeRequestNotificationPermission(
+  userId: string,
+  reason: NotificationPromptReason,
+): Promise<void> {
+  if (Platform.OS === 'web') return;
   const current = await Notifications.getPermissionsAsync();
   if (current.status === 'granted' || !current.canAskAgain) return;
 
   const alreadyPrompted = await AsyncStorage.getItem(PROMPT_SHOWN_KEY);
   if (alreadyPrompted) return;
   await AsyncStorage.setItem(PROMPT_SHOWN_KEY, '1');
+  await new Promise((resolve) => setTimeout(resolve, PROMPT_DELAY_MS));
 
   const ok = await confirm({
-    title: 'Aktivera aviseringar?',
-    message:
-      'Få en avisering när du får ett nytt meddelande, en kompisförfrågan eller när någon vill med på din meet.',
-    confirmLabel: 'Aktivera',
+    ...PROMPT_COPY[reason],
+    confirmLabel: 'Slå på',
     cancelLabel: 'Inte nu',
     icon: 'notifications-outline',
   });

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="sv">
+  <body
+    style="
+      margin: 0;
+      padding: 24px;
+      background: #0b0e14;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #e8ecf4;
+    "
+  >
+    <div
+      style="
+        max-width: 480px;
+        margin: 0 auto;
+        background: #151a24;
+        border-radius: 16px;
+        padding: 32px;
+      "
+    >
+      <h1 style="margin: 0 0 12px; font-size: 22px">Välkommen till epaRadar!</h1>
+      <p style="margin: 0 0 24px; font-size: 16px; line-height: 1.5">
+        Tryck på knappen för att bekräfta din e-post. Öppna mejlet på mobilen där du har appen, så
+        hamnar du rätt.
+      </p>
+      <p style="margin: 0 0 24px">
+        <a
+          href="{{ .ConfirmationURL }}"
+          style="
+            display: inline-block;
+            background: #2f6fed;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 14px 24px;
+            border-radius: 999px;
+          "
+          >Bekräfta e-post</a
+        >
+      </p>
+      <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #9aa4b8">
+        Länken gäller i en timme. Har du inte skapat ett konto hos epaRadar kan du strunta i det här
+        mejlet.
+      </p>
+    </div>
+  </body>
+</html>

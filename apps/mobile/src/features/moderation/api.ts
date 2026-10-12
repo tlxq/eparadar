@@ -5,7 +5,8 @@ import { supabase } from '@/lib/supabase';
 
 export type ReportTargetType = 'post' | 'message' | 'profile' | 'spot' | 'spot_photo' | 'meetup';
 
-export type ReportReason = 'hat' | 'sexuellt' | 'hot' | 'mobbning' | 'spam' | 'farligt' | 'annat';
+export type ReportReason =
+  'hat' | 'sexuellt' | 'hot' | 'mobbning' | 'spam' | 'farligt' | 'under15' | 'annat';
 
 export const REPORT_REASONS: {
   key: ReportReason;
@@ -18,6 +19,7 @@ export const REPORT_REASONS: {
   { key: 'sexuellt', label: 'Sexuellt innehåll', icon: 'eye-off-outline' },
   { key: 'farligt', label: 'Farlig körning eller brott', icon: 'car-outline' },
   { key: 'spam', label: 'Spam eller bedrägeri', icon: 'mail-unread-outline' },
+  { key: 'under15', label: 'Verkar vara under 15 år', icon: 'person-outline' },
   { key: 'annat', label: 'Något annat', icon: 'ellipsis-horizontal-circle-outline' },
 ];
 

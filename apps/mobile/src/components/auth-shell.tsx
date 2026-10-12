@@ -13,6 +13,7 @@ type AuthShellProps = {
   subtitle: string;
   children: ReactNode;
   footer: ReactNode;
+  top?: ReactNode;
 };
 
 function BrandMark() {
@@ -30,14 +31,14 @@ function BrandMark() {
   );
 }
 
-export function AuthShell({ title, subtitle, children, footer }: AuthShellProps) {
+export function AuthShell({ title, subtitle, children, footer, top }: AuthShellProps) {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container}>
         <KeyboardAvoider style={styles.container}>
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
             <View style={styles.top}>
-              <BrandMark />
+              {top ?? <BrandMark />}
               <View style={styles.titles}>
                 <ThemedText type="title" accessibilityRole="header">
                   {title}

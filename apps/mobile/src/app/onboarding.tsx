@@ -1,6 +1,6 @@
-import { useState, type ComponentProps } from 'react';
+import { useCallback, useRef, useState, type ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
@@ -17,6 +17,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { enableLocationSharing } from '@/lib/location-sharing';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
+import { useFriends, useOutgoingRequests } from '@/features/friends/hooks';
 import { useProfile } from '@/features/profile/hooks';
 import { useUserId } from '@/hooks/use-user-id';
 
@@ -122,6 +123,29 @@ export default function OnboardingScreen() {
   const [finishing, setFinishing] = useState(false);
 
   const { data: profile } = useProfile();
+  const { data: friends, refetch: refetchFriends } = useFriends();
+  const { data: outgoing, refetch: refetchOutgoing } = useOutgoingRequests();
+  const visiting = useRef<{ href: string; before: number } | null>(null);
+  const [addedVia, setAddedVia] = useState<Set<string>>(new Set());
+  const connections = (friends?.length ?? 0) + (outgoing?.length ?? 0);
+  const addedSomeone = addedVia.size > 0;
+
+  useFocusEffect(
+    useCallback(() => {
+      const visit = visiting.current;
+      if (!visit) return;
+      visiting.current = null;
+      Promise.all([refetchFriends(), refetchOutgoing()]).then(([f, o]) => {
+        const after = (f.data?.length ?? 0) + (o.data?.length ?? 0);
+        if (after > visit.before) setAddedVia((current) => new Set(current).add(visit.href));
+      });
+    }, [refetchFriends, refetchOutgoing]),
+  );
+
+  function openFriendWay(href: (typeof FRIEND_WAYS)[number]['href']) {
+    visiting.current = { href, before: connections };
+    router.push(href);
+  }
   const firstName = profile?.display_name.trim().split(' ')[0];
 
   async function finish(next?: '/cars/new') {
@@ -201,33 +225,46 @@ export default function OnboardingScreen() {
                 I epaRadar lägger du bara till folk du faktiskt träffar. Ingen kan söka upp dig.
               </ThemedText>
               <View style={styles.cards}>
-                {FRIEND_WAYS.map((way) => (
-                  <Pressable
-                    key={way.href}
-                    accessibilityRole="button"
-                    accessibilityHint={way.detail}
-                    onPress={() => router.push(way.href)}
-                    style={({ pressed }) => [
-                      styles.card,
-                      {
-                        backgroundColor: pressed
-                          ? theme.backgroundSelected
-                          : theme.backgroundElement,
-                      },
-                    ]}
-                  >
-                    <View style={[styles.cardIcon, { backgroundColor: `${theme.brand}2E` }]}>
-                      <Ionicons name={way.icon} size={22} color={theme.brandOnSurface} />
-                    </View>
-                    <View style={styles.flex}>
-                      <ThemedText type="headline">{way.title}</ThemedText>
-                      <ThemedText type="small" themeColor="textSecondary">
-                        {way.detail}
-                      </ThemedText>
-                    </View>
-                    <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
-                  </Pressable>
-                ))}
+                {FRIEND_WAYS.map((way) => {
+                  const done = addedVia.has(way.href);
+                  return (
+                    <Pressable
+                      key={way.href}
+                      accessibilityRole="button"
+                      accessibilityHint={way.detail}
+                      accessibilityState={{ checked: done }}
+                      onPress={() => openFriendWay(way.href)}
+                      style={({ pressed }) => [
+                        styles.card,
+                        {
+                          backgroundColor: pressed
+                            ? theme.backgroundSelected
+                            : theme.backgroundElement,
+                        },
+                      ]}
+                    >
+                      <View style={[styles.cardIcon, { backgroundColor: `${theme.brand}2E` }]}>
+                        <Ionicons name={way.icon} size={22} color={theme.brandOnSurface} />
+                      </View>
+                      <View style={styles.flex}>
+                        <ThemedText type="headline">{way.title}</ThemedText>
+                        <ThemedText type="small" themeColor="textSecondary">
+                          {way.detail}
+                        </ThemedText>
+                      </View>
+                      {done ? (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={24}
+                          color={theme.success}
+                          accessibilityLabel="Klart"
+                        />
+                      ) : (
+                        <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
+                      )}
+                    </Pressable>
+                  );
+                })}
               </View>
             </>
           ) : null}
@@ -281,18 +318,24 @@ export default function OnboardingScreen() {
           {step === 'welcome' ? (
             <Button label="Kör igång" onPress={() => setStep('friends')} />
           ) : null}
-          {step === 'friends' ? <Button label="Nästa" onPress={() => setStep('location')} /> : null}
+          {step === 'friends' ? (
+            <Button
+              label={addedSomeone ? 'Nästa' : 'Jag gör det sen'}
+              variant={addedSomeone ? 'primary' : 'secondary'}
+              onPress={() => setStep('location')}
+            />
+          ) : null}
           {step === 'location' ? (
             <>
               <Button
                 label="Dela med kompisar"
-                variant="secondary"
+                icon="location-outline"
                 loading={locationBusy}
                 onPress={shareLocation}
               />
               <Button
                 label="Inte nu"
-                variant="secondary"
+                variant="ghost"
                 disabled={locationBusy}
                 onPress={() => setStep('done')}
               />

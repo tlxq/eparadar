@@ -27,7 +27,8 @@ Use what exists in `apps/mobile/src/components` before building something new:
 
 - Actions: `Button` (`variant` primary, secondary, ghost; `tone` brand, success,
   danger), `IconButton`, `Fab`, `Chip`, `Switch`
-- Forms: `TextField`, `FormScreen`, `FormSheet`, `KeyboardAvoider`
+- Forms: `TextField` (`trailing` slot for an icon button), `PasswordField` (eye button to show
+  the password), `FormScreen`, `FormSheet`, `KeyboardAvoider`
 - Layout: `ScreenBackground`, `ScreenHeader`, `ModalHeader`, `ListRow`, `ActionSheet`,
   `SectionLabel` for the small-caps headings above a group
 - People: `Avatar`, `ConversationAvatar`

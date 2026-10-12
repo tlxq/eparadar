@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
@@ -10,6 +10,7 @@ type TextFieldProps = TextInputProps & {
   label?: string;
   error?: string | null;
   hint?: string;
+  trailing?: ReactNode;
 };
 
 export function TextField({
@@ -17,6 +18,7 @@ export function TextField({
   label,
   error,
   hint,
+  trailing,
   onFocus,
   onBlur,
   ...props
@@ -40,6 +42,7 @@ export function TextField({
       style={[
         styles.input,
         props.multiline && styles.multiline,
+        trailing ? styles.withTrailing : null,
         { backgroundColor: theme.backgroundElement, borderColor, color: theme.text },
         style,
       ]}
@@ -47,7 +50,16 @@ export function TextField({
     />
   );
 
-  if (!label && !error && !hint) return input;
+  const field = trailing ? (
+    <View>
+      {input}
+      <View style={styles.trailing}>{trailing}</View>
+    </View>
+  ) : (
+    input
+  );
+
+  if (!label && !error && !hint) return field;
 
   return (
     <View style={styles.field}>
@@ -56,14 +68,14 @@ export function TextField({
           {label}
         </ThemedText>
       ) : null}
-      {input}
+      {field}
       {hint && !error ? (
         <ThemedText type="caption" themeColor="textSecondary">
           {hint}
         </ThemedText>
       ) : null}
       {error ? (
-        <View style={styles.error}>
+        <View style={styles.error} accessibilityLiveRegion="polite">
           <Ionicons name="alert-circle" size={14} color={theme.danger} />
           <ThemedText type="error" style={styles.errorText}>
             {error}
@@ -85,6 +97,14 @@ const styles = StyleSheet.create({
     ...Typography.input,
   },
   multiline: { minHeight: 96, textAlignVertical: 'top' },
+  withTrailing: { paddingRight: 52 },
+  trailing: {
+    position: 'absolute',
+    right: Spacing.one,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+  },
   error: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   errorText: { flex: 1 },
 });
