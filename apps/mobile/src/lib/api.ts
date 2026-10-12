@@ -555,6 +555,35 @@ export async function setLocationApproximate(userId: string, enabled: boolean): 
   if (error) throw error;
 }
 
+export type NotificationKind = 'messages' | 'friend_requests' | 'meets';
+export type NotificationSettings = Record<NotificationKind, boolean>;
+
+export async function fetchNotificationSettings(userId: string): Promise<NotificationSettings> {
+  const { data, error } = await supabase
+    .from('notification_settings')
+    .select('messages, friend_requests, meets')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data ?? { messages: true, friend_requests: true, meets: true };
+}
+
+export async function setNotificationSetting(
+  userId: string,
+  kind: NotificationKind,
+  enabled: boolean,
+): Promise<void> {
+  const row: DbTables['notification_settings']['Insert'] = {
+    user_id: userId,
+    updated_at: new Date().toISOString(),
+  };
+  row[kind] = enabled;
+  const { error } = await supabase
+    .from('notification_settings')
+    .upsert(row, { onConflict: 'user_id' });
+  if (error) throw error;
+}
+
 export async function fetchFriendLocations(userId: string): Promise<FriendLocation[]> {
   const { data, error } = await supabase
     .from('locations')

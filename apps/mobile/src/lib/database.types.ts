@@ -594,6 +594,38 @@ export type Database = {
           },
         ];
       };
+      notification_settings: {
+        Row: {
+          friend_requests: boolean;
+          meets: boolean;
+          messages: boolean;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          friend_requests?: boolean;
+          meets?: boolean;
+          messages?: boolean;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          friend_requests?: boolean;
+          meets?: boolean;
+          messages?: boolean;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'notification_settings_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: true;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       posts: {
         Row: {
           author_id: string;

@@ -23,12 +23,18 @@ const mockFetchMyLocation = jest.fn();
 const mockSetLocationSharing = jest.fn();
 const mockSetLocationApproximate = jest.fn();
 const mockUpsertLocation = jest.fn();
+const mockFetchNotificationSettings = jest.fn();
+const mockSetNotificationSetting = jest.fn();
+const mockFetchBlocked = jest.fn();
 
 jest.mock('@/lib/api', () => ({
   fetchMyLocation: (...args: unknown[]) => mockFetchMyLocation(...args),
   setLocationSharing: (...args: unknown[]) => mockSetLocationSharing(...args),
   setLocationApproximate: (...args: unknown[]) => mockSetLocationApproximate(...args),
   upsertLocation: (...args: unknown[]) => mockUpsertLocation(...args),
+  fetchNotificationSettings: (...args: unknown[]) => mockFetchNotificationSettings(...args),
+  setNotificationSetting: (...args: unknown[]) => mockSetNotificationSetting(...args),
+  fetchBlocked: (...args: unknown[]) => mockFetchBlocked(...args),
   signOut: jest.fn(),
 }));
 
@@ -68,6 +74,12 @@ beforeEach(() => {
   jest.mocked(Location.getBackgroundPermissionsAsync).mockResolvedValue({
     status: 'granted',
   } as never);
+  mockFetchNotificationSettings.mockResolvedValue({
+    messages: true,
+    friend_requests: true,
+    meets: true,
+  } as never);
+  mockFetchBlocked.mockResolvedValue([] as never);
 });
 
 describe('SettingsScreen sharing toggle', () => {
@@ -207,6 +219,38 @@ describe('SettingsScreen approximate toggle', () => {
     });
 
     await waitFor(() => expect(mockSetLocationApproximate).toHaveBeenCalledWith('user-1', true));
+    await unmount();
+    client.clear();
+  });
+});
+
+describe('SettingsScreen notifications and blocked', () => {
+  it('turns off one notification type', async () => {
+    mockFetchMyLocation.mockResolvedValue(null as never);
+    mockSetNotificationSetting.mockResolvedValue(undefined as never);
+
+    const { client, screen } = await renderSettings();
+    const { findByTestId, unmount } = screen;
+    const toggle = await findByTestId('notify-meets');
+    await waitFor(() => expect(toggle.props.value).toBe(true));
+
+    await act(async () => {
+      fireEvent(toggle, 'valueChange', false);
+    });
+
+    await waitFor(() =>
+      expect(mockSetNotificationSetting).toHaveBeenCalledWith('user-1', 'meets', false),
+    );
+    await unmount();
+    client.clear();
+  });
+
+  it('shows the empty blocked text', async () => {
+    mockFetchMyLocation.mockResolvedValue(null as never);
+
+    const { client, screen } = await renderSettings();
+    const { findByText, unmount } = screen;
+    await findByText('Du har inte blockerat någon.');
     await unmount();
     client.clear();
   });

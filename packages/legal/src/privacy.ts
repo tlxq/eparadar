@@ -30,7 +30,7 @@ export const privacyPolicy: LegalDocument = {
           'Karta: din position, riktning och om du rör dig när platsdelning är på, din status, spots du placerar (Ragga och Varning) med bilder, meets du skapar, intresse och incheckningar.',
           'Radarn: din position i ungefär 20 sekunder medan du själv letar.',
           'Rapporter: när du rapporterar något sparar vi en kopia av innehållet, din anledning och det du skriver till oss.',
-          'Teknik: en token för aviseringar, när du öppnar appen, och felrapporter om appen kraschar.',
+          'Teknik: en token för aviseringar, vilka sorters aviseringar du har stängt av, när du öppnar appen, och felrapporter om appen kraschar.',
         ],
         'På webbplatsens väntelista sparar vi din e-postadress om du själv fyller i den.',
       ],
@@ -84,7 +84,7 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         [
           'Supabase lagrar databas, bilder och inloggning i EU (Irland).',
-          'Expo skickar aviseringar vidare till Google (Android) och Apple (iOS). Aviseringar för meddelanden innehåller bara avsändarens namn och, i grupper, gruppens namn, aldrig texten.',
+          'Expo skickar aviseringar vidare till Google (Android) och Apple (iOS). Aviseringar för meddelanden innehåller bara avsändarens namn och, i grupper, gruppens namn, aldrig texten. Du väljer vilka sorters aviseringar du får under Inställningar → Aviseringar.',
           'Resend skickar e-post från väntelistan, mejl när du bekräftar din e-post eller byter lösenord, och rapporter till oss.',
           'Sentry tar emot felrapporter när appen eller webbplatsen kraschar.',
           'Kartan använder MapLibre (laddas från unpkg) och kartbilder från OpenFreeMap. De ser din IP-adress men inte vem du är.',
