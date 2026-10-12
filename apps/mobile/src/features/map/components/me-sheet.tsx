@@ -51,7 +51,8 @@ export function MeSheet({ visible, profile, location, onClose, onStatus }: MeShe
     {
       label: location?.status_text ? 'Ändra status' : 'Sätt status',
       icon: 'chatbubble-ellipses-outline',
-      hint: 'Syns för kompisar i en timme',
+      hint: ghost ? 'Stäng av spökläge först' : 'Syns för kompisar i en timme',
+      disabled: ghost,
       onPress: onStatus,
     },
     {

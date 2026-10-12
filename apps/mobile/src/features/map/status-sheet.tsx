@@ -14,11 +14,12 @@ import { Common } from '@/constants/strings';
 type StatusSheetProps = {
   userId: string;
   current: string | null;
+  ghost: boolean;
   onClose: () => void;
   onSaved: (text: string | null) => void;
 };
 
-export function StatusSheet({ userId, current, onClose, onSaved }: StatusSheetProps) {
+export function StatusSheet({ userId, current, ghost, onClose, onSaved }: StatusSheetProps) {
   const [text, setText] = useState(current ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,10 +45,20 @@ export function StatusSheet({ userId, current, onClose, onSaved }: StatusSheetPr
         label: Common.save,
         onPress: () => save(text),
         loading: saving,
-        disabled: !text.trim(),
+        disabled: ghost || !text.trim(),
       }}
     >
-      <View style={styles.chips}>
+      {ghost ? (
+        <ThemedText type="smallBold" themeColor="textSecondary">
+          Stäng av spökläge först. Ingen ser din status när du är osynlig.
+        </ThemedText>
+      ) : null}
+      <View
+        style={[styles.chips, ghost && styles.off]}
+        pointerEvents={ghost ? 'none' : 'auto'}
+        accessibilityElementsHidden={ghost}
+        importantForAccessibility={ghost ? 'no-hide-descendants' : 'auto'}
+      >
         {STATUS_PRESETS.map((preset) => (
           <Chip
             key={preset}
@@ -63,6 +74,9 @@ export function StatusSheet({ userId, current, onClose, onSaved }: StatusSheetPr
         value={text}
         onChangeText={setText}
         maxLength={STATUS_MAX_LENGTH}
+        editable={!ghost}
+        style={ghost ? styles.off : undefined}
+        hint={ghost ? 'Stäng av spökläge först' : `${text.length}/${STATUS_MAX_LENGTH} tecken`}
         error={error}
       />
       <ThemedText type="caption" themeColor="textSecondary">
@@ -83,4 +97,5 @@ export function StatusSheet({ userId, current, onClose, onSaved }: StatusSheetPr
 
 const styles = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  off: { opacity: 0.4 },
 });
