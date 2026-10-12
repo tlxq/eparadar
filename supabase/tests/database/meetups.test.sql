@@ -65,8 +65,8 @@ set local request.jwt.claim.sub = 'c9000000-0000-0000-0000-000000000023';
 
 select is(
   (select count(*)::int from public.meetup_interests where meetup_id = 'f2000000-0000-0000-0000-000000000001'),
-  1,
-  'interest rows are visible to any authenticated user, not just participants'
+  0,
+  'interest rows are hidden from a user who is neither a friend nor the creator'
 );
 
 select throws_ok(
