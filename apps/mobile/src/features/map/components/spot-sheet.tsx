@@ -16,6 +16,7 @@ import { pickImage, type ImageSource } from '@/lib/pick-image';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
 import { openReport } from '@/store/report-sheet';
+import { WarningVoteSection } from '@/features/map/warning-votes';
 
 const REPORT_DELAY_MS = 250;
 
@@ -138,6 +139,7 @@ export function SpotSheet({ spot, hereNow, onClose }: SpotSheetProps) {
                 }}
               />
             ) : null}
+            {spot.kind === 'varning' && userId ? <WarningVoteSection spotId={spot.id} /> : null}
           </View>
         ) : null
       }

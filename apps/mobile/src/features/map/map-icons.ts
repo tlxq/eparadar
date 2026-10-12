@@ -13,8 +13,8 @@ function duo(back: string, front: string): string {
 
 export const SPOT_ICONS = {
   ragg: duo(
-    `<path d="M24 44s13-11.5 13-22a13 13 0 1 0-26 0c0 10.5 13 22 13 22Z" fill="${ORANGE}" fill-opacity=".38"/>`,
-    `<path d="M24 44s13-11.5 13-22a13 13 0 1 0-26 0c0 10.5 13 22 13 22Z" stroke="${WHITE}" stroke-width="3" stroke-linejoin="round"/><path d="M16.5 24.5v-3l2.2-5h10.6l2.2 5v3z" stroke="${WHITE}" stroke-width="2.6" stroke-linejoin="round"/><circle cx="19.5" cy="22" r="1.4" fill="${ORANGE}"/><circle cx="28.5" cy="22" r="1.4" fill="${ORANGE}"/>`,
+    `<circle cx="24" cy="27" r="16" fill="${ORANGE}" fill-opacity=".38"/>`,
+    `<path d="M10.5 34v-6.5l4.5-9.5h18l4.5 9.5V34z" stroke="${WHITE}" stroke-width="3" stroke-linejoin="round"/><path d="M14 34v4.5M34 34v4.5" stroke="${WHITE}" stroke-width="3.2" stroke-linecap="round"/><path d="M15 27.5h18" stroke="${WHITE}" stroke-width="2.4" stroke-linecap="round"/><circle cx="17" cy="31" r="1.8" fill="${ORANGE}"/><circle cx="31" cy="31" r="1.8" fill="${ORANGE}"/><path d="m38 3 1.7 4.3L44 9l-4.3 1.7L38 15l-1.7-4.3L32 9l4.3-1.7z" fill="${ORANGE}"/><path d="M9 6v6M6 9h6" stroke="${ORANGE}" stroke-width="2.4" stroke-linecap="round"/>`,
   ),
   vagarbete: duo(
     `<path d="M19 9h10l7 29H12z" fill="${YELLOW}" fill-opacity=".38"/>`,

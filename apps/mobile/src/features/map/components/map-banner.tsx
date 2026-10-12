@@ -17,6 +17,7 @@ type MapBannerProps = {
   actionLabel?: string;
   onAction?: () => void;
   onClose?: () => void;
+  top?: number;
 };
 
 export function MapBanner({
@@ -27,6 +28,7 @@ export function MapBanner({
   actionLabel,
   onAction,
   onClose,
+  top = Spacing.three,
 }: MapBannerProps) {
   const theme = useTheme();
 
@@ -35,7 +37,7 @@ export function MapBanner({
       accessibilityRole="alert"
       style={[
         styles.banner,
-        { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+        { top, backgroundColor: theme.backgroundElement, borderColor: theme.border },
       ]}
     >
       <Ionicons name={icon} size={22} color={iconColor ?? theme.brand} style={styles.icon} />
@@ -66,7 +68,6 @@ export function MapBanner({
 const styles = StyleSheet.create({
   banner: {
     position: 'absolute',
-    top: Spacing.three,
     left: Spacing.three,
     right: Spacing.three,
     flexDirection: 'row',

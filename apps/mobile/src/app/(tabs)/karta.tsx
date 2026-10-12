@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import { Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,8 +13,10 @@ import { Words } from '@/constants/strings';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { FriendPicker } from '@/features/map/components/friend-picker';
-import { MapActionBar, type PickerMode } from '@/features/map/components/map-action-bar';
+import { MapActionBar } from '@/features/map/components/map-action-bar';
 import { MapBanner } from '@/features/map/components/map-banner';
+import { FILTER_ROW_HEIGHT, MapFilterChips } from '@/features/map/components/map-filter-chips';
+import { WarningNearbyBanner } from '@/features/map/components/warning-nearby-banner';
 import { MeSheet } from '@/features/map/components/me-sheet';
 import { PlacingControls } from '@/features/map/components/placing-controls';
 import { SpotSheet } from '@/features/map/components/spot-sheet';
@@ -24,8 +26,11 @@ import { type SpotKind } from '@/features/map/spots';
 import { StatusSheet } from '@/features/map/status-sheet';
 import { fixLocationAccess } from '@/features/map/use-device-position';
 import { useHeatHint } from '@/features/map/use-heat-hint';
+import { useMapFilters, visibleLayers } from '@/features/map/use-map-filters';
 import { useMapLayers } from '@/features/map/use-map-layers';
-import { markInterested } from '@/features/meetups/api';
+import { useNearbyWarning } from '@/features/map/use-nearby-warning';
+import { useSharingToggle } from '@/features/map/use-sharing-toggle';
+import { updateMeetup } from '@/features/meetups/api';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useUserId } from '@/hooks/use-user-id';
 import { type FriendLocation } from '@/lib/api';
@@ -38,6 +43,11 @@ import { getErrorMessage } from '@/lib/errors';
 
 type LatLng = { lat: number; lng: number };
 
+type PickerMode = 'none' | 'search' | 'list';
+
+const TOP_GAP = Spacing.two;
+const BELOW_CHIPS = TOP_GAP + FILTER_ROW_HEIGHT + Spacing.two;
+
 export default function MapScreen() {
   const tabBarInset = useTabBarInset();
   const userId = useUserId();
@@ -46,6 +56,7 @@ export default function MapScreen() {
   const theme = useTheme();
   const {
     devicePosition,
+    deviceMotion,
     locationAccess,
     recheckLocation,
     friendLocations,
@@ -56,16 +67,31 @@ export default function MapScreen() {
     layers,
   } = useMapLayers();
   const heatHint = useHeatHint();
+  const hiddenLayers = useMapFilters((state) => state.hidden);
+  const toggleLayer = useMapFilters((state) => state.toggle);
+  const shown = useMemo(() => visibleLayers(layers, hiddenLayers), [layers, hiddenLayers]);
+  const { setSharing, busy: ghostBusy } = useSharingToggle();
+  const ghost = !myLocation?.sharing_enabled;
+  const nearbyWarning = useNearbyWarning({
+    position: devicePosition,
+    heading: deviceMotion.heading,
+    moving: deviceMotion.moving,
+    spots: layers.spots,
+    enabled: !hiddenLayers.includes('warnings'),
+  });
 
-  const { focus, focusLat, focusLng } = useLocalSearchParams<{
+  const { focus, focusLat, focusLng, meetup, move } = useLocalSearchParams<{
     focus?: string;
     focusLat?: string;
     focusLng?: string;
+    meetup?: string;
+    move?: string;
   }>();
   const hasCentered = useRef(!!focus || !!focusLat);
   const wantFollowRef = useRef(false);
   const [meSheetOpen, setMeSheetOpen] = useState(false);
-  const [addSheetOpen, setAddSheetOpen] = useState(false);
+  const [holdPoint, setHoldPoint] = useState<LatLng | null>(null);
+  const [movingMeetupId, setMovingMeetupId] = useState<string | null>(null);
   const [statusOpen, setStatusOpen] = useState(false);
   const [composer, setComposer] = useState<{ at: LatLng; kind: SpotKind } | null>(null);
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
@@ -125,20 +151,20 @@ export default function MapScreen() {
   }, [centerOnMe]);
 
   useEffect(() => {
-    postToMap({ type: 'SET_FRIENDS', friends: layers.friends });
-  }, [postToMap, layers.friends]);
+    postToMap({ type: 'SET_FRIENDS', friends: shown.friends });
+  }, [postToMap, shown.friends]);
 
   useEffect(() => {
     postToMap({ type: 'SET_ME', me: layers.me });
   }, [postToMap, layers.me]);
 
   useEffect(() => {
-    postToMap({ type: 'SET_MEETUPS', meetups: layers.meetups });
-  }, [postToMap, layers.meetups]);
+    postToMap({ type: 'SET_MEETUPS', meetups: shown.meetups });
+  }, [postToMap, shown.meetups]);
 
   useEffect(() => {
-    postToMap({ type: 'SET_SPOTS', spots: layers.spots });
-  }, [postToMap, layers.spots]);
+    postToMap({ type: 'SET_SPOTS', spots: shown.spots });
+  }, [postToMap, shown.spots]);
 
   useEffect(() => {
     postToMap({ type: 'SET_HEAT', cells: heat });
@@ -162,15 +188,49 @@ export default function MapScreen() {
     if (!focus || !mapReady) return;
     const friend = friendLocations?.find((f) => f.user_id === focus);
     if (!friend) return;
+    if (hiddenLayers.includes('friends')) toggleLayer('friends');
     postToMap({ type: 'CENTER_ON', lat: friend.lat, lng: friend.lng, zoom: 15.5 });
     router.setParams({ focus: undefined });
-  }, [focus, mapReady, friendLocations, postToMap]);
+  }, [focus, mapReady, friendLocations, postToMap, hiddenLayers, toggleLayer]);
+
+  useEffect(() => {
+    if (!meetup || !mapReady) return;
+    const target = layers.meetups.find((m) => m.id === meetup);
+    if (!target) return;
+    hasCentered.current = true;
+    if (hiddenLayers.includes('meets')) toggleLayer('meets');
+    postToMap({ type: 'CENTER_ON', lat: target.lat, lng: target.lng, zoom: 16 });
+    router.setParams({ meetup: undefined });
+  }, [meetup, mapReady, layers.meetups, postToMap, hiddenLayers, toggleLayer]);
+
+  const beginMove = useCallback(
+    (meetupId: string, at: LatLng) => {
+      setMovingMeetupId(meetupId);
+      setPicker('none');
+      setPlacingStep('placing');
+      setDraftPin(null);
+      postToMap({ type: 'START_PLACING', lat: at.lat, lng: at.lng });
+    },
+    [postToMap],
+  );
+
+  useEffect(() => {
+    if (!move || !mapReady) return;
+    const target = layers.meetups.find((m) => m.id === move);
+    if (!target) return;
+    hasCentered.current = true;
+    const frame = requestAnimationFrame(() => {
+      beginMove(move, target);
+      router.setParams({ move: undefined });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [move, mapReady, layers.meetups, beginMove]);
 
   const sendAll = () => {
-    postToMap({ type: 'SET_FRIENDS', friends: layers.friends });
+    postToMap({ type: 'SET_FRIENDS', friends: shown.friends });
     postToMap({ type: 'SET_ME', me: layers.me });
-    postToMap({ type: 'SET_MEETUPS', meetups: layers.meetups });
-    postToMap({ type: 'SET_SPOTS', spots: layers.spots });
+    postToMap({ type: 'SET_MEETUPS', meetups: shown.meetups });
+    postToMap({ type: 'SET_SPOTS', spots: shown.spots });
     postToMap({ type: 'SET_HEAT', cells: heat });
     postToMap({ type: 'SET_POSTS', posts: layers.posts });
   };
@@ -196,6 +256,38 @@ export default function MapScreen() {
     openComposer(devicePosition, kind);
   };
 
+  const closeHoldSheet = () => {
+    setHoldPoint(null);
+    postToMap({ type: 'CLEAR_DRAFT_SPOT' });
+  };
+
+  const addAtHoldPoint = (kind: SpotKind | 'meet') => {
+    const at = holdPoint;
+    setHoldPoint(null);
+    if (!at) return;
+    if (kind === 'meet') {
+      postToMap({ type: 'CLEAR_DRAFT_SPOT' });
+      router.push({
+        pathname: '/meetups/create',
+        params: { lat: String(at.lat), lng: String(at.lng) },
+      });
+      return;
+    }
+    openComposer(at, kind);
+  };
+
+  const toggleGhost = async () => {
+    const error = await setSharing(ghost);
+    showToast(
+      error
+        ? { tone: 'error', message: error }
+        : {
+            tone: 'success',
+            message: ghost ? 'Du syns igen för dina kompisar!' : 'Spökläge på! Ingen ser dig nu.',
+          },
+    );
+  };
+
   const centerOnFriend = (friend: FriendLocation) => {
     postToMap({ type: 'CENTER_ON', lat: friend.lat, lng: friend.lng, zoom: 15 });
     setPicker('none');
@@ -209,14 +301,37 @@ export default function MapScreen() {
   };
 
   const cancelPlacing = () => {
+    const moved = movingMeetupId;
     setPlacingStep('idle');
     setDraftPin(null);
+    setMovingMeetupId(null);
     postToMap({ type: 'CANCEL_PLACING' });
+    if (moved) router.push(`/meetups/${moved}`);
+  };
+
+  const moveMeetupTo = async (meetupId: string, at: LatLng) => {
+    try {
+      await updateMeetup(meetupId, { lat: at.lat, lng: at.lng });
+      queryClient.invalidateQueries({ queryKey: queryKeys.meetups() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.meetupDetail(meetupId) });
+      showToast({ tone: 'success', message: 'Meeten är flyttad!' });
+      router.push(`/meetups/${meetupId}`);
+    } catch (error) {
+      showToast({ tone: 'error', message: getErrorMessage(error) });
+    }
   };
 
   const confirmPlacement = () => {
     if (!draftPin) return;
     postToMap({ type: 'CANCEL_PLACING' });
+    if (movingMeetupId) {
+      const id = movingMeetupId;
+      setMovingMeetupId(null);
+      setPlacingStep('idle');
+      setDraftPin(null);
+      moveMeetupTo(id, draftPin);
+      return;
+    }
     router.push({
       pathname: '/meetups/create',
       params: { lat: String(draftPin.lat), lng: String(draftPin.lng) },
@@ -245,7 +360,9 @@ export default function MapScreen() {
         setSelectedSpotId(msg.id);
       } else if (msg.type === 'MAP_LONG_PRESS') {
         pressHaptic();
-        openComposer({ lat: msg.lat, lng: msg.lng }, 'ragg');
+        setPicker('none');
+        postToMap({ type: 'SHOW_DRAFT_SPOT', lat: msg.lat, lng: msg.lng });
+        setHoldPoint({ lat: msg.lat, lng: msg.lng });
       } else if (msg.type === 'HEAT_IN_VIEW') {
         heatHint.show();
       } else if (msg.type === 'MEETUP_TAP') {
@@ -253,12 +370,6 @@ export default function MapScreen() {
       } else if (msg.type === 'DRAFT_PIN_SET' || msg.type === 'DRAFT_PIN_MOVED') {
         setDraftPin({ lat: msg.lat, lng: msg.lng });
         setPlacingStep('confirming');
-      } else if (msg.type === 'MEETUP_LONG_PRESS' && userId) {
-        pressHaptic();
-        markInterested(msg.id, userId).then(() => {
-          queryClient.invalidateQueries({ queryKey: queryKeys.meetups() });
-          queryClient.invalidateQueries({ queryKey: queryKeys.meetupDetail(msg.id) });
-        });
       }
     } catch {
       return;
@@ -295,8 +406,11 @@ export default function MapScreen() {
           onMessage={handleWebViewMessage}
         />
 
+        <MapFilterChips top={TOP_GAP} />
+
         {locationOff ? (
           <MapBanner
+            top={BELOW_CHIPS}
             icon="location-outline"
             iconColor={theme.accent}
             title={
@@ -310,8 +424,15 @@ export default function MapScreen() {
             }
             onAction={fixLocation}
           />
+        ) : nearbyWarning.warning && placingStep === 'idle' ? (
+          <WarningNearbyBanner
+            warning={nearbyWarning.warning}
+            top={BELOW_CHIPS}
+            onClose={nearbyWarning.dismiss}
+          />
         ) : heatHint.visible ? (
           <MapBanner
+            top={BELOW_CHIPS}
             icon="flame-outline"
             iconColor={theme.accent}
             title="Här brukar folk vara på kvällen"
@@ -325,6 +446,7 @@ export default function MapScreen() {
           <PlacingControls
             step={placingStep}
             bottom={tabBarInset}
+            moving={!!movingMeetupId}
             onCancel={cancelPlacing}
             onConfirm={confirmPlacement}
           />
@@ -332,8 +454,8 @@ export default function MapScreen() {
           <>
             {picker !== 'none' && (
               <FriendPicker
-                mode={picker}
-                bottom={tabBarInset + 76}
+                top={BELOW_CHIPS}
+                autoFocus={picker === 'search'}
                 friends={friendLocations}
                 onPick={centerOnFriend}
                 onClose={() => setPicker('none')}
@@ -341,9 +463,14 @@ export default function MapScreen() {
             )}
             <MapActionBar
               bottom={tabBarInset}
-              picker={picker}
-              onPicker={setPicker}
-              onAdd={() => setAddSheetOpen(true)}
+              ghost={ghost}
+              ghostBusy={ghostBusy}
+              onSearch={() => setPicker('search')}
+              onFriendList={() => setPicker('list')}
+              onToggleGhost={toggleGhost}
+              onAddRagga={() => dropHere('ragg')}
+              onAddWarning={() => dropHere('varning')}
+              onAddMeet={startPlacing}
               onLocate={centerOnMe}
               following={following}
               locating={locating}
@@ -351,22 +478,28 @@ export default function MapScreen() {
           </>
         )}
         <ActionSheet
-          visible={addSheetOpen}
-          title={Words.placeOnMap}
-          onClose={() => setAddSheetOpen(false)}
+          visible={!!holdPoint}
+          title="Lägg till här"
+          onClose={closeHoldSheet}
           actions={[
             {
-              label: `${Words.ragga} där jag är`,
-              icon: 'flag-outline',
-              hint: 'Eller håll in var som helst på kartan',
-              onPress: () => dropHere('ragg'),
+              label: Words.ragga,
+              icon: 'sparkles-outline',
+              hint: 'Ett ställe där folk brukar ragga',
+              onPress: () => addAtHoldPoint('ragg'),
             },
             {
-              label: `${Words.warning} där jag är`,
+              label: Words.warning,
               icon: 'warning-outline',
-              onPress: () => dropHere('varning'),
+              hint: 'Vägarbete, halka, gropar',
+              onPress: () => addAtHoldPoint('varning'),
             },
-            { label: `${Words.meet} på kartan`, icon: 'calendar-outline', onPress: startPlacing },
+            {
+              label: Words.meet,
+              icon: 'calendar-outline',
+              hint: 'Bjud in kompisarna hit',
+              onPress: () => addAtHoldPoint('meet'),
+            },
           ]}
         />
         <SpotSheet

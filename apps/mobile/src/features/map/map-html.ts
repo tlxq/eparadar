@@ -520,23 +520,12 @@ export const MAP_HTML = `<!DOCTYPE html>
     }
 
     const meetupMarkers = {};
-    let longPressFired = false;
     function meetupHtml(m) {
       const count = m.interestCount > 0 && step === 'street' ? '<span class="count">' + m.interestCount + '</span>' : '';
       const chip = step === 'street'
         ? '<span class="below pill"><span class="t">' + escapeHtml(m.title) + '</span><span class="when">· ' + escapeHtml(m.time) + '</span></span>'
         : '';
       return tileHtml('k-meet', m.icon || '${ICON_MEETUP}', count, m.hereNowCount > 0) + chip;
-    }
-    function attachLongPress(el, onLong) {
-      let timer = null;
-      el.addEventListener('touchstart', function () {
-        longPressFired = false;
-        timer = setTimeout(function () { longPressFired = true; timer = null; onLong(); }, ${LONG_PRESS_MS});
-      }, { passive: true });
-      ['touchend', 'touchmove', 'touchcancel'].forEach(function (t) {
-        el.addEventListener(t, function () { if (timer) { clearTimeout(timer); timer = null; } }, { passive: true });
-      });
     }
     let meetups = [];
     function renderMeetups() {
@@ -553,10 +542,8 @@ export const MAP_HTML = `<!DOCTYPE html>
         const el = makeEl('mk meet', meetupHtml(m));
         el.addEventListener('click', function (e) {
           e.stopPropagation();
-          if (longPressFired) { longPressFired = false; return; }
           sendToNative({ type: 'MEETUP_TAP', id: m.id });
         });
-        attachLongPress(el, function () { sendToNative({ type: 'MEETUP_LONG_PRESS', id: m.id }); });
         meetupMarkers[m.id] = new maplibregl.Marker({ element: el }).setLngLat([m.lng, m.lat]).addTo(map);
       });
     }
@@ -694,15 +681,18 @@ export const MAP_HTML = `<!DOCTYPE html>
 
     let placing = false;
     let draftMarker = null;
-    map.on('click', function (e) {
-      if (!placing || draftMarker) return;
+    function placeDraft(lngLat) {
       const el = makeEl('mk pin', '${ICON_PIN}');
-      draftMarker = new maplibregl.Marker({ element: el, anchor: 'bottom', draggable: true }).setLngLat(e.lngLat).addTo(map);
+      draftMarker = new maplibregl.Marker({ element: el, anchor: 'bottom', draggable: true }).setLngLat(lngLat).addTo(map);
       draftMarker.on('dragend', function () {
         const ll = draftMarker.getLngLat();
         sendToNative({ type: 'DRAFT_PIN_MOVED', lat: ll.lat, lng: ll.lng });
       });
-      sendToNative({ type: 'DRAFT_PIN_SET', lat: e.lngLat.lat, lng: e.lngLat.lng });
+      sendToNative({ type: 'DRAFT_PIN_SET', lat: lngLat.lat, lng: lngLat.lng });
+    }
+    map.on('click', function (e) {
+      if (!placing || draftMarker) return;
+      placeDraft(e.lngLat);
     });
 
     map.on('moveend', renderFriends);
@@ -755,7 +745,15 @@ export const MAP_HTML = `<!DOCTYPE html>
         if (!msg.keepFollow) setFollowing(false);
         map.flyTo({ center: [msg.lng, msg.lat], zoom: msg.zoom || 15, pitch: msg.pitch == null ? map.getPitch() : msg.pitch, speed: 1.4 });
       }
-      if (msg.type === 'START_PLACING') placing = true;
+      if (msg.type === 'START_PLACING') {
+        placing = true;
+        if (draftMarker) { draftMarker.remove(); draftMarker = null; }
+        if (msg.lat != null && msg.lng != null) {
+          setFollowing(false);
+          map.flyTo({ center: [msg.lng, msg.lat], zoom: Math.max(map.getZoom(), 15), speed: 1.4 });
+          placeDraft({ lat: msg.lat, lng: msg.lng });
+        }
+      }
       if (msg.type === 'CANCEL_PLACING') {
         placing = false;
         if (draftMarker) { draftMarker.remove(); draftMarker = null; }

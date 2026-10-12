@@ -99,6 +99,7 @@ export function useMapLayers() {
 
   return {
     devicePosition: device.position,
+    deviceMotion: device.motion,
     locationAccess: device.access,
     recheckLocation: device.recheck,
     friendLocations,

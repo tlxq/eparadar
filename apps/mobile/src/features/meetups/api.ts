@@ -13,6 +13,7 @@ export type Meetup = {
   lat: number;
   lng: number;
   starts_at: string;
+  description: string | null;
   interest_count: number;
   here_now_count: number;
 };
@@ -102,6 +103,7 @@ export async function createMeetup(input: {
   lat: number;
   lng: number;
   startsAt: string;
+  description?: string | null;
 }): Promise<Meetup> {
   const payload: DbTables['meetups']['Insert'] = {
     creator_id: input.creatorId,
@@ -110,10 +112,38 @@ export async function createMeetup(input: {
     lat: input.lat,
     lng: input.lng,
     starts_at: input.startsAt,
+    description: input.description?.trim() || null,
   };
   const { data, error } = await supabase.from('meetups').insert(payload).select().single();
   if (error) throw error;
   return { ...data, interest_count: 0, here_now_count: 0 };
+}
+
+export async function updateMeetup(
+  meetupId: string,
+  patch: {
+    title?: string;
+    vibe?: string;
+    startsAt?: string;
+    description?: string | null;
+    lat?: number;
+    lng?: number;
+  },
+): Promise<void> {
+  const update: DbTables['meetups']['Update'] = {};
+  if (patch.title !== undefined) update.title = patch.title.trim();
+  if (patch.vibe !== undefined) update.vibe = patch.vibe;
+  if (patch.startsAt !== undefined) update.starts_at = patch.startsAt;
+  if (patch.description !== undefined) update.description = patch.description?.trim() || null;
+  if (patch.lat !== undefined) update.lat = patch.lat;
+  if (patch.lng !== undefined) update.lng = patch.lng;
+  const { data, error } = await supabase
+    .from('meetups')
+    .update(update)
+    .eq('id', meetupId)
+    .select('id');
+  if (error) throw error;
+  if (!data?.length) throw new Error('Bara den som skapade meeten kan ändra den.');
 }
 
 export async function deleteMeetup(meetupId: string): Promise<void> {
@@ -142,17 +172,6 @@ export async function setInterested(
   }
 }
 
-/** Idempotent "mark interested" for the long-press-on-a-pin gesture — never errors on a repeat press. */
-export async function markInterested(meetupId: string, userId: string): Promise<void> {
-  const { error } = await supabase
-    .from('meetup_interests')
-    .upsert(
-      { meetup_id: meetupId, user_id: userId },
-      { onConflict: 'meetup_id,user_id', ignoreDuplicates: true },
-    );
-  if (error) throw error;
-}
-
 export async function checkInAtMeetup(
   meetupId: string,
   lat: number,
@@ -165,4 +184,16 @@ export async function checkInAtMeetup(
   });
   if (error) throw error;
   return !!data;
+}
+
+export async function fetchSharedMeetup(
+  meetupId: string,
+): Promise<Pick<Meetup, 'id' | 'title' | 'vibe' | 'starts_at'> | null> {
+  const { data, error } = await supabase
+    .from('meetups')
+    .select('id, title, vibe, starts_at')
+    .eq('id', meetupId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
 }

@@ -18,7 +18,7 @@ export const WARNING_TYPES: { key: WarningType; label: string }[] = [
 
 const HERE_NOW_RADIUS_M = 100;
 
-function warningLabel(type: string | null): string {
+export function warningLabel(type: string | null): string {
   return WARNING_TYPES.find((warning) => warning.key === type)?.label ?? 'Varning';
 }
 
@@ -120,3 +120,35 @@ export async function deleteSpotPhoto(photo: Pick<SpotPhotoRow, 'id' | 'path'>):
   if (error) throw error;
   await supabase.storage.from('spot-photos').remove([photo.path]);
 }
+
+export type WarningVotes = { stillThere: number; gone: number; myVote: boolean | null };
+
+export async function fetchWarningVotes(spotId: string): Promise<WarningVotes> {
+  const { data, error } = await supabase.rpc('warning_votes', { p_spot_id: spotId });
+  if (error) throw error;
+  const row = data?.[0];
+  return {
+    stillThere: row?.still_there ?? 0,
+    gone: row?.gone ?? 0,
+    myVote: row ? (row.my_vote ?? null) : null,
+  };
+}
+
+export async function voteOnWarning(
+  spotId: string,
+  gone: boolean,
+): Promise<{ stillThere: number; gone: number; cleared: boolean }> {
+  const { data, error } = await supabase.rpc('vote_on_warning', {
+    p_spot_id: spotId,
+    p_gone: gone,
+  });
+  if (error) throw error;
+  const row = data?.[0];
+  return {
+    stillThere: row?.still_there ?? 0,
+    gone: row?.gone ?? 0,
+    cleared: !!row?.cleared,
+  };
+}
+
+export const WARNING_CLEAR_VOTES = 5;

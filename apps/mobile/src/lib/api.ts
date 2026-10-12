@@ -425,6 +425,7 @@ export async function sendMessage(input: {
   body: string;
   imagePath?: string | null;
   postId?: string | null;
+  meetupId?: string | null;
 }) {
   const { error } = await supabase.from('messages').insert({
     id: input.id,
@@ -433,6 +434,7 @@ export async function sendMessage(input: {
     body: input.body,
     image_path: input.imagePath ?? null,
     post_id: input.postId ?? null,
+    meetup_id: input.meetupId ?? null,
   });
   if (error) throw error;
 }

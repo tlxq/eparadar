@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SvgXml } from 'react-native-svg';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -20,7 +21,9 @@ import {
   useMeetupDetail,
   useToggleInterest,
 } from '@/features/meetups/hooks';
+import { ShareMeetupSheet } from '@/features/meetups/share-meetup-sheet';
 import { formatMeetupTime } from '@/features/meetups/time';
+import { openPerson } from '@/store/person-sheet';
 import { useTheme } from '@/hooks/use-theme';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
@@ -36,6 +39,7 @@ export default function MeetupDetailScreen() {
   const { data: meetup, isLoading, isError, refetch } = useMeetupDetail(id, userId);
   const toggleInterest = useToggleInterest(id, userId);
   const deleteMeetup = useDeleteMeetup();
+  const [shareOpen, setShareOpen] = useState(false);
   useAutoCheckIn(id);
 
   async function handleDelete() {
@@ -102,6 +106,11 @@ export default function MeetupDetailScreen() {
     meetup.creator_id === userId
       ? [
           {
+            label: 'Redigera',
+            icon: 'create-outline',
+            onPress: () => router.push({ pathname: '/meetups/edit', params: { id: meetup.id } }),
+          },
+          {
             label: 'Ta bort meeten',
             icon: 'trash-outline',
             destructive: true,
@@ -159,25 +168,95 @@ export default function MeetupDetailScreen() {
             </View>
           </View>
 
-          <ThemedText themeColor="textSecondary">
-            {meetup.creator ? `${meetup.creator.display_name} skapade denna` : null}
-          </ThemedText>
+          {meetup.creator ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Visa ${meetup.creator.display_name}`}
+              onPress={() => openPerson(meetup.creator!.id)}
+              style={styles.creator}
+            >
+              <Avatar
+                name={meetup.creator.display_name}
+                imageUrl={meetup.creator.avatar_url}
+                size={24}
+              />
+              <ThemedText themeColor="textSecondary">
+                {`${meetup.creator.display_name} skapade denna`}
+              </ThemedText>
+            </Pressable>
+          ) : null}
 
           <ThemedText type="smallBold" style={styles.meta}>
             {formatMeetupTime(meetup.starts_at)}
           </ThemedText>
 
+          {meetup.description ? (
+            <ThemedText style={styles.description}>{meetup.description}</ThemedText>
+          ) : null}
+
+          <View style={styles.actions}>
+            <View style={styles.action}>
+              <Button
+                label="Visa på kartan"
+                icon="map-outline"
+                variant="secondary"
+                size="sm"
+                onPress={() =>
+                  router.navigate({ pathname: '/karta', params: { meetup: meetup.id } })
+                }
+              />
+            </View>
+            <View style={styles.action}>
+              <Button
+                label="Dela"
+                icon="paper-plane-outline"
+                variant="secondary"
+                size="sm"
+                onPress={() => setShareOpen(true)}
+              />
+            </View>
+          </View>
+
           {meetup.interested.length > 0 && (
             <View style={styles.avatarStrip}>
               <View style={styles.avatars}>
                 {meetup.interested.slice(0, 6).map((person) => (
-                  <View key={person.id} style={styles.avatarWrap}>
+                  <Pressable
+                    key={person.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Visa ${person.display_name}`}
+                    hitSlop={4}
+                    onPress={() => openPerson(person.id)}
+                    style={styles.avatarWrap}
+                  >
                     <Avatar name={person.display_name} imageUrl={person.avatar_url} size={30} />
-                  </View>
+                  </Pressable>
                 ))}
               </View>
               <ThemedText type="small" themeColor="textSecondary">
                 {meetup.interest_count} intresserade
+              </ThemedText>
+            </View>
+          )}
+
+          {meetup.hereNow.length > 0 && (
+            <View style={styles.avatarStrip}>
+              <View style={styles.avatars}>
+                {meetup.hereNow.slice(0, 6).map((person) => (
+                  <Pressable
+                    key={person.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Visa ${person.display_name}`}
+                    hitSlop={4}
+                    onPress={() => openPerson(person.id)}
+                    style={styles.avatarWrap}
+                  >
+                    <Avatar name={person.display_name} imageUrl={person.avatar_url} size={30} />
+                  </Pressable>
+                ))}
+              </View>
+              <ThemedText type="small" themeColor="success">
+                {meetup.hereNow.length} är här
               </ThemedText>
             </View>
           )}
@@ -210,6 +289,7 @@ export default function MeetupDetailScreen() {
           )}
         </ScrollView>
       </SafeAreaView>
+      {shareOpen ? <ShareMeetupSheet meetup={meetup} onClose={() => setShareOpen(false)} /> : null}
     </ScreenBackground>
   );
 }
@@ -250,6 +330,15 @@ const styles = StyleSheet.create({
   liveDot: { width: 7, height: 7, borderRadius: 4 },
   title: Typography.display,
   meta: { marginTop: Spacing.one },
+  creator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    alignSelf: 'flex-start',
+  },
+  description: { marginTop: Spacing.two },
+  actions: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.three },
+  action: { flex: 1 },
   avatarStrip: {
     flexDirection: 'row',
     alignItems: 'center',

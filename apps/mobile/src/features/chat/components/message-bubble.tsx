@@ -2,6 +2,7 @@ import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Avatar } from '@/components/avatar';
 import { Skeleton } from '@/components/skeleton';
+import { MeetupCard } from '@/features/chat/components/meetup-card';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -250,6 +251,9 @@ export function MessageBubble({
               onOpen={onOpenImage}
               onLongPress={() => onLongPress(message)}
             />
+          ) : null}
+          {message.meetup_id ? (
+            <MeetupCard meetupId={message.meetup_id} onLongPress={() => onLongPress(message)} />
           ) : null}
           {message.body.trim() ? (
             <Pressable
