@@ -20,16 +20,18 @@ import {
   RequestRow,
 } from '@/features/friends/components/friend-rows';
 import { usePullRefresh } from '@/hooks/use-pull-refresh';
+import { useWithoutPendingRemovals } from '@/store/pending-removals';
 
 export default function FriendsScreen() {
   const userId = useUserId();
   const tabBarInset = useTabBarInset();
 
-  const { data: friends, isLoading: friendsLoading, isError, refetch } = useFriends();
+  const { data: allFriends, isLoading: friendsLoading, isError, refetch } = useFriends();
+  const friends = useWithoutPendingRemovals(allFriends);
 
-  const { data: requests } = useFriendRequests();
+  const requests = useWithoutPendingRemovals(useFriendRequests().data);
 
-  const { data: outgoingRequests } = useOutgoingRequests();
+  const outgoingRequests = useWithoutPendingRemovals(useOutgoingRequests().data);
 
   const pull = usePullRefresh(refetch);
 

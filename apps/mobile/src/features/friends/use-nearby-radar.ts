@@ -17,11 +17,12 @@ function toRadarPermission(response: Location.LocationPermissionResponse): Radar
   return response.canAskAgain ? 'denied' : 'blocked';
 }
 
-export function useNearbyRadar(userId: string | undefined) {
+export function useNearbyRadar(userId: string | undefined, paused = false) {
   const [permission, setPermission] = useState<RadarPermission>('checking');
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [active, setActive] = useState(false);
   const leaving = useRef(false);
+  const running = active && !paused;
 
   useEffect(() => {
     Location.getForegroundPermissionsAsync().then((response) =>
@@ -61,7 +62,11 @@ export function useNearbyRadar(userId: string | undefined) {
   }, []);
 
   useEffect(() => {
-    if (permission !== 'granted' || !active) return;
+    if (paused) leaveNearby().catch(() => undefined);
+  }, [paused]);
+
+  useEffect(() => {
+    if (permission !== 'granted' || !running) return;
     let watcher: Location.LocationSubscription | null = null;
     let cancelled = false;
     Location.watchPositionAsync(
@@ -75,12 +80,12 @@ export function useNearbyRadar(userId: string | undefined) {
       cancelled = true;
       watcher?.remove();
     };
-  }, [permission, active]);
+  }, [permission, running]);
 
   const query = useQuery({
     queryKey: queryKeys.nearby(userId, coords?.lat.toFixed(4), coords?.lng.toFixed(4)),
     queryFn: () => scanNearby(coords!.lat, coords!.lng),
-    enabled: !!userId && !!coords && active && permission === 'granted',
+    enabled: !!userId && !!coords && running && permission === 'granted',
     refetchInterval: SCAN_INTERVAL_MS,
     placeholderData: (previous) => previous,
     gcTime: 0,

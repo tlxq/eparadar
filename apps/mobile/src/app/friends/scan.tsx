@@ -89,7 +89,7 @@ export default function ScanFriendCodeScreen() {
           </View>
           <View style={styles.permissionFooter}>
             <Button
-              label="Skriv in kod istället"
+              label="Skriv kod i stället"
               icon="keypad-outline"
               variant="secondary"
               onPress={() => router.replace('/friends/enter-code')}
@@ -138,7 +138,7 @@ export default function ScanFriendCodeScreen() {
         </View>
         <View style={styles.cameraFooter}>
           <Button
-            label="Skriv in kod istället"
+            label="Skriv kod i stället"
             icon="keypad-outline"
             variant="secondary"
             onPress={() => router.replace('/friends/enter-code')}
