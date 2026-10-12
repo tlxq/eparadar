@@ -56,43 +56,46 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [x] Apply 7b–7g to the live database, deploy `notify-report` and `send-push`, set secrets
    - [x] Tom: leaked-password protection in Supabase Auth, `RESEND_API_KEY` function secret (sending-only keys)
 
-6. **Design round (picked by Tom 2026-10-12 in the pitch artifact, one PR each, in this order)**
-   - [ ] 6a Words: kompisar, post, Radarn, playful tone with full stops, map words
+6. **Design round (picked by Tom 2026-10-12, all live 2026-10-12, #138–#151)**
+   - [x] 6a Words: kompisar, post, Radarn, playful tone with full stops, map words
          (Spot = anything on the map, Ragga, Meet, Varning, verb Placera), vehicle words
          EPA / kärra / traktor, clearer private push texts, one section-label component,
          one-line help texts, short block text, "📷 Bild"
-   - [ ] 6b The 22 bug fixes from the pitch (Swedish auth errors, post image links that expire,
+   - [x] 6b The 22 bug fixes from the pitch (Swedish auth errors, post image links that expire,
          grey buttons that explain, meetup errors, "Pågår nu" ends, spot time left, and the rest)
-   - [ ] 6c App-wide patterns: Karta as the middle tab, own confirm sheet, delete rules
+   - [x] 6c App-wide patterns: Karta as the middle tab, own confirm sheet, delete rules
          (small things undo, own content ⋯ + confirm), error + Försök igen on every screen,
          placeholders everywhere, buttons with dropdowns to save space
-   - [ ] 6d Sign-up and login: one field per screen with steps and validation, email
+   - [x] 6d Sign-up and login: one field per screen with steps and validation, email
          verification, Glömt lösenordet, show password, "Minst 8 tecken", friendlier age text,
          clearer location step, ✓ on the friends step, push asked the first time it matters
-   - [ ] 6e Report and block: reason, optional text, Skicka; anonymous thank-you; add it to radar,
+   - [x] 6e Report and block: reason, optional text, Skicka; anonymous thank-you; add it to radar,
          friend requests, spot photos, group chats, statuses and full-screen chat images;
          an admin view for Tom to see reports and map items
-   - [ ] 6f Map look: avatar parked and car when driving, three zoom steps with stacks, filled
+   - [x] 6f Map look: avatar parked and car when driving, three zoom steps with stacks, filled
          colors for spots, meetups and warnings, meetup chip "Namn · 20:00", old positions fade,
          time left only for the creator, heat explained once, location-off banner, status counter,
          status greyed out in ghost mode
-   - [ ] 6g Map actions: button bar with dropdowns, hold the map for "Lägg till här" (Ragga with
+   - [x] 6g Map actions: button bar with dropdowns, hold the map for "Lägg till här" (Ragga with
          its own icon, Varning, Meet), no hidden long-press interest, filter chips, warnings get
          "Finns kvar / Borta nu" (5 votes clear it) and a small banner when you are close,
          full-screen spot photos, meetup time picker, meetup page with map, edit, share, avatars
-   - [ ] 6h Feed: picture first, emoji reactions, send to chat, full-screen zoom, new header,
+   - [x] 6h Feed: picture first, emoji reactions, send to chat, full-screen zoom, new header,
          story-style map row, picture-only posts, two empty states, discard-draft question,
          Kvällen (evening map card) and Släpp (post at a place, photo pin for 24 h)
-   - [ ] 6i Profile and cars: full profile (garage first), strangers see name and cars only,
+   - [x] 6i Profile and cars: full profile (garage first), strangers see name and cars only,
          correct and tappable counts, full car edit, car page with its posts, "Färg på kartan"
          with preview, camera choice for car and avatar, @username shown as locked
-   - [ ] 6j Chat: double-tap 🔥, tap for time, tappable reaction chips, "Ångra skickat" with
+   - [x] 6j Chat: double-tap 🔥, tap for time, tappable reaction chips, "Ångra skickat" with
          confirm, retry on failed messages, picture preview, chevron in the header, hold a chat
          row for a menu, mute, add group members, everyone can rename a group
-   - [ ] 6k Kompisar: four tiles then suggestions, one code screen, undo toasts, "Neka" button,
+   - [x] 6k Kompisar: four tiles then suggestions, one code screen, undo toasts, "Neka" button,
          chat icon on each row, blocked list always in Settings, radar stops after 30 s,
          "Skicka meddelande" after adding
-   - [ ] 6l Settings: Plats, Aviseringar (one switch per type), Sekretess, Hjälp, Konto
+   - [x] 6l Settings: Plats, Aviseringar (one switch per type), Sekretess, Hjälp, Konto
+   - [x] 6m Admin view: reports list, mark handled, remove content (only Tom is admin)
+   - [ ] Tom: custom SMTP (Resend), app redirect URL, Swedish templates, then "Confirm email"
+   - [ ] Phone test of step 6
 
 5. **Bigger features after the design round** (each also needs report, block and expiry)
    - [ ] Invite friends to a meetup, meetup list inside Karta
