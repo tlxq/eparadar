@@ -120,11 +120,11 @@ export default function MeetupDetailScreen() {
         </View>
 
         <ScrollView contentContainerStyle={styles.content}>
-          {meetup.hereNow.length > 0 && (
+          {meetup.here_now_count > 0 && (
             <View style={[styles.liveBanner, { backgroundColor: `${theme.success}24` }]}>
               <View style={[styles.liveDot, { backgroundColor: theme.success }]} />
               <ThemedText type="smallBold" themeColor="success">
-                {meetup.hereNow.length} är här nu
+                {meetup.here_now_count} är här nu
               </ThemedText>
             </View>
           )}
