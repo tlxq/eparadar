@@ -14,8 +14,11 @@ insert into public.profiles (id, username, display_name) values
 on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
 
 insert into public.meetups (id, creator_id, title, vibe, lat, lng, starts_at) values
-  ('f2000000-0000-0000-0000-000000000001', 'd9000000-0000-0000-0000-000000000021', 'Cruising', 'cruising', 59.3000, 18.1000, now() + interval '1 day'),
+  ('f2000000-0000-0000-0000-000000000001', 'd9000000-0000-0000-0000-000000000021', 'Cruising', 'cruising', 59.3000, 18.1000, now()),
   ('f2000000-0000-0000-0000-000000000002', 'd9000000-0000-0000-0000-000000000021', 'Throwaway', 'hang', 59.4000, 18.2000, now() + interval '1 day');
+
+insert into public.friendships (requester_id, addressee_id, status) values
+  ('d9000000-0000-0000-0000-000000000021', 'c9000000-0000-0000-0000-000000000023', 'accepted');
 
 set local role authenticated;
 set local request.jwt.claim.sub = 'e9000000-0000-0000-0000-000000000022';
