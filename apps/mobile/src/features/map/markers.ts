@@ -74,12 +74,23 @@ export function meMarker({
 
 export type MeMarker = ReturnType<typeof meMarker>;
 
-export function meetupMarkers(meetups: Meetup[] | undefined) {
+const WEEKDAYS = ['sön', 'mån', 'tis', 'ons', 'tor', 'fre', 'lör'];
+
+export function meetupTimeLabel(startsAt: string, now: Date = new Date()): string {
+  const start = new Date(startsAt);
+  if (start.getTime() <= now.getTime()) return 'nu';
+  const time = `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
+  return start.toDateString() === now.toDateString() ? time : `${WEEKDAYS[start.getDay()]} ${time}`;
+}
+
+export function meetupMarkers(meetups: Meetup[] | undefined, now: Date = new Date()) {
   return (meetups ?? []).map((m) => ({
     id: m.id,
     lat: m.lat,
     lng: m.lng,
     icon: meetupVibe(m.vibe).icon,
+    title: m.title,
+    time: meetupTimeLabel(m.starts_at, now),
     interestCount: m.interest_count,
     hereNowCount: m.here_now_count,
   }));
@@ -90,6 +101,7 @@ export function spotMarkers(
   friends: FriendMarker[],
   me: MeMarker,
   photoCounts: Record<string, number> | undefined,
+  myUserId: string | null = null,
 ) {
   const people = friends.filter((f) => !f.approximate);
   const present = me && !me.ghost ? [...people, { lat: me.lat, lng: me.lng }] : people;
@@ -103,5 +115,7 @@ export function spotMarkers(
     hereNow: spot.kind === 'ragg' ? countHereNow(spot, present) : 0,
     photoCount: photoCounts?.[spot.id] ?? 0,
     expiresAt: new Date(spot.expires_at).getTime(),
+    createdAt: new Date(spot.created_at).getTime(),
+    mine: !!myUserId && spot.creator_id === myUserId,
   }));
 }

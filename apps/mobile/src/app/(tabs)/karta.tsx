@@ -11,8 +11,10 @@ import { EmptyState } from '@/components/empty-state';
 import { ScreenBackground } from '@/components/screen-background';
 import { Words } from '@/constants/strings';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { FriendPicker } from '@/features/map/components/friend-picker';
 import { MapActionBar, type PickerMode } from '@/features/map/components/map-action-bar';
+import { MapBanner } from '@/features/map/components/map-banner';
 import { MeSheet } from '@/features/map/components/me-sheet';
 import { PlacingControls } from '@/features/map/components/placing-controls';
 import { SpotSheet } from '@/features/map/components/spot-sheet';
@@ -20,6 +22,8 @@ import { MAP_HTML } from '@/features/map/map-html';
 import { SpotComposer } from '@/features/map/spot-composer';
 import { type SpotKind } from '@/features/map/spots';
 import { StatusSheet } from '@/features/map/status-sheet';
+import { fixLocationAccess } from '@/features/map/use-device-position';
+import { useHeatHint } from '@/features/map/use-heat-hint';
 import { useMapLayers } from '@/features/map/use-map-layers';
 import { markInterested } from '@/features/meetups/api';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
@@ -39,8 +43,19 @@ export default function MapScreen() {
   const userId = useUserId();
   const webviewRef = useRef<WebView>(null);
   const queryClient = useQueryClient();
-  const { devicePosition, friendLocations, myLocation, myProfile, spots, heat, layers } =
-    useMapLayers();
+  const theme = useTheme();
+  const {
+    devicePosition,
+    locationAccess,
+    recheckLocation,
+    friendLocations,
+    myLocation,
+    myProfile,
+    spots,
+    heat,
+    layers,
+  } = useMapLayers();
+  const heatHint = useHeatHint();
 
   const { focus } = useLocalSearchParams<{ focus?: string }>();
   const hasCentered = useRef(!!focus);
@@ -67,6 +82,7 @@ export default function MapScreen() {
     if (!granted) {
       const result = await Location.requestForegroundPermissionsAsync();
       granted = result.status === 'granted';
+      recheckLocation();
     }
     if (!granted) return;
 
@@ -90,7 +106,13 @@ export default function MapScreen() {
     } finally {
       setLocating(false);
     }
-  }, [postToMap]);
+  }, [postToMap, recheckLocation]);
+
+  const fixLocation = async () => {
+    const granted = await fixLocationAccess(locationAccess);
+    recheckLocation();
+    if (granted) centerOnMe();
+  };
 
   useEffect(() => {
     if (hasCentered.current) return;
@@ -203,6 +225,8 @@ export default function MapScreen() {
       } else if (msg.type === 'MAP_LONG_PRESS') {
         pressHaptic();
         openComposer({ lat: msg.lat, lng: msg.lng }, 'ragg');
+      } else if (msg.type === 'HEAT_IN_VIEW') {
+        heatHint.show();
       } else if (msg.type === 'MEETUP_TAP') {
         router.push(`/meetups/${msg.id}`);
       } else if (msg.type === 'DRAFT_PIN_SET' || msg.type === 'DRAFT_PIN_MOVED') {
@@ -234,6 +258,8 @@ export default function MapScreen() {
     );
   }
 
+  const locationOff =
+    locationAccess === 'ask' || locationAccess === 'blocked' || locationAccess === 'off';
   const selectedSpot = spots?.find((spot) => spot.id === selectedSpotId) ?? null;
   const selectedSpotHereNow = layers.spots.find((spot) => spot.id === selectedSpotId)?.hereNow ?? 0;
 
@@ -247,6 +273,32 @@ export default function MapScreen() {
           style={styles.webview}
           onMessage={handleWebViewMessage}
         />
+
+        {locationOff ? (
+          <MapBanner
+            icon="location-outline"
+            iconColor={theme.accent}
+            title={
+              locationAccess === 'off' ? 'Platsen är av i telefonen' : 'Appen får inte se din plats'
+            }
+            message="Slå på den så hittar kartan dig. Kompisar ser dig bara om du delar din plats, och du kan stänga av när du vill."
+            actionLabel={
+              locationAccess === 'ask' || (locationAccess === 'off' && Platform.OS === 'android')
+                ? 'Slå på plats'
+                : 'Öppna inställningar'
+            }
+            onAction={fixLocation}
+          />
+        ) : heatHint.visible ? (
+          <MapBanner
+            icon="flame-outline"
+            iconColor={theme.accent}
+            title="Här brukar folk vara på kvällen"
+            message="Det orangea skenet visar var minst två kompisar har varit de senaste timmarna. Det visar aldrig vem."
+            actionLabel="Fattar!"
+            onAction={heatHint.dismiss}
+          />
+        ) : null}
 
         {placingStep !== 'idle' ? (
           <PlacingControls
@@ -305,6 +357,7 @@ export default function MapScreen() {
           <StatusSheet
             userId={userId}
             current={myLocation?.status_text ?? null}
+            ghost={!myLocation?.sharing_enabled}
             onClose={() => setStatusOpen(false)}
             onSaved={(text) => {
               const previous = myLocation?.status_text ?? null;

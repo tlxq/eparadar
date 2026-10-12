@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { latestCarColor, meMarker, spotMarkers } from '@/features/map/markers';
+import { latestCarColor, meetupTimeLabel, meMarker, spotMarkers } from '@/features/map/markers';
 import type { Spot } from '@/features/map/spots';
 import type { Car, Profile } from '@/lib/api';
 import type { DbRow } from '@/lib/db-types';
@@ -74,6 +74,8 @@ describe('spotMarkers', () => {
     name: 'Max',
     warning_type: null,
     expires_at: '2026-10-13T00:00:00Z',
+    created_at: '2026-10-12T00:00:00Z',
+    creator_id: 'u1',
   } as Spot;
 
   it('counts me as here unless I am a ghost', () => {
@@ -88,5 +90,34 @@ describe('spotMarkers', () => {
       hereNow: 0,
       photoCount: 0,
     });
+  });
+
+  it('marks only my own spots as mine', () => {
+    const me = meMarker({
+      devicePosition: null,
+      motion: still,
+      location: location({}),
+      profile,
+      cars: [],
+    });
+    expect(spotMarkers([spot], [], me, undefined, 'u1')[0]).toMatchObject({ mine: true });
+    expect(spotMarkers([spot], [], me, undefined, 'u2')[0]).toMatchObject({ mine: false });
+    expect(spotMarkers([spot], [], me, undefined)[0]).toMatchObject({ mine: false });
+  });
+});
+
+describe('meetupTimeLabel', () => {
+  const now = new Date(2026, 9, 12, 18, 0);
+
+  it('shows only the time for today', () => {
+    expect(meetupTimeLabel(new Date(2026, 9, 12, 20, 5).toISOString(), now)).toBe('20:05');
+  });
+
+  it('adds the weekday for another day', () => {
+    expect(meetupTimeLabel(new Date(2026, 9, 17, 9, 30).toISOString(), now)).toBe('lör 09:30');
+  });
+
+  it('says nu once it has started', () => {
+    expect(meetupTimeLabel(new Date(2026, 9, 12, 17, 0).toISOString(), now)).toBe('nu');
   });
 });

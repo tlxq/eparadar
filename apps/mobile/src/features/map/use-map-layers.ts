@@ -84,12 +84,14 @@ export function useMapLayers() {
   );
   const meetupLayer = useMemo(() => meetupMarkers(meetups), [meetups]);
   const spotLayer = useMemo(
-    () => spotMarkers(spots, friends, me, photoCounts),
-    [spots, friends, me, photoCounts],
+    () => spotMarkers(spots, friends, me, photoCounts, userId),
+    [spots, friends, me, photoCounts, userId],
   );
 
   return {
     devicePosition: device.position,
+    locationAccess: device.access,
+    recheckLocation: device.recheck,
     friendLocations,
     myLocation,
     myProfile,
