@@ -859,6 +859,32 @@ export type Database = {
         };
         Relationships: [];
       };
+      user_ages: {
+        Row: {
+          birth_year: number;
+          created_at: string;
+          user_id: string;
+        };
+        Insert: {
+          birth_year: number;
+          created_at?: string;
+          user_id: string;
+        };
+        Update: {
+          birth_year?: number;
+          created_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'user_ages_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: true;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       waitlist: {
         Row: {
           created_at: string;
@@ -978,6 +1004,7 @@ export type Database = {
           people: number;
         }[];
       };
+      export_my_data: { Args: never; Returns: Json };
       generate_friend_code: { Args: never; Returns: string };
       has_any_friendship_row: {
         Args: { a: string; b: string };

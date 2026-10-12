@@ -8,10 +8,14 @@ import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { signUpWithProfile } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
+import { birthYearError } from '@/lib/age';
+import { useTheme } from '@/hooks/use-theme';
 
 export default function SignUpScreen() {
+  const theme = useTheme();
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
+  const [birthYear, setBirthYear] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -19,8 +23,19 @@ export default function SignUpScreen() {
 
   async function handleSubmit() {
     setError(null);
-    if (!displayName.trim() || !username.trim() || !email.trim() || !password) {
+    if (
+      !displayName.trim() ||
+      !username.trim() ||
+      !birthYear.trim() ||
+      !email.trim() ||
+      !password
+    ) {
       setError('Fyll i alla fält.');
+      return;
+    }
+    const ageError = birthYearError(birthYear);
+    if (ageError) {
+      setError(ageError);
       return;
     }
     setLoading(true);
@@ -30,6 +45,7 @@ export default function SignUpScreen() {
         password,
         username: username.trim(),
         displayName: displayName.trim(),
+        birthYear: Number(birthYear.trim()),
       });
     } catch (err) {
       setError(getErrorMessage(err));
@@ -44,6 +60,21 @@ export default function SignUpScreen() {
       subtitle="Hitta gänget, visa upp bilen och ses på träffar."
       footer={
         <>
+          <ThemedText type="caption" themeColor="textSecondary" style={styles.consent}>
+            Genom att skapa ett konto godkänner du{' '}
+            <Link href="/terms" style={{ color: theme.brandOnSurface }}>
+              användarvillkoren
+            </Link>{' '}
+            och{' '}
+            <Link href="/community" style={{ color: theme.brandOnSurface }}>
+              communityreglerna
+            </Link>
+            . Så hanterar vi dina uppgifter:{' '}
+            <Link href="/privacy" style={{ color: theme.brandOnSurface }}>
+              integritetspolicyn
+            </Link>
+            .
+          </ThemedText>
           <Button label="Skapa konto" onPress={handleSubmit} loading={loading} />
           <Link href="/(auth)/login" style={styles.link}>
             <ThemedText type="small" themeColor="textSecondary">
@@ -72,6 +103,15 @@ export default function SignUpScreen() {
         onChangeText={setUsername}
       />
       <TextField
+        label="Födelseår"
+        placeholder="2009"
+        keyboardType="number-pad"
+        maxLength={4}
+        value={birthYear}
+        onChangeText={setBirthYear}
+        hint="Du måste vara minst 15 år. Bara du ser ditt födelseår."
+      />
+      <TextField
         label="E-post"
         autoCapitalize="none"
         autoComplete="email"
@@ -95,4 +135,5 @@ export default function SignUpScreen() {
 
 const styles = StyleSheet.create({
   link: { alignSelf: 'center', paddingVertical: 12 },
+  consent: { textAlign: 'center' },
 });

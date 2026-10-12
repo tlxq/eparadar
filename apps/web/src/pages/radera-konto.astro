@@ -1,0 +1,43 @@
+---
+import { CONTACT_EMAIL, type LegalDocument } from '@eparadar/legal';
+import LegalPage from '../components/LegalPage.astro';
+import { SITE } from '../config/site';
+
+const doc: LegalDocument = {
+  title: 'Radera ditt konto',
+  updated: '12 oktober 2026',
+  intro: ['Du kan radera ditt epaRadar-konto och allt du har lagt upp när du vill.'],
+  sections: [
+    {
+      heading: 'I appen',
+      blocks: [
+        [
+          'Öppna epaRadar och gå till Profil.',
+          'Tryck på kugghjulet för Inställningar.',
+          'Välj Radera konto och skriv ditt lösenord.',
+        ],
+        'Kontot raderas direkt.',
+      ],
+    },
+    {
+      heading: 'Utan appen',
+      blocks: [
+        `Mejla ${CONTACT_EMAIL} från e-postadressen du loggar in med och skriv att du vill radera kontot. Vi raderar det inom 30 dagar och svarar när det är klart.`,
+      ],
+    },
+    {
+      heading: 'Vad som raderas',
+      blocks: [
+        [
+          'Din profil, dina bilar, inlägg, bilder, vänskaper och din plats.',
+          'Dina 1:1-chattar och grupper där ingen annan är kvar. I grupper med andra försvinner du som medlem.',
+          'Platser, träffar och aviseringstoken.',
+        ],
+        'Rapporter som andra har gjort om innehåll kan sparas en kort tid om de behövs för att hantera ett ärende, enligt integritetspolicyn.',
+      ],
+    },
+  ],
+};
+---
+
+<LegalPage doc={doc} description="Så raderar du ditt epaRadar-konto." path={SITE.routes.deleteAccount} />

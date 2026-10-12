@@ -8,17 +8,25 @@ interface Props {
 
 const { narrow = false, currentPath } = Astro.props;
 const year = new Date().getFullYear();
+const links = [
+  { href: SITE.routes.privacy, label: 'Integritetspolicy' },
+  { href: SITE.routes.terms, label: 'Användarvillkor' },
+  { href: SITE.routes.community, label: 'Communityregler' },
+  { href: SITE.routes.deleteAccount, label: 'Radera konto' },
+];
 ---
 
 <footer class="site-footer" class:list={{ narrow }}>
   © {year} epaRadar
   {
-    currentPath !== SITE.routes.privacy && (
-      <>
-        {' '}
-        · <a href={SITE.routes.privacy}>Integritetspolicy</a>
-      </>
-    )
+    links
+      .filter((link) => link.href !== currentPath)
+      .map((link) => (
+        <>
+          {' '}
+          · <a href={link.href}>{link.label}</a>
+        </>
+      ))
   }
   {' '}
   · <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>

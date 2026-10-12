@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { router, useFocusEffect } from 'expo-router';
@@ -20,6 +20,18 @@ import { useMyLocation } from '@/features/map/hooks';
 import { BlockedSection } from '@/features/friends/components/blocked-section';
 import { useSharingToggle } from '@/features/map/use-sharing-toggle';
 import { useUserId } from '@/hooks/use-user-id';
+import { shareMyData } from '@/features/profile/export';
+import { showToast } from '@/store/toast';
+
+const ABOUT_LINKS: {
+  href: '/privacy' | '/terms' | '/community';
+  label: string;
+  icon: ComponentProps<typeof Ionicons>['name'];
+}[] = [
+  { href: '/privacy', label: 'Integritetspolicy', icon: 'shield-checkmark-outline' },
+  { href: '/terms', label: 'Användarvillkor', icon: 'document-text-outline' },
+  { href: '/community', label: 'Communityregler', icon: 'people-outline' },
+];
 
 export default function SettingsScreen() {
   const theme = useTheme();
@@ -32,6 +44,7 @@ export default function SettingsScreen() {
   const sharingEnabled = location?.sharing_enabled ?? false;
   const approximateEnabled = location?.approximate_enabled ?? false;
   const [approximateBusy, setApproximateBusy] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -65,6 +78,17 @@ export default function SettingsScreen() {
       setError(getErrorMessage(err));
     } finally {
       setApproximateBusy(false);
+    }
+  }
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      await shareMyData();
+    } catch (err) {
+      showToast({ tone: 'error', message: getErrorMessage(err) });
+    } finally {
+      setExporting(false);
     }
   }
 
@@ -128,26 +152,49 @@ export default function SettingsScreen() {
             OM EPARADAR
           </ThemedText>
           <View style={[styles.group, { backgroundColor: theme.backgroundElement }]}>
-            <Pressable
-              accessibilityRole="link"
-              onPress={() => router.push('/privacy')}
-              style={({ pressed }) => [
-                styles.linkRow,
-                pressed && { backgroundColor: theme.backgroundSelected },
-              ]}
-            >
-              <Ionicons name="shield-checkmark-outline" size={22} color={theme.brandOnSurface} />
-              <ThemedText type="headline" style={styles.rowText}>
-                Integritetspolicy
-              </ThemedText>
-              <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
-            </Pressable>
+            {ABOUT_LINKS.map((link, index) => (
+              <View key={link.href}>
+                {index > 0 ? (
+                  <View style={[styles.separator, { backgroundColor: theme.separator }]} />
+                ) : null}
+                <Pressable
+                  accessibilityRole="link"
+                  onPress={() => router.push(link.href)}
+                  style={({ pressed }) => [
+                    styles.linkRow,
+                    pressed && { backgroundColor: theme.backgroundSelected },
+                  ]}
+                >
+                  <Ionicons name={link.icon} size={22} color={theme.brandOnSurface} />
+                  <ThemedText type="headline" style={styles.rowText}>
+                    {link.label}
+                  </ThemedText>
+                  <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
+                </Pressable>
+              </View>
+            ))}
           </View>
 
           <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
             KONTO
           </ThemedText>
           <View style={[styles.group, { backgroundColor: theme.backgroundElement }]}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ busy: exporting }}
+              disabled={exporting}
+              onPress={handleExport}
+              style={({ pressed }) => [
+                styles.linkRow,
+                pressed && { backgroundColor: theme.backgroundSelected },
+              ]}
+            >
+              <Ionicons name="download-outline" size={22} color={theme.brandOnSurface} />
+              <ThemedText type="headline" style={styles.rowText}>
+                {exporting ? 'Hämtar dina uppgifter …' : 'Ladda ner mina uppgifter'}
+              </ThemedText>
+            </Pressable>
+            <View style={[styles.separator, { backgroundColor: theme.separator }]} />
             <Pressable
               accessibilityRole="button"
               onPress={handleSignOut}

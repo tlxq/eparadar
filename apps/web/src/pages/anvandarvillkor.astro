@@ -1,0 +1,11 @@
+---
+import { termsOfUse } from '@eparadar/legal';
+import LegalPage from '../components/LegalPage.astro';
+import { SITE } from '../config/site';
+---
+
+<LegalPage
+  doc={termsOfUse}
+  description="Villkoren för att använda epaRadar."
+  path={SITE.routes.terms}
+/>

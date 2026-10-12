@@ -4,6 +4,9 @@ export const SITE = {
   routes: {
     home: '/',
     privacy: '/integritetspolicy',
+    terms: '/anvandarvillkor',
+    community: '/communityregler',
+    deleteAccount: '/radera-konto',
   },
   api: {
     waitlist: '/api/waitlist',

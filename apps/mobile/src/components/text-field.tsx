@@ -9,9 +9,18 @@ import { useTheme } from '@/hooks/use-theme';
 type TextFieldProps = TextInputProps & {
   label?: string;
   error?: string | null;
+  hint?: string;
 };
 
-export function TextField({ style, label, error, onFocus, onBlur, ...props }: TextFieldProps) {
+export function TextField({
+  style,
+  label,
+  error,
+  hint,
+  onFocus,
+  onBlur,
+  ...props
+}: TextFieldProps) {
   const theme = useTheme();
   const [focused, setFocused] = useState(false);
   const borderColor = error ? theme.danger : focused ? theme.brand : theme.border;
@@ -38,7 +47,7 @@ export function TextField({ style, label, error, onFocus, onBlur, ...props }: Te
     />
   );
 
-  if (!label && !error) return input;
+  if (!label && !error && !hint) return input;
 
   return (
     <View style={styles.field}>
@@ -48,6 +57,11 @@ export function TextField({ style, label, error, onFocus, onBlur, ...props }: Te
         </ThemedText>
       ) : null}
       {input}
+      {hint && !error ? (
+        <ThemedText type="caption" themeColor="textSecondary">
+          {hint}
+        </ThemedText>
+      ) : null}
       {error ? (
         <View style={styles.error}>
           <Ionicons name="alert-circle" size={14} color={theme.danger} />

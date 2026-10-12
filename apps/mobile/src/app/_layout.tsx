@@ -105,6 +105,7 @@ function RootLayout() {
           </Stack.Protected>
           <Stack.Protected guard={!!session}>
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="age" options={{ gestureEnabled: false, animation: 'fade' }} />
             <Stack.Screen
               name="onboarding"
               options={{ gestureEnabled: false, animation: 'fade' }}
@@ -141,10 +142,6 @@ function RootLayout() {
               options={{ headerShown: true, title: 'Radera konto' }}
             />
             <Stack.Screen
-              name="privacy"
-              options={{ headerShown: true, title: 'Integritetspolicy' }}
-            />
-            <Stack.Screen
               name="meetups/create"
               options={{ presentation: 'modal', headerShown: false }}
             />
@@ -153,6 +150,15 @@ function RootLayout() {
               options={{ presentation: 'modal', headerShown: false }}
             />
           </Stack.Protected>
+          <Stack.Screen
+            name="privacy"
+            options={{ headerShown: true, title: 'Integritetspolicy' }}
+          />
+          <Stack.Screen name="terms" options={{ headerShown: true, title: 'Användarvillkor' }} />
+          <Stack.Screen
+            name="community"
+            options={{ headerShown: true, title: 'Communityregler' }}
+          />
         </Stack>
         {session ? <PersonSheetHost /> : null}
         {session ? <ReportSheetHost /> : null}

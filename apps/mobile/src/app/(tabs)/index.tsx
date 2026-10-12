@@ -110,12 +110,7 @@ export default function FeedScreen() {
           }}
           onEndReachedThreshold={0.5}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <PostItem
-              post={item}
-              onMore={() => setSelected(item)}
-            />
-          )}
+          renderItem={({ item }) => <PostItem post={item} onMore={() => setSelected(item)} />}
           contentContainerStyle={{ paddingBottom: tabBarInset + Spacing.six }}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
           ListHeaderComponent={
