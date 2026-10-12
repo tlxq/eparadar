@@ -3,6 +3,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { FlatList, RefreshControl, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { ActionSheet, type SheetAction } from '@/components/action-sheet';
 
 import { Avatar } from '@/components/avatar';
 import { ConversationAvatar } from '@/components/conversation-avatar';
@@ -17,8 +20,13 @@ import { Words } from '@/constants/strings';
 import { Fonts, Radius, Spacing, Typography } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
-import { conversationTitle, type Conversation } from '@/lib/api';
-import { isUnread, readersOf } from '@/lib/chat-state';
+import { conversationTitle, markConversationRead, type Conversation } from '@/lib/api';
+import { isMuted, isUnread, readersOf } from '@/lib/chat-state';
+import { getErrorMessage } from '@/lib/errors';
+import { pressHaptic } from '@/lib/haptics';
+import { queryKeys } from '@/lib/query-keys';
+import { showToast } from '@/store/toast';
+import { confirmLeaveGroup, MUTE_CHOICES, muteConversation } from '@/features/chat/actions';
 import { formatChatTimestamp } from '@/lib/relative-time';
 import { activeTypists, typingLabel, useTypingStore } from '@/store/typing';
 import { useConversations } from '@/features/chat/hooks';
@@ -45,6 +53,7 @@ function RowMeta({ conversation, myUserId }: { conversation: Conversation; myUse
   const lastMessage = conversation.messages?.[0];
   if (!lastMessage) return null;
   const unread = isUnread(conversation, myUserId);
+  const muted = isMuted(conversation);
   const seenBy =
     !conversation.is_group && lastMessage.sender_id === myUserId
       ? readersOf(conversation, lastMessage, myUserId)[0]
@@ -52,17 +61,27 @@ function RowMeta({ conversation, myUserId }: { conversation: Conversation; myUse
 
   return (
     <View style={styles.meta}>
-      <ThemedText
-        type="caption"
-        themeColor={unread ? 'brandOnSurface' : 'textSecondary'}
-        style={unread && styles.metaStrong}
-      >
-        {formatChatTimestamp(lastMessage.created_at)}
-      </ThemedText>
+      <View style={styles.metaTop}>
+        {muted ? (
+          <Ionicons
+            name="notifications-off"
+            size={14}
+            color={theme.textSecondary}
+            accessibilityLabel="Tystad"
+          />
+        ) : null}
+        <ThemedText
+          type="caption"
+          themeColor={unread && !muted ? 'brandOnSurface' : 'textSecondary'}
+          style={unread && styles.metaStrong}
+        >
+          {formatChatTimestamp(lastMessage.created_at)}
+        </ThemedText>
+      </View>
       {unread ? (
         <View
           accessibilityLabel="Oläst"
-          style={[styles.unreadDot, { backgroundColor: theme.brand }]}
+          style={[styles.unreadDot, { backgroundColor: muted ? theme.textSecondary : theme.brand }]}
         />
       ) : seenBy ? (
         <View accessibilityLabel={`Sedd av ${seenBy.profiles.display_name}`}>
@@ -113,8 +132,11 @@ export default function ChatListScreen() {
   );
   const now = useTicker(anyTyping);
   const userId = useUserId();
+  const queryClient = useQueryClient();
   const tabBarInset = useTabBarInset();
   const [query, setQuery] = useState('');
+  const [menuFor, setMenuFor] = useState<Conversation | null>(null);
+  const [muteFor, setMuteFor] = useState<Conversation | null>(null);
 
   const { data, isLoading, isError, refetch } = useConversations();
 
@@ -132,6 +154,65 @@ export default function ChatListScreen() {
   }, [data, query, userId]);
 
   const hasAny = (data?.length ?? 0) > 0;
+
+  async function markRead(conversation: Conversation) {
+    try {
+      await markConversationRead(conversation.id);
+    } catch (error) {
+      showToast({ tone: 'error', message: getErrorMessage(error) });
+    } finally {
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });
+    }
+  }
+
+  const menuActions: SheetAction[] = menuFor
+    ? [
+        isMuted(menuFor)
+          ? {
+              label: 'Slå på ljudet',
+              icon: 'notifications-outline',
+              onPress: () => muteConversation(queryClient, userId, menuFor.id, null),
+            }
+          : {
+              label: 'Tysta',
+              icon: 'notifications-off-outline',
+              onPress: () => setMuteFor(menuFor),
+            },
+        ...(userId && isUnread(menuFor, userId)
+          ? [
+              {
+                label: 'Markera som läst',
+                icon: 'checkmark-done-outline' as const,
+                onPress: () => markRead(menuFor),
+              },
+            ]
+          : []),
+        ...(menuFor.is_group
+          ? [
+              {
+                label: 'Lämna gruppen',
+                icon: 'exit-outline' as const,
+                destructive: true,
+                onPress: () =>
+                  confirmLeaveGroup(
+                    queryClient,
+                    userId,
+                    menuFor.id,
+                    conversationTitle(menuFor, userId!),
+                  ),
+              },
+            ]
+          : []),
+      ]
+    : [];
+
+  const muteActions: SheetAction[] = muteFor
+    ? MUTE_CHOICES.map((choice) => ({
+        label: choice.label,
+        icon: choice.key === 'forever' ? 'notifications-off-outline' : 'time-outline',
+        onPress: () => muteConversation(queryClient, userId, muteFor.id, choice.key),
+      }))
+    : [];
 
   return (
     <ScreenBackground style={styles.container}>
@@ -154,9 +235,14 @@ export default function ChatListScreen() {
                 subtitleColor={typing ? 'brandOnSurface' : undefined}
                 emphasized={unread}
                 accessibilityLabel={unread ? `${title}, oläst` : title}
+                accessibilityHint="Håll inne för fler val"
                 leading={<ConversationAvatar conversation={item} myUserId={userId!} size={52} />}
                 trailing={<RowMeta conversation={item} myUserId={userId!} />}
                 onPress={() => router.push(`/chat/${item.id}`)}
+                onLongPress={() => {
+                  pressHaptic();
+                  setMenuFor(item);
+                }}
               />
             );
           }}
@@ -207,6 +293,18 @@ export default function ChatListScreen() {
         />
       </SafeAreaView>
       <Fab icon="add" accessibilityLabel="Ny chatt" onPress={() => router.push('/chat/new')} />
+      <ActionSheet
+        visible={!!menuFor}
+        title={menuFor && userId ? conversationTitle(menuFor, userId) : undefined}
+        onClose={() => setMenuFor(null)}
+        actions={menuActions}
+      />
+      <ActionSheet
+        visible={!!muteFor}
+        title="Tysta aviseringar"
+        onClose={() => setMuteFor(null)}
+        actions={muteActions}
+      />
     </ScreenBackground>
   );
 }
@@ -229,6 +327,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
   },
   meta: { alignItems: 'flex-end', gap: Spacing.one, minWidth: 40 },
+  metaTop: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   metaStrong: { fontFamily: Fonts.inter.bold },
   unreadDot: { width: 12, height: 12, borderRadius: 6 },
   metaSpacer: { height: 16 },

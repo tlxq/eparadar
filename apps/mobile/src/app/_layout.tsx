@@ -149,6 +149,10 @@ function RootLayout() {
             <Stack.Screen name="add/[code]" options={{ presentation: 'modal' }} />
             <Stack.Screen name="group/[id]" />
             <Stack.Screen name="post/[id]" options={{ headerShown: true, title: 'Post' }} />
+            <Stack.Screen
+              name="group/add-members"
+              options={{ presentation: 'modal', headerShown: true, title: 'Lägg till medlemmar' }}
+            />
             <Stack.Screen name="settings" options={{ headerShown: true, title: 'Inställningar' }} />
             <Stack.Screen name="admin" options={{ headerShown: true, title: 'Admin' }} />
             <Stack.Screen

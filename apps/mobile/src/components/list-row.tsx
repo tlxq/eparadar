@@ -11,7 +11,9 @@ type ListRowProps = {
   leading?: ReactNode;
   trailing?: ReactNode;
   onPress?: () => void;
+  onLongPress?: () => void;
   accessibilityLabel?: string;
+  accessibilityHint?: string;
   emphasized?: boolean;
   subtitleColor?: ThemeColor;
 };
@@ -22,7 +24,9 @@ export function ListRow({
   leading,
   trailing,
   onPress,
+  onLongPress,
   accessibilityLabel,
+  accessibilityHint,
   emphasized,
   subtitleColor,
 }: ListRowProps) {
@@ -57,7 +61,10 @@ export function ListRow({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? title}
+      accessibilityHint={accessibilityHint}
       onPress={onPress}
+      onLongPress={onLongPress}
+      delayLongPress={onLongPress ? 350 : undefined}
       style={({ pressed }) => [styles.row, pressed && { backgroundColor: theme.backgroundElement }]}
     >
       {content}

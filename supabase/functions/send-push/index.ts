@@ -103,7 +103,13 @@ export default {
 
       const senderName = sender?.display_name ?? "Någon";
       const what = message.post_id ? "en post" : message.image_path ? "en bild" : "ett meddelande";
-      recipientIds = (members ?? []).map((m) => m.user_id);
+      const { data: mutes } = await supabase
+        .from("conversation_mutes")
+        .select("user_id")
+        .eq("conversation_id", message.conversation_id)
+        .gt("muted_until", new Date().toISOString());
+      const muted = new Set((mutes ?? []).map((m) => m.user_id));
+      recipientIds = (members ?? []).map((m) => m.user_id).filter((id) => !muted.has(id));
       actorId = message.sender_id;
       if (conversation?.is_group) {
         title = conversation.name?.trim() || "Gruppchatt";

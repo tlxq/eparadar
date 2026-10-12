@@ -21,7 +21,6 @@ import { useRealtimeTable } from '@/hooks/use-realtime-table';
 import { useTheme } from '@/hooks/use-theme';
 import {
   conversationTitle,
-  leaveConversation,
   removeMember,
   renameConversation,
   setGroupAvatar,
@@ -34,6 +33,7 @@ import { showToast, showUndoToast } from '@/store/toast';
 import { useConversation } from '@/features/chat/hooks';
 import { openPerson } from '@/store/person-sheet';
 import { openReport } from '@/store/report-sheet';
+import { confirmLeaveGroup } from '@/features/chat/actions';
 import { useUserId } from '@/hooks/use-user-id';
 import { pickImage } from '@/lib/pick-image';
 import { ModalHeader } from '@/components/modal-header';
@@ -161,26 +161,7 @@ export default function GroupInfoScreen() {
 
   async function handleLeave() {
     if (!id) return;
-    const ok = await confirmDestructive({
-      title: 'Lämna gruppen?',
-      message:
-        'Du slutar få meddelanden från gruppen. För att vara med igen behöver någon starta en ny grupp med dig.',
-      confirmLabel: 'Lämna',
-      icon: 'exit-outline',
-    });
-    if (!ok) return;
-    setBusy('leave');
-    try {
-      await leaveConversation(id);
-      queryClient.removeQueries({ queryKey: queryKeys.conversation(id) });
-      queryClient.removeQueries({ queryKey: queryKeys.messages(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });
-      showToast({ message: `Du har lämnat ${title}.` });
-      router.dismissTo('/chat');
-    } catch (error) {
-      showToast({ tone: 'error', message: getErrorMessage(error) });
-      setBusy(null);
-    }
+    if (await confirmLeaveGroup(queryClient, userId, id, title)) router.dismissTo('/chat');
   }
 
   return (
@@ -284,6 +265,16 @@ export default function GroupInfoScreen() {
 
                 <View style={styles.members}>
                   <SectionLabel style={styles.sectionLabel}>Medlemmar</SectionLabel>
+                  <ListRow
+                    title="Lägg till medlemmar"
+                    subtitle="Bara dina kompisar"
+                    leading={
+                      <View style={[styles.addIcon, { backgroundColor: theme.backgroundElement }]}>
+                        <Ionicons name="person-add-outline" size={20} color={theme.text} />
+                      </View>
+                    }
+                    onPress={() => router.push({ pathname: '/group/add-members', params: { id } })}
+                  />
                   {members.map((member) => {
                     const isMe = member.user_id === userId;
                     return (
@@ -345,7 +336,6 @@ export default function GroupInfoScreen() {
               icon="exit-outline"
               variant="secondary"
               tone="danger"
-              loading={busy === 'leave'}
               onPress={handleLeave}
             />
           </View>
@@ -401,4 +391,11 @@ const styles = StyleSheet.create({
     borderRadius: Radius.pill,
   },
   footer: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two, gap: Spacing.one },
+  addIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

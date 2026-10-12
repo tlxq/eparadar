@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Clipboard from 'expo-clipboard';
+import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useIsFocused } from 'expo-router/react-navigation';
 import { FlatList, Image, Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
@@ -43,11 +44,15 @@ import { useUserId } from '@/hooks/use-user-id';
 import { pickImage, type ImageSource } from '@/lib/pick-image';
 import {
   MessageBubble,
+  QUICK_REACTION,
   REACTIONS,
   ReadReceipt,
   TypingBubble,
 } from '@/features/chat/components/message-bubble';
+import { ImagePreview } from '@/features/chat/components/image-preview';
+import { ReactorsSheet } from '@/features/chat/components/reactors-sheet';
 import { Common } from '@/constants/strings';
+import { confirmDestructive } from '@/lib/confirm';
 import { openReport } from '@/store/report-sheet';
 const LOADING_BUBBLES = [
   { width: '55%', mine: false },
@@ -68,6 +73,9 @@ export default function ConversationScreen() {
   const [sending, setSending] = useState(false);
   const [selected, setSelected] = useState<Message | null>(null);
   const [viewer, setViewer] = useState<{ url: string; message: Message } | null>(null);
+  const [reactorsOf, setReactorsOf] = useState<Message | null>(null);
+  const [failed, setFailed] = useState<Message[]>([]);
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const { data: myProfile } = useProfile();
   const myName = myProfile?.display_name ?? '';
@@ -156,6 +164,13 @@ export default function ConversationScreen() {
   }
 
   async function handleUnsend(message: Message) {
+    const ok = await confirmDestructive({
+      title: 'Ångra skickat?',
+      message: 'Meddelandet tas bort för alla i chatten.',
+      confirmLabel: 'Ångra skickat',
+      icon: 'arrow-undo-outline',
+    });
+    if (!ok) return;
     try {
       await unsendMessage(message.id, message.image_path);
       queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) });
@@ -171,18 +186,37 @@ export default function ConversationScreen() {
     if (id && userId && text.trim()) sendTyping(id, userId, myName);
   }
 
+  function setMyReaction(messageId: string, emoji: string | null) {
+    if (!userId) return;
+    queryClient.setQueryData<Message[]>(queryKeys.messages(id), (current) =>
+      current?.map((message) =>
+        message.id === messageId
+          ? {
+              ...message,
+              reactions: [
+                ...(message.reactions ?? []).filter((reaction) => reaction.user_id !== userId),
+                ...(emoji ? [{ user_id: userId, emoji }] : []),
+              ],
+            }
+          : message,
+      ),
+    );
+  }
+
   async function handleReact(message: Message, emoji: string) {
     setSelected(null);
     tapHaptic();
     const removing = message.reactions?.some(
       (reaction) => reaction.user_id === userId && reaction.emoji === emoji,
     );
+    setMyReaction(message.id, removing ? null : emoji);
     try {
       await toggleReaction(message.id, emoji);
-      queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) });
     } catch (error) {
       showToast({ tone: 'error', message: getErrorMessage(error) });
       return;
+    } finally {
+      queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) });
     }
     if (!removing) return;
     showUndoToast({
@@ -198,16 +232,29 @@ export default function ConversationScreen() {
     });
   }
 
+  function handleDoubleTap(message: Message) {
+    const mine = message.reactions?.find((reaction) => reaction.user_id === userId);
+    if (mine?.emoji === QUICK_REACTION) {
+      tapHaptic();
+      return;
+    }
+    handleReact(message, QUICK_REACTION);
+  }
+
   async function handlePickImage(source: ImageSource) {
     if (!id || !userId) return;
     const uri = await pickImage({ quality: 0.7, source });
-    if (!uri) return;
+    if (uri) setPreviewUri(uri);
+  }
+
+  async function handleSendImage(caption: string) {
+    if (!id || !userId || !previewUri) return;
     setSending(true);
     try {
-      const imagePath = await uploadChatImage(id, uri);
-      await sendMessage({ conversationId: id, senderId: userId, body: body.trim(), imagePath });
-      setBody('');
-      sendStoppedTyping(id, userId, myName);
+      const imagePath = await uploadChatImage(id, previewUri);
+      await sendMessage({ conversationId: id, senderId: userId, body: caption, imagePath });
+      setPreviewUri(null);
+      tapHaptic();
       queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });
     } catch (error) {
@@ -217,10 +264,46 @@ export default function ConversationScreen() {
     }
   }
 
+  async function deliver(draft: Message) {
+    if (!id || !userId) return;
+    const key = queryKeys.messages(id);
+    await queryClient.cancelQueries({ queryKey: key });
+    queryClient.setQueryData<Message[]>(key, (current) => [...(current ?? []), draft]);
+    try {
+      await sendMessage({
+        id: draft.id,
+        conversationId: id,
+        senderId: userId,
+        body: draft.body,
+      });
+      queryClient.setQueryData<Message[]>(key, (current) =>
+        current?.map((message) =>
+          message.id === draft.id ? { ...message, pending: false } : message,
+        ),
+      );
+      queryClient.invalidateQueries({ queryKey: key });
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });
+    } catch {
+      queryClient.setQueryData<Message[]>(key, (current) =>
+        current?.filter((message) => message.id !== draft.id),
+      );
+      setFailed((current) => [...current, { ...draft, pending: false, failed: true }]);
+    }
+  }
+
+  function handleRetry(message: Message) {
+    setFailed((current) => current.filter((item) => item.id !== message.id));
+    tapHaptic();
+    deliver({ ...message, failed: false, pending: true, created_at: new Date().toISOString() });
+  }
+
+  function handleDiscard(message: Message) {
+    setFailed((current) => current.filter((item) => item.id !== message.id));
+  }
+
   async function handleSend() {
     const text = body.trim();
     if (!userId || !id || !text) return;
-    const key = queryKeys.messages(id);
     const draft: Message = {
       id: randomId(),
       conversation_id: id,
@@ -244,27 +327,7 @@ export default function ConversationScreen() {
     setBody('');
     tapHaptic();
     sendStoppedTyping(id, userId, myName);
-    await queryClient.cancelQueries({ queryKey: key });
-    queryClient.setQueryData<Message[]>(key, (current) => [...(current ?? []), draft]);
-    try {
-      await sendMessage({ id: draft.id, conversationId: id, senderId: userId, body: text });
-      queryClient.setQueryData<Message[]>(key, (current) =>
-        current?.map((message) =>
-          message.id === draft.id ? { ...message, pending: false } : message,
-        ),
-      );
-      queryClient.invalidateQueries({ queryKey: key });
-      queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });
-    } catch (error) {
-      queryClient.setQueryData<Message[]>(key, (current) =>
-        current?.filter((message) => message.id !== draft.id),
-      );
-      setBody((current) => current || text);
-      showToast({
-        tone: 'error',
-        message: `Meddelandet skickades inte. ${getErrorMessage(error)}`,
-      });
-    }
+    await deliver(draft);
   }
 
   function reportImage(message: Message) {
@@ -287,43 +350,57 @@ export default function ConversationScreen() {
     !!conversation &&
     !!userId &&
     readersOf(conversation, selected, userId).length > 0;
-  const selectedActions: SheetAction[] = selected
+  const selectedActions: SheetAction[] = selected?.failed
     ? [
-        ...(selected.body.trim()
-          ? [
-              {
-                label: 'Kopiera',
-                icon: 'copy-outline' as const,
-                onPress: () => handleCopy(selected),
-              },
-            ]
-          : []),
-        ...(selectedIsMine
-          ? [
-              {
-                label: Common.remove,
-                icon: 'trash-outline' as const,
-                destructive: true,
-                disabled: selectedIsRead,
-                hint: selectedIsRead ? 'Redan läst, kan inte tas bort' : undefined,
-                onPress: () => handleUnsend(selected),
-              },
-            ]
-          : [
-              {
-                label: Common.report,
-                icon: 'flag-outline' as const,
-                onPress: () =>
-                  openReport({
-                    type: 'message',
-                    id: selected.id,
-                    userId: selected.sender_id,
-                    name: selected.sender?.display_name ?? 'personen',
-                  }),
-              },
-            ]),
+        {
+          label: 'Försök igen',
+          icon: 'refresh-outline',
+          onPress: () => handleRetry(selected),
+        },
+        {
+          label: 'Släng',
+          icon: 'trash-outline',
+          destructive: true,
+          onPress: () => handleDiscard(selected),
+        },
       ]
-    : [];
+    : selected
+      ? [
+          ...(selected.body.trim()
+            ? [
+                {
+                  label: 'Kopiera',
+                  icon: 'copy-outline' as const,
+                  onPress: () => handleCopy(selected),
+                },
+              ]
+            : []),
+          ...(selectedIsMine
+            ? [
+                {
+                  label: 'Ångra skickat',
+                  icon: 'arrow-undo-outline' as const,
+                  destructive: true,
+                  disabled: selectedIsRead,
+                  hint: selectedIsRead ? 'Redan läst, kan inte ångras' : 'Tas bort för alla',
+                  onPress: () => handleUnsend(selected),
+                },
+              ]
+            : [
+                {
+                  label: Common.report,
+                  icon: 'flag-outline' as const,
+                  onPress: () =>
+                    openReport({
+                      type: 'message',
+                      id: selected.id,
+                      userId: selected.sender_id,
+                      name: selected.sender?.display_name ?? 'personen',
+                    }),
+                },
+              ]),
+        ]
+      : [];
 
   const title = conversation && userId ? conversationTitle(conversation, userId) : 'Chatt';
   const isGroup = !!conversation?.is_group;
@@ -331,7 +408,10 @@ export default function ConversationScreen() {
   const otherMemberId = conversation?.conversation_members.find(
     (member) => member.user_id !== userId,
   )?.user_id;
-  const list = messages ?? [];
+  const list = [
+    ...(messages ?? []),
+    ...failed.filter((draft) => !messages?.some((message) => message.id === draft.id)),
+  ];
   const canSend = !!body.trim() && !sending;
   const typing = typingLabel(activeTypists(typists, userId, now), isGroup);
   const myReaction = selected?.reactions?.find((reaction) => reaction.user_id === userId)?.emoji;
@@ -361,12 +441,20 @@ export default function ConversationScreen() {
               <Avatar name={title} size={36} />
             )}
             <View style={styles.navText}>
-              <ThemedText type="headline" numberOfLines={1} accessibilityRole="header">
-                {title}
-              </ThemedText>
+              <View style={styles.navName}>
+                <ThemedText
+                  type="headline"
+                  numberOfLines={1}
+                  accessibilityRole="header"
+                  style={styles.navNameText}
+                >
+                  {title}
+                </ThemedText>
+                <Ionicons name="chevron-forward" size={16} color={theme.textSecondary} />
+              </View>
               {isGroup ? (
                 <ThemedText type="caption" themeColor="textSecondary">
-                  {memberCount} medlemmar · tryck för info
+                  {memberCount} medlemmar
                 </ThemedText>
               ) : null}
             </View>
@@ -396,6 +484,13 @@ export default function ConversationScreen() {
                   setSelected(message);
                 }}
                 onOpenImage={(url) => setViewer({ url, message: item })}
+                onDoubleTap={handleDoubleTap}
+                onToggleReaction={handleReact}
+                onShowReactors={(message) => {
+                  pressHaptic();
+                  setReactorsOf(message);
+                }}
+                onRetry={handleRetry}
               />
             )}
             ListFooterComponent={
@@ -490,7 +585,7 @@ export default function ConversationScreen() {
           onClose={() => setSelected(null)}
           actions={selectedActions}
           header={
-            selected ? (
+            selected && !selected.failed ? (
               <View style={styles.reactionBar} accessibilityRole="toolbar">
                 {REACTIONS.map((emoji) => (
                   <Pressable
@@ -511,6 +606,19 @@ export default function ConversationScreen() {
               </View>
             ) : null
           }
+        />
+        <ReactorsSheet
+          message={reactorsOf}
+          conversation={conversation}
+          myUserId={userId}
+          onClose={() => setReactorsOf(null)}
+        />
+        <ImagePreview
+          key={previewUri ?? 'none'}
+          uri={previewUri}
+          sending={sending}
+          onCancel={() => setPreviewUri(null)}
+          onSend={handleSendImage}
         />
         <Modal
           visible={!!viewer}
@@ -564,6 +672,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   navText: { flex: 1 },
+  navName: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
+  navNameText: { flexShrink: 1 },
   navTitle: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   goneNotice: { textAlign: 'center', padding: Spacing.three },
   list: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, gap: 2, flexGrow: 1 },

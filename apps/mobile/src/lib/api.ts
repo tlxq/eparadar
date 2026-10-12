@@ -274,6 +274,7 @@ export type ConversationMember = {
   last_read_at: string | null;
   role: 'admin' | 'member';
   joined_at?: string;
+  added_at?: string | null;
   profiles: ProfileSummary;
 };
 
@@ -286,12 +287,14 @@ export type Conversation = DbRow<'conversations'> & {
     image_path: string | null;
     post_id: string | null;
   }[];
+  muted_until?: string | null;
 };
 
 export type Message = DbRow<'messages'> & {
   sender: ProfileSummary | null;
   reactions: { user_id: string; emoji: string }[];
   pending?: boolean;
+  failed?: boolean;
 };
 
 export function conversationTitle(conversation: Conversation, myUserId: string): string {
@@ -370,23 +373,59 @@ export async function unsendMessage(messageId: string, imagePath?: string | null
 }
 
 export async function fetchConversations(): Promise<Conversation[]> {
-  const { data, error } = await supabase
-    .from('conversations')
-    .select(
-      '*, conversation_members(user_id, last_read_at, role, profiles(id, username, display_name, avatar_url)), messages(body, created_at, sender_id, image_path, post_id)',
-    )
-    .order('created_at', { foreignTable: 'messages', ascending: false })
-    .limit(1, { foreignTable: 'messages' });
+  const [{ data, error }, { data: mutes, error: mutesError }] = await Promise.all([
+    supabase
+      .from('conversations')
+      .select(
+        '*, conversation_members(user_id, last_read_at, role, added_at, profiles(id, username, display_name, avatar_url)), messages(body, created_at, sender_id, image_path, post_id)',
+      )
+      .order('created_at', { foreignTable: 'messages', ascending: false })
+      .limit(1, { foreignTable: 'messages' }),
+    supabase
+      .from('conversation_mutes')
+      .select('conversation_id, muted_until')
+      .gt('muted_until', new Date().toISOString()),
+  ]);
   if (error) throw error;
-  const conversations = (data ?? []) as unknown as Conversation[];
+  if (mutesError) throw mutesError;
+  const mutedUntil = new Map((mutes ?? []).map((mute) => [mute.conversation_id, mute.muted_until]));
+  const conversations = ((data ?? []) as unknown as Conversation[]).map((conversation) => ({
+    ...conversation,
+    muted_until: mutedUntil.get(conversation.id) ?? null,
+  }));
   return conversations.sort((a, b) => lastActivity(b) - lastActivity(a));
+}
+
+export const MUTE_FOREVER = 'infinity';
+
+export async function setConversationMute(
+  conversationId: string,
+  until: Date | typeof MUTE_FOREVER | null,
+): Promise<void> {
+  const { error } = await supabase.rpc('set_conversation_mute', {
+    p_conversation_id: conversationId,
+    p_until: (until instanceof Date ? until.toISOString() : until) as string,
+  });
+  if (error) throw error;
+}
+
+export async function addConversationMembers(
+  conversationId: string,
+  userIds: string[],
+): Promise<number> {
+  const { data, error } = await supabase.rpc('add_conversation_members', {
+    p_conversation_id: conversationId,
+    p_user_ids: userIds,
+  });
+  if (error) throw error;
+  return data ?? 0;
 }
 
 export async function fetchConversation(conversationId: string): Promise<Conversation> {
   const { data, error } = await supabase
     .from('conversations')
     .select(
-      '*, conversation_members(user_id, last_read_at, role, joined_at, profiles(id, username, display_name, avatar_url))',
+      '*, conversation_members(user_id, last_read_at, role, joined_at, added_at, profiles(id, username, display_name, avatar_url))',
     )
     .eq('id', conversationId)
     .single();
@@ -436,7 +475,7 @@ export async function sendMessage(input: {
     post_id: input.postId ?? null,
     meetup_id: input.meetupId ?? null,
   });
-  if (error) throw error;
+  if (error && !(input.id && error.code === '23505')) throw error;
 }
 
 export async function toggleReaction(messageId: string, emoji: string): Promise<void> {

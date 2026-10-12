@@ -109,6 +109,7 @@ export type Database = {
       };
       conversation_members: {
         Row: {
+          added_at: string | null;
           conversation_id: string;
           joined_at: string;
           last_read_at: string | null;
@@ -116,6 +117,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          added_at?: string | null;
           conversation_id: string;
           joined_at?: string;
           last_read_at?: string | null;
@@ -123,6 +125,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          added_at?: string | null;
           conversation_id?: string;
           joined_at?: string;
           last_read_at?: string | null;
@@ -143,6 +146,35 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
+          },
+        ];
+      };
+      conversation_mutes: {
+        Row: {
+          conversation_id: string;
+          created_at: string;
+          muted_until: string;
+          user_id: string;
+        };
+        Insert: {
+          conversation_id: string;
+          created_at?: string;
+          muted_until: string;
+          user_id: string;
+        };
+        Update: {
+          conversation_id?: string;
+          created_at?: string;
+          muted_until?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'conversation_mutes_conversation_id_user_id_fkey';
+            columns: ['conversation_id', 'user_id'];
+            isOneToOne: true;
+            referencedRelation: 'conversation_members';
+            referencedColumns: ['conversation_id', 'user_id'];
           },
         ];
       };
@@ -1149,6 +1181,10 @@ export type Database = {
       };
     };
     Functions: {
+      add_conversation_members: {
+        Args: { p_conversation_id: string; p_user_ids: string[] };
+        Returns: number;
+      };
       admin_mark_report_handled: {
         Args: { p_report_id: string };
         Returns: undefined;
@@ -1191,6 +1227,10 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      can_see_message: {
+        Args: { p_conversation_id: string; p_created_at: string };
+        Returns: boolean;
       };
       check_in_at_meetup: {
         Args: { p_lat: number; p_lng: number; p_meetup_id: string };
@@ -1271,6 +1311,7 @@ export type Database = {
         }[];
       };
       purge_expired_map_data: { Args: never; Returns: undefined };
+      purge_expired_mutes: { Args: never; Returns: undefined };
       purge_expired_post_places: { Args: never; Returns: undefined };
       redeem_friend_code: {
         Args: { friend_code: string };
@@ -1332,6 +1373,10 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      set_conversation_mute: {
+        Args: { p_conversation_id: string; p_until: string };
+        Returns: string;
       };
       set_group_avatar: {
         Args: { p_conversation_id: string; p_path: string };

@@ -1,16 +1,17 @@
 import { describe, expect, it } from '@jest/globals';
 
 import type { Conversation } from '@/lib/api';
-import { isUnread, lastActivity, readersOf } from '@/lib/chat-state';
+import { isMuted, isUnread, lastActivity, readersOf } from '@/lib/chat-state';
 
 const ME = 'me';
 const ELSA = 'elsa';
 const LINUS = 'linus';
 
-function member(userId: string, lastReadAt: string | null) {
+function member(userId: string, lastReadAt: string | null, addedAt: string | null = null) {
   return {
     user_id: userId,
     last_read_at: lastReadAt,
+    added_at: addedAt,
     role: 'member' as const,
     profiles: { id: userId, username: userId, display_name: userId, avatar_url: null },
   };
@@ -70,6 +71,28 @@ describe('readersOf', () => {
       true,
     );
     expect(readersOf(chat, message, ME).map((reader) => reader.user_id)).toEqual([ELSA]);
+  });
+
+  it('skips members who were added after the message was sent', () => {
+    const message = { sender_id: ME, created_at: '2026-10-05T18:00:00+00:00' };
+    const chat = conversation(
+      message,
+      [member(ME, null), member(LINUS, '2026-10-05T20:00:00+00:00', '2026-10-05T19:00:00+00:00')],
+      true,
+    );
+    expect(readersOf(chat, message, ME)).toEqual([]);
+  });
+});
+
+describe('isMuted', () => {
+  const now = Date.parse('2026-10-05T18:00:00+00:00');
+
+  it('is muted until the time passes, and forever for infinity', () => {
+    const chat = conversation(null, []);
+    expect(isMuted({ ...chat, muted_until: '2026-10-05T19:00:00+00:00' }, now)).toBe(true);
+    expect(isMuted({ ...chat, muted_until: '2026-10-05T17:00:00+00:00' }, now)).toBe(false);
+    expect(isMuted({ ...chat, muted_until: 'infinity' }, now)).toBe(true);
+    expect(isMuted({ ...chat, muted_until: null }, now)).toBe(false);
   });
 });
 
