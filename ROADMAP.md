@@ -53,7 +53,7 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [x] 7f One privacy policy for web and app, terms, community rules, web delete-account page,
          data export
    - [x] 7g Small hardening (function defaults, meetup counts, check-in window)
-   - [ ] Apply 7b–7g to the live database, deploy `notify-report` and `send-push`, set secrets
+   - [x] Apply 7b–7g to the live database, deploy `notify-report` and `send-push`, set secrets
    - [ ] Tom: leaked-password protection in Supabase Auth, `RESEND_API_KEY` function secret
 
 5. **Bigger features** (each also needs report, block and expiry where it applies)
