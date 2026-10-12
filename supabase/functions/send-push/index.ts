@@ -47,6 +47,23 @@ async function blockedWith(supabase: SupabaseClient, userId: string): Promise<Se
   );
 }
 
+type PushKind = "messages" | "friend_requests" | "meets";
+
+async function withPushOn(
+  supabase: SupabaseClient,
+  userIds: string[],
+  kind: PushKind,
+): Promise<string[]> {
+  if (userIds.length === 0) return userIds;
+  const { data } = await supabase
+    .from("notification_settings")
+    .select("user_id")
+    .in("user_id", userIds)
+    .eq(kind, false);
+  const off = new Set((data ?? []).map((row) => row.user_id));
+  return userIds.filter((id) => !off.has(id));
+}
+
 export default {
   fetch: withSupabase({ auth: ["secret"] }, async (req, ctx) => {
     const payload = (await req.json()) as WebhookPayload;
@@ -54,6 +71,7 @@ export default {
 
     let recipientIds: string[] = [];
     let actorId: string | null = null;
+    let kind: PushKind = "messages";
     let title = "";
     let body = "";
     let data: Record<string, unknown> = {};
@@ -107,6 +125,7 @@ export default {
       actorId = friendship.requester_id;
       title = "Ny kompisförfrågan";
       body = `${requester?.display_name ?? "Någon"} vill bli kompis med dig`;
+      kind = "friend_requests";
       data = { type: "friend_request" };
     } else if (payload.table === "friendships" && payload.type === "UPDATE") {
       const friendship = payload.record as { requester_id: string; addressee_id: string; status: string };
@@ -123,6 +142,7 @@ export default {
       recipientIds = [friendship.requester_id];
       title = "Ny kompis";
       body = `Du och ${addressee?.display_name ?? "någon"} är kompisar nu`;
+      kind = "friend_requests";
       data = { type: "friend_accepted" };
     } else if (payload.table === "meetup_interests" && payload.type === "INSERT") {
       const interest = payload.record as { meetup_id: string; user_id: string };
@@ -144,6 +164,7 @@ export default {
       actorId = interest.user_id;
       title = "Din meet";
       body = `${interested?.display_name ?? "Någon"} vill med på ${meetup.title}`;
+      kind = "meets";
       data = { type: "meetup_interest", meetupId: interest.meetup_id };
     } else {
       return Response.json({ skipped: true });
@@ -153,6 +174,7 @@ export default {
       const blocked = await blockedWith(supabase, actorId);
       recipientIds = recipientIds.filter((id) => !blocked.has(id));
     }
+    recipientIds = await withPushOn(supabase, recipientIds, kind);
     if (recipientIds.length === 0) return Response.json({ skipped: true });
 
     const { data: tokens } = await supabase

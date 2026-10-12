@@ -19,6 +19,7 @@ export const queryKeys = {
   conversations: (userId: string | undefined) => ['conversations', userId] as const,
   conversation: (conversationId: string | undefined) => ['conversation', conversationId] as const,
   messages: (conversationId: string | undefined) => ['messages', conversationId] as const,
+  notificationSettings: (userId: string | undefined) => ['notificationSettings', userId] as const,
   myLocation: (userId: string | undefined) => ['myLocation', userId] as const,
   friendLocations: (userId: string | undefined) => ['friendLocations', userId] as const,
   friendCode: (userId: string | undefined) => ['friendCode', userId] as const,
