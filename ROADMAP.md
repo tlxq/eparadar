@@ -45,15 +45,16 @@ Living checklist. Tick items as they land. Finished detail lives in git history 
    - [x] Map friend search stays above the keyboard (panel moves to the top)
 7. **Launch safety (before 6 and 5, agreed 2026-10-12)**
    - [x] Rules in `CLAUDE.md` and `.claude/rules`, policies only for logged-in users (#125)
-   - [ ] 7a Everything on the map is friends-only and deleted on a schedule (pg_cron)
-   - [ ] 7b Storage: post images private, every bucket logged-in only, size and type limits
-   - [ ] 7c Report and block on posts, messages, profiles, spots and meetups
-   - [ ] 7d Age 15+ checked at sign-up, on the server
-   - [ ] 7e Push notifications without message text, skip blocked users
-   - [ ] 7f One privacy policy for web and app, terms, community rules, web delete-account page,
+   - [x] 7a Everything on the map is friends-only and deleted on a schedule (pg_cron)
+   - [x] 7b Storage: post images private, every bucket logged-in only, size and type limits
+   - [x] 7c Report and block on posts, messages, profiles, spots and meetups
+   - [x] 7d Age 15+ checked at sign-up, on the server
+   - [x] 7e Push notifications without message text, skip blocked users
+   - [x] 7f One privacy policy for web and app, terms, community rules, web delete-account page,
          data export
-   - [ ] 7g Small hardening (function defaults, waitlist without service key, meetup check-in
-         distance on the server)
+   - [x] 7g Small hardening (function defaults, meetup counts, check-in window)
+   - [ ] Apply 7b–7g to the live database, deploy `notify-report` and `send-push`, set secrets
+   - [ ] Tom: leaked-password protection in Supabase Auth, `RESEND_API_KEY` function secret
 
 5. **Bigger features** (each also needs report, block and expiry where it applies)
    - [ ] Meetup list inside Karta, invite friends, share to chat
