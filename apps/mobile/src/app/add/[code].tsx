@@ -17,6 +17,7 @@ import {
   type RedeemOutcome,
   type RedeemResult,
 } from '@/features/friends/friend-code';
+import { useStartChat } from '@/features/chat/use-start-chat';
 import { useTheme } from '@/hooks/use-theme';
 import { getErrorMessage } from '@/lib/errors';
 import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
@@ -127,6 +128,10 @@ export default function RedeemFriendCodeScreen() {
   const badgeColor =
     copy?.tone === 'success' ? theme.success : copy?.tone === 'error' ? theme.danger : theme.brand;
   const failed = copy?.tone === 'error';
+  const canChat =
+    !!result?.user_id && (result.outcome === 'accepted' || result.outcome === 'already_friends');
+  const { startChat, busy } = useStartChat();
+  const done = () => (router.canGoBack() ? router.back() : router.replace('/friends'));
 
   return (
     <ScreenBackground style={styles.container}>
@@ -179,12 +184,24 @@ export default function RedeemFriendCodeScreen() {
               onPress={() => router.replace(typed ? '/friends/enter-code' : '/friends/scan')}
             />
           ) : null}
-          <Button
-            label="Klar"
-            variant={failed ? 'secondary' : 'primary'}
-            disabled={!copy}
-            onPress={() => (router.canGoBack() ? router.back() : router.replace('/friends'))}
-          />
+          {canChat ? (
+            <>
+              <Button
+                label="Skicka meddelande"
+                icon="chatbubble-outline"
+                loading={busy}
+                onPress={() => result?.user_id && startChat(result.user_id, { replace: true })}
+              />
+              <Button label="Klar" variant="secondary" onPress={done} />
+            </>
+          ) : (
+            <Button
+              label="Klar"
+              variant={failed ? 'secondary' : 'primary'}
+              disabled={!copy}
+              onPress={done}
+            />
+          )}
         </View>
       </SafeAreaView>
     </ScreenBackground>

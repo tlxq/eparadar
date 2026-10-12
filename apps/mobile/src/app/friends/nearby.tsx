@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Linking, ScrollView, StyleSheet, View } from 'react-native';
@@ -30,6 +31,7 @@ import { useUserId } from '@/hooks/use-user-id';
 import { ModalHeader } from '@/components/modal-header';
 
 const RADAR_SIZE = 220;
+const SEARCH_TIMEOUT_MS = 30000;
 const BLIP_SIZE = 44;
 const BLIP_SPOTS = [
   { x: 0.68, y: 0.3 },
@@ -201,17 +203,25 @@ function PermissionPrompt({ blocked, onAllow }: { blocked: boolean; onAllow: () 
 export default function NearbyRadarScreen() {
   const theme = useTheme();
   const userId = useUserId();
+  const [timedOut, setTimedOut] = useState(false);
   const {
     permission,
     requestPermission,
     locating,
     people: found,
     isError,
-  } = useNearbyRadar(userId);
+  } = useNearbyRadar(userId, timedOut);
   const ignored = useRadarIgnoreStore((state) => state.ignored);
   const people = found.filter((person) => !ignored.includes(person.user_id));
   const needsPermission =
     permission === 'undetermined' || permission === 'denied' || permission === 'blocked';
+  const foundSomeone = people.length > 0;
+
+  useEffect(() => {
+    if (permission !== 'granted' || timedOut || foundSomeone) return;
+    const timer = setTimeout(() => setTimedOut(true), SEARCH_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [permission, timedOut, foundSomeone]);
 
   return (
     <ScreenBackground style={styles.container}>
@@ -220,6 +230,27 @@ export default function NearbyRadarScreen() {
 
         {needsPermission ? (
           <PermissionPrompt blocked={permission === 'blocked'} onAllow={requestPermission} />
+        ) : timedOut ? (
+          <View style={styles.centerFill} accessibilityLiveRegion="polite">
+            <EmptyState
+              icon="radio-outline"
+              title="Ingen hittad"
+              message="Skanna koden i stället. Radarn är avstängd nu, så ingen ser dig på den."
+              action={{
+                label: 'Skanna kod',
+                icon: 'scan-outline',
+                onPress: () => router.replace('/friends/scan'),
+              }}
+            />
+            <View style={styles.retry}>
+              <Button
+                label="Sök igen"
+                icon="refresh"
+                variant="ghost"
+                onPress={() => setTimedOut(false)}
+              />
+            </View>
+          </View>
         ) : (
           <ScrollView contentContainerStyle={styles.content}>
             <View style={styles.radar}>
@@ -316,5 +347,6 @@ const styles = StyleSheet.create({
   searching: { gap: Spacing.two, paddingHorizontal: Spacing.four, paddingTop: Spacing.two },
   center: { textAlign: 'center' },
   centerFill: { flex: 1, justifyContent: 'center' },
+  retry: { alignSelf: 'center' },
   footer: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
 });

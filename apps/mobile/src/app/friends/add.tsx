@@ -1,23 +1,16 @@
 import { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { Button } from '@/components/button';
 import { ScreenBackground } from '@/components/screen-background';
-import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
-import { Words } from '@/constants/strings';
 import { CandidateRow } from '@/features/friends/components/candidate-row';
-import { CodeEntry } from '@/features/friends/components/code-entry';
-import { RadarHero } from '@/features/friends/components/radar-hero';
+import { AddTiles } from '@/features/friends/components/add-tiles';
 import { SuggestionSection } from '@/features/friends/components/suggestion-section';
 import { formatRelativeSwedish } from '@/features/friends/api';
 import { useMeetupSuggestions, useMutualSuggestions } from '@/features/friends/hooks';
-import { Radius, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { Spacing } from '@/constants/theme';
 import { getErrorMessage } from '@/lib/errors';
 import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
@@ -26,7 +19,6 @@ import { useUserId } from '@/hooks/use-user-id';
 import { successHaptic } from '@/lib/haptics';
 
 export default function AddFriendScreen() {
-  const theme = useTheme();
   const userId = useUserId();
   const queryClient = useQueryClient();
 
@@ -53,23 +45,16 @@ export default function AddFriendScreen() {
     onSettled: () => setSendingId(null),
   });
 
-  const blipCount = Math.min(
-    4,
-    (meetupSuggestions.data?.length ?? 0) + (mutualSuggestions.data?.length ?? 0),
-  );
-
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['bottom']}>
         <ScrollView contentContainerStyle={styles.content}>
-          <View style={styles.hero}>
-            <RadarHero blipCount={blipCount} />
-            <ThemedText type="small" themeColor="textSecondary" style={styles.heroCopy}>
-              Vi vill att du bara lägger till folk du faktiskt träffat.
+          <View style={styles.intro}>
+            <AddTiles />
+            <ThemedText type="small" themeColor="textSecondary" style={styles.introCopy}>
+              Lägg bara till folk du faktiskt träffat.
             </ThemedText>
           </View>
-
-          <CodeEntry />
 
           <SuggestionSection
             title="Möttes på en meet"
@@ -111,53 +96,12 @@ export default function AddFriendScreen() {
             ))}
           </SuggestionSection>
 
-          <View style={styles.nearbySection}>
-            <SectionLabel>{Words.radar}</SectionLabel>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push('/friends/nearby')}
-              style={({ pressed }) => [
-                styles.nearbyCard,
-                { backgroundColor: pressed ? theme.backgroundSelected : theme.backgroundElement },
-              ]}
-            >
-              <View style={[styles.nearbyIcon, { backgroundColor: theme.brand }]}>
-                <Ionicons name="radio-outline" size={22} color={theme.brandText} />
-              </View>
-              <View style={styles.nearbyText}>
-                <ThemedText type="headline">{Words.startRadar}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  Hitta folk inom 100 m som också har radarn öppen.
-                </ThemedText>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
-            </Pressable>
-          </View>
-
           {error ? (
             <ThemedText type="error" style={styles.error}>
               {error}
             </ThemedText>
           ) : null}
         </ScrollView>
-
-        <View style={styles.actionBar}>
-          <View style={styles.actionButton}>
-            <Button
-              label="Visa min kod"
-              icon="qr-code-outline"
-              variant="secondary"
-              onPress={() => router.push('/friends/code')}
-            />
-          </View>
-          <View style={styles.actionButton}>
-            <Button
-              label="Skanna kod"
-              icon="scan-outline"
-              onPress={() => router.push('/friends/scan')}
-            />
-          </View>
-        </View>
       </SafeAreaView>
     </ScreenBackground>
   );
@@ -171,31 +115,7 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.three,
     gap: Spacing.five,
   },
-  hero: { alignItems: 'center', gap: Spacing.two },
-  heroCopy: { textAlign: 'center', maxWidth: 280 },
+  intro: { gap: Spacing.three },
+  introCopy: { textAlign: 'center' },
   error: { textAlign: 'center' },
-  actionBar: {
-    flexDirection: 'row',
-    gap: Spacing.two,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-    paddingBottom: Spacing.two,
-  },
-  actionButton: { flex: 1 },
-  nearbySection: { gap: Spacing.two },
-  nearbyCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.three,
-    padding: Spacing.three,
-    borderRadius: Radius.lg,
-  },
-  nearbyIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: Radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nearbyText: { flex: 1, gap: Spacing.half },
 });
