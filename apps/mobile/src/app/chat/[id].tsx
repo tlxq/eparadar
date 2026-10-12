@@ -136,7 +136,7 @@ export default function ConversationScreen() {
 
   async function handleCopy(message: Message) {
     await Clipboard.setStringAsync(message.body);
-    showToast({ tone: 'success', message: 'Kopierat.' });
+    showToast({ tone: 'success', message: 'Kopierat!' });
   }
 
   async function handleUnsend(message: Message) {

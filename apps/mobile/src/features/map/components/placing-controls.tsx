@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
-import { Common } from '@/constants/strings';
+import { Common, Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -26,7 +26,7 @@ export function PlacingControls({ step, bottom, onCancel, onConfirm }: PlacingCo
         ]}
       >
         <ThemedText type="smallBold">
-          {step === 'placing' ? 'Tryck där ni ska träffas' : 'Dra pinnen för att justera'}
+          {step === 'placing' ? 'Tryck där meeten ska vara' : 'Dra pinnen för att justera'}
         </ThemedText>
       </View>
       <View style={[styles.bar, { bottom }]}>
@@ -44,7 +44,7 @@ export function PlacingControls({ step, bottom, onCancel, onConfirm }: PlacingCo
             style={[styles.button, styles.primary, { backgroundColor: theme.brand }]}
           >
             <ThemedText type="smallBold" style={{ color: theme.brandText }}>
-              Placera här
+              {`${Words.place} här`}
             </ThemedText>
           </Pressable>
         )}

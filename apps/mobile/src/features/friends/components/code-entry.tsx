@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { TextField } from '@/components/text-field';
-import { ThemedText } from '@/components/themed-text';
+import { SectionLabel } from '@/components/section-label';
 import { Fonts, Spacing } from '@/constants/theme';
 import {
   FRIEND_CODE_LENGTH,
@@ -24,9 +24,7 @@ export function CodeEntry() {
 
   return (
     <View style={styles.section}>
-      <ThemedText type="caption" themeColor="textSecondary" style={styles.label}>
-        HAR DU EN KOD?
-      </ThemedText>
+      <SectionLabel>Har du en kod?</SectionLabel>
       <View style={styles.row}>
         <View style={styles.field}>
           <TextField
@@ -34,7 +32,7 @@ export function CodeEntry() {
             onChangeText={(text) => setCode(normalizeFriendCode(text))}
             onSubmitEditing={submit}
             placeholder="K7P-2QX"
-            accessibilityLabel="Vänkod, sex tecken"
+            accessibilityLabel="Kompiskod, sex tecken"
             autoCapitalize="characters"
             autoCorrect={false}
             autoComplete="off"
@@ -51,7 +49,6 @@ export function CodeEntry() {
 
 const styles = StyleSheet.create({
   section: { gap: Spacing.two },
-  label: { letterSpacing: 0.6 },
   row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   field: { flex: 1 },
   input: { fontFamily: Fonts.mono, letterSpacing: 2 },

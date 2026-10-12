@@ -8,7 +8,9 @@ import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { FormScreen } from '@/components/form-screen';
 import { IconButton } from '@/components/icon-button';
+import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
+import { Words } from '@/constants/strings';
 import { Radius, Spacing, Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { createPost } from '@/lib/api';
@@ -51,7 +53,7 @@ export default function NewPostScreen() {
     onSuccess: () => {
       successHaptic();
       queryClient.invalidateQueries({ queryKey: queryKeys.posts() });
-      showToast({ tone: 'success', message: 'Inlägget är publicerat.' });
+      showToast({ tone: 'success', message: 'Posten är ute!' });
       router.back();
     },
     onError: (err) => setError(getErrorMessage(err)),
@@ -79,7 +81,7 @@ export default function NewPostScreen() {
               {body.length}/{MAX_LENGTH}
             </ThemedText>
             <Button
-              label="Publicera"
+              label={Words.publishPost}
               size="sm"
               onPress={() => mutation.mutate()}
               loading={mutation.isPending}
@@ -96,9 +98,9 @@ export default function NewPostScreen() {
           <TextInput
             value={body}
             onChangeText={setBody}
-            placeholder="Vad händer med bilen?"
+            placeholder="Vad händer med kärran?"
             placeholderTextColor={theme.textSecondary}
-            accessibilityLabel="Inlägg"
+            accessibilityLabel="Post"
             multiline
             autoFocus
             maxLength={MAX_LENGTH}
@@ -127,9 +129,7 @@ export default function NewPostScreen() {
 
       {cars && cars.length > 0 ? (
         <View style={styles.carSection}>
-          <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
-            TAGGA BIL
-          </ThemedText>
+          <SectionLabel>Tagga EPA</SectionLabel>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -172,7 +172,6 @@ const styles = StyleSheet.create({
   imagePreview: { width: '100%', aspectRatio: 4 / 3, borderRadius: Radius.lg },
   removeImage: { position: 'absolute', top: Spacing.two, right: Spacing.two },
   carSection: { gap: Spacing.two },
-  sectionLabel: { letterSpacing: 0.6 },
   chips: { gap: Spacing.two },
   footerRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   counter: { flex: 1, textAlign: 'right' },

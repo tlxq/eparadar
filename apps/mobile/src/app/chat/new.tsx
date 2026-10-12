@@ -11,6 +11,7 @@ import { FormScreen } from '@/components/form-screen';
 import { ListRow } from '@/components/list-row';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
+import { Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { createConversation, friendProfile } from '@/lib/api';
@@ -88,7 +89,7 @@ export default function NewChatScreen() {
       {friends.length > 5 ? (
         <TextField
           label="Till"
-          placeholder="Sök bland dina vänner"
+          placeholder="Sök bland dina kompisar"
           autoCapitalize="none"
           value={query}
           onChangeText={setQuery}
@@ -122,10 +123,10 @@ export default function NewChatScreen() {
       {isLoading ? null : friends.length === 0 ? (
         <EmptyState
           icon="people-outline"
-          title="Inga vänner än"
-          message="Du kan chatta med dina vänner. Lägg till någon du har träffat först."
+          title="Inga kompisar än"
+          message="Du kan chatta med dina kompisar. Lägg till någon du har träffat först."
           action={{
-            label: 'Lägg till vän',
+            label: Words.addFriend,
             icon: 'person-add-outline',
             onPress: () => router.replace('/friends/add'),
           }}

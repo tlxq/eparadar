@@ -37,7 +37,7 @@ export default function LoginScreen() {
   return (
     <AuthShell
       title="Välkommen tillbaka"
-      subtitle="Logga in för att se vad gänget hittar på."
+      subtitle="Logga in och kolla vad kompisarna hittar på."
       footer={
         <>
           <Button label="Logga in" onPress={handleSubmit} loading={loading} />

@@ -11,6 +11,7 @@ import { IconButton } from '@/components/icon-button';
 import { ScreenBackground } from '@/components/screen-background';
 import { ScreenHeader } from '@/components/screen-header';
 import { Skeleton } from '@/components/skeleton';
+import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
@@ -41,7 +42,7 @@ import {
   EditProfileSheet,
   Stat,
 } from '@/features/profile/components/profile-parts';
-import { Common } from '@/constants/strings';
+import { Common, Words } from '@/constants/strings';
 const AVATAR_SIZE = 96;
 
 export default function ProfileScreen() {
@@ -83,7 +84,8 @@ export default function ProfileScreen() {
     } catch (error) {
       showToast({
         tone: 'error',
-        message: error instanceof Error ? error.message : 'Bilden kunde inte laddas upp.',
+        message:
+          error instanceof Error ? error.message : 'Bilden kunde inte laddas upp. Testa igen!',
       });
     } finally {
       setUploadingAvatar(false);
@@ -124,7 +126,7 @@ export default function ProfileScreen() {
   async function handleDeleteCar(car: Car) {
     const ok = await confirmDestructive({
       title: `Ta bort ${car.nickname ?? `${car.make} ${car.model}`}?`,
-      message: 'Bilen och dess bild tas bort. Inlägg där den är taggad finns kvar, utan taggen.',
+      message: 'EPA:n och dess bild tas bort. Poster där den är taggad finns kvar, utan taggen.',
       confirmLabel: Common.remove,
     });
     if (!ok) return;
@@ -132,7 +134,7 @@ export default function ProfileScreen() {
       await deleteCar(car);
       queryClient.invalidateQueries({ queryKey: queryKeys.cars(userId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.posts() });
-      showToast({ message: 'Bilen är borttagen.' });
+      showToast({ message: 'EPA:n är borttagen.' });
     } catch (error) {
       showToast({ tone: 'error', message: getErrorMessage(error) });
     }
@@ -216,9 +218,9 @@ export default function ProfileScreen() {
             </View>
 
             <View style={styles.stats}>
-              <Stat value={cars?.length} label="bilar" />
-              <Stat value={friends?.length} label="vänner" />
-              <Stat value={postCount} label="inlägg" />
+              <Stat value={cars?.length} label={Words.vehicle} />
+              <Stat value={friends?.length} label="kompisar" />
+              <Stat value={postCount} label="poster" />
             </View>
 
             <Button
@@ -230,9 +232,7 @@ export default function ProfileScreen() {
             />
 
             <View style={styles.sectionHeader}>
-              <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
-                MINA BILAR
-              </ThemedText>
+              <SectionLabel>{`Mina ${Words.vehicles}`}</SectionLabel>
               <Button
                 label="Lägg till"
                 icon="add"
@@ -264,9 +264,9 @@ export default function ProfileScreen() {
               ]}
             >
               <Ionicons name="car-sport-outline" size={28} color={theme.brandOnSurface} />
-              <ThemedText type="smallBold">Lägg till din första bil</ThemedText>
+              <ThemedText type="smallBold">Lägg till din första EPA</ThemedText>
               <ThemedText type="caption" themeColor="textSecondary" style={styles.center}>
-                Bilen visas på din profil och kan taggas i inlägg.
+                Den visas på din profil och kan taggas i poster.
               </ThemedText>
             </Pressable>
           ) : (
@@ -277,9 +277,7 @@ export default function ProfileScreen() {
           )}
 
           <View style={[styles.padded, styles.postsHeader]}>
-            <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
-              MINA INLÄGG
-            </ThemedText>
+            <SectionLabel>{Words.myPosts}</SectionLabel>
             <Button
               label="Skriv"
               icon="create-outline"
@@ -307,7 +305,7 @@ export default function ProfileScreen() {
               themeColor="textSecondary"
               style={[styles.padded, styles.noPosts]}
             >
-              Du har inte postat något än. Dina inlägg syns här och i dina vänners flöde.
+              Du har inte postat något än. Dina poster syns här och i dina kompisars flöde.
             </ThemedText>
           ) : null}
         </ScrollView>
@@ -340,7 +338,7 @@ export default function ProfileScreen() {
           selectedCar
             ? [
                 {
-                  label: 'Ta bort bil',
+                  label: 'Ta bort EPA',
                   icon: 'trash-outline',
                   destructive: true,
                   onPress: () => handleDeleteCar(selectedCar),
@@ -390,7 +388,6 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.8 },
   stats: { flexDirection: 'row', gap: Spacing.two },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  sectionLabel: { letterSpacing: 0.6 },
   postsHeader: {
     flexDirection: 'row',
     alignItems: 'center',

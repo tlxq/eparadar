@@ -9,6 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ScreenBackground } from '@/components/screen-background';
 import { Switch } from '@/components/switch';
 import { ThemedText } from '@/components/themed-text';
+import { SectionLabel } from '@/components/section-label';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { setLocationApproximate, setLocationSharing, signOut } from '@/lib/api';
@@ -53,9 +54,7 @@ export default function SettingsScreen() {
         if (permission.status !== 'granted') {
           await stopLocationSharing();
           await setLocationSharing(userId, false);
-          setError(
-            'Platsåtkomst har inaktiverats i telefonens inställningar. Platsdelning är nu avstängd.',
-          );
+          setError('Platsen är avstängd i telefonens inställningar, så delningen är av nu.');
           refetch();
         }
       });
@@ -107,16 +106,13 @@ export default function SettingsScreen() {
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['bottom']}>
         <ScrollView contentContainerStyle={styles.content}>
-          <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
-            PLATS
-          </ThemedText>
+          <SectionLabel style={styles.sectionLabel}>Plats</SectionLabel>
           <View style={[styles.group, { backgroundColor: theme.backgroundElement }]}>
             <View style={styles.row}>
               <View style={styles.rowText}>
                 <ThemedText type="headline">Dela min plats</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
-                  När det här är på kan dina vänner se var du är på kartan. Ingen annan kan se din
-                  plats, den delas aldrig offentligt, och du kan stänga av det här när du vill.
+                  Bara dina kompisar ser dig. Stäng av när du vill.
                 </ThemedText>
               </View>
               <Switch
@@ -131,9 +127,7 @@ export default function SettingsScreen() {
               <View style={styles.rowText}>
                 <ThemedText type="headline">Ungefärlig plats</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
-                  Visa bara ett ungefärligt område för dina vänner — cirka 300 meter — istället för
-                  exakt var du står. Bra när du vill dela att du är i närheten utan att visa exakt
-                  position.
+                  Visar ett område på ca 300 m i stället för exakt plats.
                 </ThemedText>
               </View>
               <Switch
@@ -148,9 +142,7 @@ export default function SettingsScreen() {
 
           <BlockedSection />
 
-          <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
-            OM EPARADAR
-          </ThemedText>
+          <SectionLabel style={styles.sectionLabel}>Om epaRadar</SectionLabel>
           <View style={[styles.group, { backgroundColor: theme.backgroundElement }]}>
             {ABOUT_LINKS.map((link, index) => (
               <View key={link.href}>
@@ -175,9 +167,7 @@ export default function SettingsScreen() {
             ))}
           </View>
 
-          <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
-            KONTO
-          </ThemedText>
+          <SectionLabel style={styles.sectionLabel}>Konto</SectionLabel>
           <View style={[styles.group, { backgroundColor: theme.backgroundElement }]}>
             <Pressable
               accessibilityRole="button"
@@ -233,7 +223,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: Spacing.three, gap: Spacing.two, paddingBottom: Spacing.five },
-  sectionLabel: { letterSpacing: 0.6, paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
+  sectionLabel: { paddingHorizontal: Spacing.three, paddingTop: Spacing.three },
   group: { borderRadius: Radius.lg, overflow: 'hidden' },
   row: {
     flexDirection: 'row',

@@ -7,7 +7,6 @@ import { Button } from '@/components/button';
 import { IconButton } from '@/components/icon-button';
 import { ListRow } from '@/components/list-row';
 import { Skeleton } from '@/components/skeleton';
-import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useBlockUser } from '@/features/friends/hooks';
 import { friendProfile, removeFriend, respondToFriendRequest, type Friendship } from '@/lib/api';
@@ -16,23 +15,15 @@ import { queryKeys } from '@/lib/query-keys';
 import { openPerson } from '@/store/person-sheet';
 import { showToast } from '@/store/toast';
 import { confirmDestructive } from '@/lib/confirm';
-import { Common } from '@/constants/strings';
+import { blockedText, Common } from '@/constants/strings';
 import { successHaptic } from '@/lib/haptics';
 
-async function confirmBlock(name: string, consequence: string) {
+async function confirmBlock(name: string) {
   return confirmDestructive({
     title: `Blockera ${name}?`,
-    message: `${consequence} ${name} får inget besked om det.`,
+    message: blockedText(name),
     confirmLabel: Common.block,
   });
-}
-
-export function SectionLabel({ children }: { children: string }) {
-  return (
-    <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
-      {children}
-    </ThemedText>
-  );
 }
 
 export function RequestRow({ request, myUserId }: { request: Friendship; myUserId: string }) {
@@ -48,11 +39,12 @@ export function RequestRow({ request, myUserId }: { request: Friendship; myUserI
       queryClient.invalidateQueries({ queryKey: queryKeys.friendRequests(myUserId) });
       if (accepted) {
         successHaptic();
-        showToast({ tone: 'success', message: `Du och ${requester.display_name} är nu vänner.` });
+        showToast({ tone: 'success', message: `Du och ${requester.display_name} är kompisar nu!` });
         maybeRequestNotificationPermission(myUserId);
       }
     },
-    onError: () => showToast({ tone: 'error', message: 'Det gick inte att svara på förfrågan.' }),
+    onError: () =>
+      showToast({ tone: 'error', message: 'Det gick inte att svara på förfrågan. Testa igen!' }),
   });
 
   return (
@@ -97,10 +89,7 @@ export function RequestRow({ request, myUserId }: { request: Friendship; myUserI
             icon: 'ban-outline',
             destructive: true,
             onPress: async () => {
-              const ok = await confirmBlock(
-                requester.display_name,
-                `Förfrågan tas bort och ${requester.display_name} kan inte skicka nya vänförfrågningar till dig.`,
-              );
+              const ok = await confirmBlock(requester.display_name);
               if (ok) block.mutate(requester.id);
             },
           },
@@ -125,7 +114,8 @@ export function OutgoingRequestRow({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(myUserId) });
     },
-    onError: () => showToast({ tone: 'error', message: 'Det gick inte att avbryta förfrågan.' }),
+    onError: () =>
+      showToast({ tone: 'error', message: 'Det gick inte att avbryta förfrågan. Testa igen!' }),
   });
 
   return (
@@ -156,9 +146,10 @@ export function FriendRow({ friendship, myUserId }: { friendship: Friendship; my
     mutationFn: () => removeFriend(friendship.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.friends(myUserId) });
-      showToast({ message: `${friend.display_name} är borttagen från dina vänner.` });
+      showToast({ message: `${friend.display_name} är inte längre din kompis.` });
     },
-    onError: () => showToast({ tone: 'error', message: 'Det gick inte att ta bort vännen.' }),
+    onError: () =>
+      showToast({ tone: 'error', message: 'Det gick inte att ta bort kompisen. Testa igen!' }),
   });
 
   return (
@@ -184,7 +175,7 @@ export function FriendRow({ friendship, myUserId }: { friendship: Friendship; my
         onClose={() => setSheetOpen(false)}
         actions={[
           {
-            label: 'Ta bort vän',
+            label: 'Ta bort kompis',
             icon: 'person-remove-outline',
             destructive: true,
             onPress: () => remove.mutate(),
@@ -194,10 +185,7 @@ export function FriendRow({ friendship, myUserId }: { friendship: Friendship; my
             icon: 'ban-outline',
             destructive: true,
             onPress: async () => {
-              const ok = await confirmBlock(
-                friend.display_name,
-                `${friend.display_name} försvinner från dina vänner och kan inte skicka vänförfrågningar till dig.`,
-              );
+              const ok = await confirmBlock(friend.display_name);
               if (ok) block.mutate(friend.id);
             },
           },
@@ -224,11 +212,6 @@ export function FriendsSkeleton() {
 }
 
 const styles = StyleSheet.create({
-  sectionLabel: {
-    letterSpacing: 0.6,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-  },
   requestActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   skeleton: { paddingHorizontal: Spacing.three, gap: Spacing.four, paddingTop: Spacing.two },
   skeletonRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },

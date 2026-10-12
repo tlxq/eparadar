@@ -71,7 +71,7 @@ export default function EnterFriendCodeScreen() {
         keyboardType="default"
         returnKeyType="done"
         maxLength={FRIEND_CODE_LENGTH + 1}
-        accessibilityLabel="Vänkod, sex tecken"
+        accessibilityLabel="Kompiskod, sex tecken"
         style={styles.hiddenInput}
       />
     </FormScreen>

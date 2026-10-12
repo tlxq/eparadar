@@ -17,9 +17,15 @@ type ToastState = {
 
 let nextId = 1;
 
+export function withFullStop(message: string) {
+  const trimmed = message.trim();
+  return /[.!?…]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+}
+
 export const useToastStore = create<ToastState>((set) => ({
   toast: null,
-  show: ({ tone = 'info', ...toast }) => set({ toast: { ...toast, tone, id: nextId++ } }),
+  show: ({ tone = 'info', ...toast }) =>
+    set({ toast: { ...toast, message: withFullStop(toast.message), tone, id: nextId++ } }),
   dismiss: () => set({ toast: null }),
 }));
 

@@ -47,7 +47,7 @@ export function PostItem({ post, onMore }: { post: Post; onMore?: () => void }) 
             icon="ellipsis-horizontal"
             variant="plain"
             size={32}
-            accessibilityLabel="Fler val för inlägget"
+            accessibilityLabel="Fler val för posten"
             onPress={onMore}
           />
         ) : null}

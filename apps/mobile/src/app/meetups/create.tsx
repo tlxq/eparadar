@@ -15,7 +15,7 @@ import { useCreateMeetup } from '@/features/meetups/hooks';
 import { quickTimeToDate, type QuickTimeOption } from '@/features/meetups/time';
 import { useTheme } from '@/hooks/use-theme';
 import { useUserId } from '@/hooks/use-user-id';
-import { Common } from '@/constants/strings';
+import { Common, Words } from '@/constants/strings';
 
 const TIME_OPTIONS: { value: QuickTimeOption; label: string }[] = [
   { value: 'tonight', label: 'Ikväll' },
@@ -55,7 +55,7 @@ export default function CreateMeetupScreen() {
         <KeyboardAvoider style={styles.container}>
           <View style={styles.header}>
             <Button label={Common.cancel} variant="ghost" size="sm" onPress={() => router.back()} />
-            <ThemedText type="headline">Ny träff</ThemedText>
+            <ThemedText type="headline">Ny meet</ThemedText>
             <View style={styles.headerSpacer} />
           </View>
 
@@ -94,7 +94,7 @@ export default function CreateMeetupScreen() {
             </View>
 
             <TextField
-              label="Namn på träffen"
+              label="Namn på meeten"
               value={title}
               onChangeText={setTitle}
               placeholder='T.ex. "Cruising vid torget"'
@@ -132,7 +132,7 @@ export default function CreateMeetupScreen() {
 
           <View style={[styles.footer, { borderTopColor: theme.separator }]}>
             <Button
-              label="Släpp pinnen"
+              label={Words.place}
               icon="location"
               onPress={handleSubmit}
               disabled={!title.trim()}

@@ -4,6 +4,7 @@ import { Redirect, Tabs } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { FloatingTabBar } from '@/components/floating-tab-bar';
+import { Words } from '@/constants/strings';
 import { useRealtimeTable } from '@/hooks/use-realtime-table';
 import { isUnread } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
@@ -127,7 +128,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="friends"
         options={{
-          title: 'Vänner',
+          title: Words.friends,
           tabBarBadge: pendingCount > 0 ? pendingCount : undefined,
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons name={focused ? 'people' : 'people-outline'} size={size} color={color} />

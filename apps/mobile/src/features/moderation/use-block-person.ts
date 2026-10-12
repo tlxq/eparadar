@@ -1,4 +1,4 @@
-import { Common } from '@/constants/strings';
+import { blockedText, Common } from '@/constants/strings';
 import { useBlockUser } from '@/features/friends/hooks';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
@@ -10,7 +10,7 @@ export function useBlockPerson() {
   return async function blockPerson(userId: string, name: string, title = `Blockera ${name}?`) {
     const ok = await confirmDestructive({
       title,
-      message: `${name} kan inte längre se dig, din plats eller skriva till dig, och får inget besked om det. Du kan ångra det i Inställningar.`,
+      message: blockedText(name),
       confirmLabel: Common.block,
     });
     if (!ok) return false;

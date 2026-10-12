@@ -76,11 +76,23 @@ export default {
         .select("display_name")
         .eq("id", message.sender_id)
         .single();
+      const { data: conversation } = await supabase
+        .from("conversations")
+        .select("is_group, name")
+        .eq("id", message.conversation_id)
+        .single();
 
+      const senderName = sender?.display_name ?? "Någon";
+      const what = message.image_path ? "en bild" : "ett meddelande";
       recipientIds = (members ?? []).map((m) => m.user_id);
       actorId = message.sender_id;
-      title = sender?.display_name ?? "Nytt meddelande";
-      body = message.image_path ? "Skickade en bild" : "Skickade ett meddelande";
+      if (conversation?.is_group) {
+        title = conversation.name?.trim() || "Gruppchatt";
+        body = `${senderName} skickade ${what}`;
+      } else {
+        title = senderName;
+        body = `Skickade ${what}`;
+      }
       data = { type: "message", conversationId: message.conversation_id };
     } else if (payload.table === "friendships" && payload.type === "INSERT") {
       const friendship = payload.record as { requester_id: string; addressee_id: string; status: string };
@@ -93,8 +105,8 @@ export default {
 
       recipientIds = [friendship.addressee_id];
       actorId = friendship.requester_id;
-      title = "Ny vänförfrågan";
-      body = `${requester?.display_name ?? "Någon"} vill bli vän med dig`;
+      title = "Ny kompisförfrågan";
+      body = `${requester?.display_name ?? "Någon"} vill bli kompis med dig`;
       data = { type: "friend_request" };
     } else if (payload.table === "friendships" && payload.type === "UPDATE") {
       const friendship = payload.record as { requester_id: string; addressee_id: string; status: string };
@@ -109,8 +121,8 @@ export default {
         .single();
 
       recipientIds = [friendship.requester_id];
-      title = "Vänförfrågan accepterad";
-      body = `${addressee?.display_name ?? "Någon"} accepterade din vänförfrågan`;
+      title = "Ny kompis";
+      body = `Du och ${addressee?.display_name ?? "någon"} är kompisar nu`;
       data = { type: "friend_accepted" };
     } else if (payload.table === "meetup_interests" && payload.type === "INSERT") {
       const interest = payload.record as { meetup_id: string; user_id: string };
@@ -130,8 +142,8 @@ export default {
 
       recipientIds = [meetup.creator_id];
       actorId = interest.user_id;
-      title = "Någon är intresserad";
-      body = `${interested?.display_name ?? "Någon"} är intresserad av ${meetup.title}`;
+      title = "Din meet";
+      body = `${interested?.display_name ?? "Någon"} vill med på ${meetup.title}`;
       data = { type: "meetup_interest", meetupId: interest.meetup_id };
     } else {
       return Response.json({ skipped: true });

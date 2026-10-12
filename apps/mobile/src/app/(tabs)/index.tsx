@@ -9,7 +9,9 @@ import { Fab } from '@/components/fab';
 import { ScreenBackground } from '@/components/screen-background';
 import { ScreenHeader } from '@/components/screen-header';
 import { Skeleton } from '@/components/skeleton';
+import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
+import { Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
@@ -26,9 +28,7 @@ function OnMapNow({ friends }: { friends: FriendLocation[] }) {
 
   return (
     <View style={styles.onMap}>
-      <ThemedText type="caption" themeColor="textSecondary" style={styles.sectionLabel}>
-        PÅ KARTAN NU
-      </ThemedText>
+      <SectionLabel>På kartan nu</SectionLabel>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -125,10 +125,10 @@ export default function FeedScreen() {
             ) : isError ? null : (
               <EmptyState
                 icon="newspaper-outline"
-                title="Inga inlägg än"
-                message="Här ser du inlägg från dina vänner. Visa upp bilen eller dela en bild från helgens tur."
+                title="Inga poster än"
+                message="Här ser du poster från dina kompisar. Visa upp kärran eller dela en bild från helgens tur!"
                 action={{
-                  label: 'Skriv ett inlägg',
+                  label: 'Skriv en post',
                   icon: 'create-outline',
                   onPress: () => router.push('/post/new'),
                 }}
@@ -140,7 +140,7 @@ export default function FeedScreen() {
       <PostActionsSheet post={selected} onClose={() => setSelected(null)} />
       <Fab
         icon="create-outline"
-        accessibilityLabel="Ny post"
+        accessibilityLabel={Words.newPost}
         onPress={() => router.push('/post/new')}
       />
     </ScreenBackground>
@@ -151,7 +151,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   headerBlock: { paddingHorizontal: Spacing.three },
-  sectionLabel: { letterSpacing: 0.6 },
   onMap: { gap: Spacing.two, paddingBottom: Spacing.two },
   onMapRow: { gap: Spacing.three, paddingRight: Spacing.three },
   onMapItem: { alignItems: 'center', gap: Spacing.one, width: ON_MAP_AVATAR + 8 },

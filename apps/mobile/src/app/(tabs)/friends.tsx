@@ -5,6 +5,8 @@ import { EmptyState } from '@/components/empty-state';
 import { IconButton } from '@/components/icon-button';
 import { ScreenBackground } from '@/components/screen-background';
 import { ScreenHeader } from '@/components/screen-header';
+import { SectionLabel } from '@/components/section-label';
+import { Words } from '@/constants/strings';
 import { Spacing } from '@/constants/theme';
 import { useFriendRequests, useFriends, useOutgoingRequests } from '@/features/friends/hooks';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
@@ -15,7 +17,6 @@ import {
   FriendsSkeleton,
   OutgoingRequestRow,
   RequestRow,
-  SectionLabel,
 } from '@/features/friends/components/friend-rows';
 
 export default function FriendsScreen() {
@@ -28,7 +29,7 @@ export default function FriendsScreen() {
 
   const { data: outgoingRequests } = useOutgoingRequests();
 
-  useQueryErrorToast(isError, 'Kunde inte ladda dina vänner.', refetch);
+  useQueryErrorToast(isError, 'Kunde inte ladda dina kompisar.', refetch);
 
   const friendCount = friends?.length ?? 0;
 
@@ -45,11 +46,11 @@ export default function FriendsScreen() {
             <>
               <View style={styles.headerBlock}>
                 <ScreenHeader
-                  title="Vänner"
+                  title={Words.friends}
                   actions={
                     <IconButton
                       icon="person-add-outline"
-                      accessibilityLabel="Lägg till vän"
+                      accessibilityLabel={Words.addFriend}
                       onPress={() => router.push('/friends/add')}
                     />
                   }
@@ -57,7 +58,9 @@ export default function FriendsScreen() {
               </View>
               {requests && requests.length > 0 ? (
                 <View style={styles.section}>
-                  <SectionLabel>{`FÖRFRÅGNINGAR · ${requests.length}`}</SectionLabel>
+                  <SectionLabel
+                    style={styles.label}
+                  >{`Förfrågningar · ${requests.length}`}</SectionLabel>
                   {requests.map((request) => (
                     <RequestRow key={request.id} request={request} myUserId={userId!} />
                   ))}
@@ -65,14 +68,14 @@ export default function FriendsScreen() {
               ) : null}
               {outgoingRequests && outgoingRequests.length > 0 ? (
                 <View style={styles.section}>
-                  <SectionLabel>SKICKADE</SectionLabel>
+                  <SectionLabel style={styles.label}>Skickade</SectionLabel>
                   {outgoingRequests.map((request) => (
                     <OutgoingRequestRow key={request.id} request={request} myUserId={userId!} />
                   ))}
                 </View>
               ) : null}
               {friendCount > 0 ? (
-                <SectionLabel>{`DINA VÄNNER · ${friendCount}`}</SectionLabel>
+                <SectionLabel style={styles.label}>{`Dina kompisar · ${friendCount}`}</SectionLabel>
               ) : null}
             </>
           }
@@ -82,10 +85,10 @@ export default function FriendsScreen() {
             ) : isError ? null : (
               <EmptyState
                 icon="people-outline"
-                title="Inga vänner än"
-                message="Lägg till folk du träffat på en träff eller som era kompisar redan känner."
+                title="Inga kompisar än"
+                message="Lägg till folk du träffat på en meet eller som dina kompisar redan känner."
                 action={{
-                  label: 'Lägg till vän',
+                  label: Words.addFriend,
                   icon: 'person-add-outline',
                   onPress: () => router.push('/friends/add'),
                 }}
@@ -103,4 +106,5 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   headerBlock: { paddingHorizontal: Spacing.three },
   section: { marginBottom: Spacing.three },
+  label: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two },
 });

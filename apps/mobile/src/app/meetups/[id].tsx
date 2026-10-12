@@ -39,15 +39,15 @@ export default function MeetupDetailScreen() {
   async function handleDelete() {
     if (!id) return;
     const ok = await confirmDestructive({
-      title: 'Ta bort träffen?',
+      title: 'Ta bort meeten?',
       message:
-        'Träffen försvinner från kartan för alla, tillsammans med intresseanmälningar och incheckningar.',
+        'Meeten försvinner från kartan för alla, tillsammans med intresseanmälningar och incheckningar.',
       confirmLabel: Common.remove,
     });
     if (!ok) return;
     try {
       await deleteMeetup.mutateAsync(id);
-      showToast({ message: 'Träffen är borttagen.' });
+      showToast({ message: 'Meeten är borttagen.' });
       if (router.canDismiss()) router.dismiss();
       else router.replace('/karta');
     } catch (error) {
@@ -66,7 +66,7 @@ export default function MeetupDetailScreen() {
           />
         </View>
         <ThemedText themeColor="danger" style={styles.errorText}>
-          Kunde inte hämta träffen.{'\n'}
+          Kunde inte hämta meeten.{'\n'}
           {(() => {
             if (error instanceof Error) return error.message;
             if (error && typeof error === 'object') {
@@ -197,7 +197,7 @@ export default function MeetupDetailScreen() {
           {meetup.creator_id === userId ? (
             <View style={styles.deleteButton}>
               <Button
-                label="Ta bort träffen"
+                label="Ta bort meeten"
                 icon="trash-outline"
                 variant="secondary"
                 tone="danger"
@@ -208,7 +208,7 @@ export default function MeetupDetailScreen() {
           ) : (
             <View style={styles.deleteButton}>
               <Button
-                label="Rapportera träffen"
+                label="Rapportera meeten"
                 icon="flag-outline"
                 variant="ghost"
                 onPress={() =>

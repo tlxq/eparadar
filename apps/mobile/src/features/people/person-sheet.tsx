@@ -27,7 +27,7 @@ import { queryKeys } from '@/lib/query-keys';
 import { usePersonSheetStore } from '@/store/person-sheet';
 import { openReport } from '@/store/report-sheet';
 import { useBlockPerson } from '@/features/moderation/use-block-person';
-import { Common } from '@/constants/strings';
+import { Common, Words } from '@/constants/strings';
 import { showToast } from '@/store/toast';
 import { successHaptic } from '@/lib/haptics';
 
@@ -80,7 +80,7 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
       await sendFriendRequest(personId);
       successHaptic();
       queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(myUserId) });
-      showToast({ tone: 'success', message: `Vänförfrågan skickad till ${name}.` });
+      showToast({ tone: 'success', message: `Förfrågan skickad till ${name}!` });
     } catch (error) {
       showToast({ tone: 'error', message: getErrorMessage(error) });
     }
@@ -120,7 +120,7 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
       ]
     : [
         {
-          label: requested ? 'Vänförfrågan skickad' : 'Lägg till vän',
+          label: requested ? 'Förfrågan skickad' : Words.addFriend,
           icon: 'person-add-outline',
           disabled: requested || !profile,
           onPress: requestFriend,

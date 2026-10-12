@@ -387,7 +387,7 @@ export const MAP_HTML = `<!DOCTYPE html>
           const face = f.avatarUrl ? '<img src="' + escapeHtml(f.avatarUrl) + '" />' : '<span class="initials">' + initials(f.label) + '</span>';
           return '<div class="ring" style="--ring:' + f.ring + '">' + face + '</div>';
         }).join('') + (rest > 0 ? '<div class="ring" style="--ring:${NIGHT.text};background:${NIGHT.text}"><span class="more">+' + rest + '</span></div>' : '') +
-          '</div><span class="label">' + g.members.length + ' vänner här</span>';
+          '</div><span class="label">' + g.members.length + ' kompisar här</span>';
         const el = makeEl('mk', html);
         const lngLat = map.unproject([g.x, g.y]);
         el.addEventListener('click', function (e) {

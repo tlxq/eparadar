@@ -15,7 +15,7 @@ export async function setMapStatus(userId: string, text: string | null): Promise
     .select('user_id');
   if (error) throw error;
   if (!data?.length) {
-    throw new Error('Slå på platsdelning först, så kan dina vänner se din status.');
+    throw new Error('Slå på platsdelning först, så kan dina kompisar se din status.');
   }
 }
 

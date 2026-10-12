@@ -40,7 +40,7 @@ export function FriendPicker({ mode, bottom, friends, onPick, onClose }: FriendP
         ]}
       >
         {mode === 'search' && (
-          <TextField placeholder="Sök vän" value={query} onChangeText={setQuery} autoFocus />
+          <TextField placeholder="Sök kompis" value={query} onChangeText={setQuery} autoFocus />
         )}
         <FlatList
           data={results}
@@ -58,7 +58,7 @@ export function FriendPicker({ mode, bottom, friends, onPick, onClose }: FriendP
           )}
           ListEmptyComponent={
             <ThemedText type="small" themeColor="textSecondary" style={styles.empty}>
-              Inga vänner delar sin plats just nu.
+              Inga kompisar delar sin plats just nu.
             </ThemedText>
           }
         />

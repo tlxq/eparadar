@@ -8,6 +8,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/button';
 import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
+import { SectionLabel } from '@/components/section-label';
+import { Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { completeOnboarding } from '@/lib/api';
@@ -31,7 +33,7 @@ const FRIEND_WAYS: {
   {
     icon: 'qr-code-outline',
     title: 'Visa min kod',
-    detail: 'Låt en polare skanna, koden byts var 10:e minut',
+    detail: 'Låt en kompis skanna, koden byts var 10:e minut',
     href: '/friends/code',
   },
   {
@@ -42,14 +44,14 @@ const FRIEND_WAYS: {
   },
   {
     icon: 'radio-outline',
-    title: 'Radar',
+    title: Words.radar,
     detail: 'Se vilka som har radarn öppen inom 100 m',
     href: '/friends/nearby',
   },
 ];
 
 const LOCATION_FACTS = [
-  'Bara dina vänner ser dig, aldrig någon annan',
+  'Bara dina kompisar ser dig, aldrig någon annan',
   'Välj ungefärlig plats, ca 300 m, i stället för exakt',
   'Spökläge och av-knapp finns alltid på kartan',
 ];
@@ -144,7 +146,7 @@ export default function OnboardingScreen() {
       const result = await enableLocationSharing(userId);
       if (result.ok) {
         queryClient.invalidateQueries({ queryKey: queryKeys.myLocation(userId) });
-        showToast({ tone: 'success', message: 'Dina vänner kan nu se dig på kartan.' });
+        showToast({ tone: 'success', message: 'Nu ser dina kompisar dig på kartan!' });
       } else {
         setLocationNote('Okej, kartan är av. Du kan slå på den i Inställningar senare.');
       }
@@ -182,10 +184,10 @@ export default function OnboardingScreen() {
                 <Badge size={132} icon="radio-outline" color={theme.brand} />
               </View>
               <ThemedText type="title" accessibilityRole="header">
-                {firstName ? `Välkommen till gänget, ${firstName}!` : 'Välkommen till gänget!'}
+                {firstName ? `Välkommen till epaRadar, ${firstName}!` : 'Välkommen till epaRadar!'}
               </ThemedText>
               <ThemedText themeColor="textSecondary">
-                Två snabba grejer så hittar du dina polare och ser vilka som är ute och rullar.
+                Två snabba grejer så hittar du dina kompisar och ser vilka som är ute och rullar.
               </ThemedText>
             </>
           ) : null}
@@ -196,7 +198,7 @@ export default function OnboardingScreen() {
                 Vem kör du med?
               </ThemedText>
               <ThemedText themeColor="textSecondary">
-                I epaRadar lägger man bara till folk man faktiskt träffar. Ingen kan söka upp dig.
+                I epaRadar lägger du bara till folk du faktiskt träffar. Ingen kan söka upp dig.
               </ThemedText>
               <View style={styles.cards}>
                 {FRIEND_WAYS.map((way) => (
@@ -233,9 +235,7 @@ export default function OnboardingScreen() {
           {step === 'location' ? (
             <>
               <View style={[styles.offPill, { backgroundColor: theme.backgroundElement }]}>
-                <ThemedText type="caption" themeColor="textSecondary">
-                  AV SOM STANDARD
-                </ThemedText>
+                <SectionLabel>Av som standard</SectionLabel>
               </View>
               <ThemedText type="title" accessibilityRole="header">
                 Synas på kartan?
@@ -263,7 +263,7 @@ export default function OnboardingScreen() {
                 Klart, nu rullar vi!
               </ThemedText>
               <ThemedText themeColor="textSecondary">
-                Visa upp traktorn och lägg till din bil på profilen när du har en stund.
+                Visa upp traktorn och lägg till din EPA på profilen när du har en stund.
               </ThemedText>
               {locationNote ? (
                 <View style={[styles.note, { backgroundColor: theme.backgroundElement }]}>
@@ -285,7 +285,7 @@ export default function OnboardingScreen() {
           {step === 'location' ? (
             <>
               <Button
-                label="Dela med vänner"
+                label="Dela med kompisar"
                 variant="secondary"
                 loading={locationBusy}
                 onPress={shareLocation}
@@ -302,7 +302,7 @@ export default function OnboardingScreen() {
             <>
               <Button label="Till flödet" loading={finishing} onPress={() => finish()} />
               <Button
-                label="Lägg till min bil"
+                label="Lägg till min EPA"
                 variant="ghost"
                 disabled={finishing}
                 onPress={() => finish('/cars/new')}

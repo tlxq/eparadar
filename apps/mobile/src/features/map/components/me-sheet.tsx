@@ -29,29 +29,29 @@ export function MeSheet({ visible, profile, location, onClose, onStatus }: MeShe
         ? { tone: 'error', message: error }
         : {
             tone: 'success',
-            message: ghost ? 'Dina vänner ser dig igen.' : 'Spökläge på. Ingen ser dig nu.',
+            message: ghost ? 'Du syns igen för dina kompisar!' : 'Spökläge på! Ingen ser dig nu.',
           },
     );
   }
 
   const sharingText = !location?.sharing_enabled
-    ? 'Spökläge är på. Ingen av dina vänner ser dig på kartan.'
+    ? 'Spökläge är på. Ingen av dina kompisar ser dig på kartan.'
     : location.approximate_enabled
-      ? 'Dina vänner ser ungefär var du är, inte exakt punkt.'
-      : 'Dina vänner ser din exakta plats och när du kör.';
+      ? 'Dina kompisar ser ungefär var du är, inte exakt punkt.'
+      : 'Dina kompisar ser din exakta plats och när du kör.';
 
   const actions: SheetAction[] = [
     {
       label: ghost ? 'Stäng av spökläge' : 'Slå på spökläge',
       icon: ghost ? 'eye-outline' : 'eye-off-outline',
-      hint: ghost ? 'Vännerna ser dig på kartan igen' : 'Vännerna slutar se dig direkt',
+      hint: ghost ? 'Kompisarna ser dig på kartan igen' : 'Kompisarna slutar se dig direkt',
       disabled: busy,
       onPress: toggleGhost,
     },
     {
       label: location?.status_text ? 'Ändra status' : 'Sätt status',
       icon: 'chatbubble-ellipses-outline',
-      hint: 'Syns för vänner i en timme',
+      hint: 'Syns för kompisar i en timme',
       onPress: onStatus,
     },
     {
@@ -74,7 +74,7 @@ export function MeSheet({ visible, profile, location, onClose, onStatus }: MeShe
         <View style={styles.header}>
           <Avatar name={profile?.display_name ?? ''} imageUrl={profile?.avatar_url} size={56} />
           <View style={styles.text}>
-            <ThemedText type="smallBold">Så ser vännerna dig</ThemedText>
+            <ThemedText type="smallBold">Så ser kompisarna dig</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
               {sharingText}
             </ThemedText>
