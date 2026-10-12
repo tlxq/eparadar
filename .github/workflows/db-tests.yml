@@ -17,5 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v5
-      - run: supabase start -x realtime,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Start Supabase (retries on registry rate limits)
+        run: |
+          for attempt in 1 2 3 4 5; do
+            supabase start -x realtime,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor && exit 0
+            supabase stop --no-backup || true
+            sleep $((attempt * 60))
+          done
+          exit 1
       - run: supabase test db --local
