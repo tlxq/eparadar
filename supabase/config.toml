@@ -425,6 +425,12 @@ entrypoint = "./functions/send-push/index.ts"
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/send-push/*.html" ]
 
+[functions.purge-storage]
+enabled = true
+verify_jwt = false
+import_map = "./functions/purge-storage/deno.json"
+entrypoint = "./functions/purge-storage/index.ts"
+
 [functions.delete-account]
 enabled = true
 verify_jwt = true

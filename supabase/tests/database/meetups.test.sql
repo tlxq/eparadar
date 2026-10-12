@@ -22,8 +22,8 @@ set local request.jwt.claim.sub = 'e9000000-0000-0000-0000-000000000022';
 
 select is(
   (select count(*)::int from public.meetups where id = 'f2000000-0000-0000-0000-000000000001'),
-  1,
-  'anyone (not just the creator) can view a meetup'
+  0,
+  'a non-friend cannot view a meetup'
 );
 
 select throws_ok(

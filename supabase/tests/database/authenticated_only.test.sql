@@ -122,17 +122,17 @@ select is(
 );
 
 select is(
-  (select interest_count::int from public.meetups_with_stats
+  (select count(*)::int from public.meetups_with_stats
     where id = 'ab0000aa-0000-0000-0000-000000000001'),
-  1,
-  'a stranger still sees how many are interested'
+  0,
+  'a stranger does not see a meetup from a non-friend'
 );
 
 select is(
   (select here_now_count::int from public.meetups_with_stats
     where id = 'ab0000aa-0000-0000-0000-000000000001'),
-  1,
-  'a stranger still sees how many are there now'
+  null,
+  'a stranger gets no here-now count for a meetup they cannot see'
 );
 
 select is(
