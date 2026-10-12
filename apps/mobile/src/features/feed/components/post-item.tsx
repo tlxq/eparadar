@@ -53,9 +53,9 @@ export function PostItem({ post, onMore }: { post: Post; onMore?: () => void }) 
         ) : null}
       </View>
       {post.body ? <ThemedText>{post.body}</ThemedText> : null}
-      {post.image_url ? (
+      {post.image_signed_url ? (
         <Image
-          source={{ uri: post.image_url }}
+          source={{ uri: post.image_signed_url }}
           style={[styles.postImage, { backgroundColor: theme.backgroundElement }]}
           accessibilityLabel={`Bild från ${authorName}`}
         />
