@@ -29,7 +29,7 @@ export const privacyPolicy: LegalDocument = {
           'Innehåll: poster med bilder, chattmeddelanden, bilder i chatten, reaktioner och gruppchattar.',
           'Karta: din position, riktning och om du rör dig när platsdelning är på, din status, spots du placerar (Ragga och Varning) med bilder, meets du skapar, intresse och incheckningar.',
           'Radarn: din position i ungefär 20 sekunder medan du själv letar.',
-          'Rapporter: när du rapporterar något sparar vi en kopia av innehållet, din anledning och det du skriver till oss.',
+          'Rapporter: när du rapporterar något sparar vi en kopia av innehållet, din anledning och det du skriver till oss. Rapporterna läses av epaRadars admin i appen, som kan ta bort innehåll som bryter mot reglerna. Den du rapporterar får aldrig veta vem som rapporterade.',
           'Teknik: en token för aviseringar, vilka sorters aviseringar du har stängt av, när du öppnar appen, och felrapporter om appen kraschar.',
         ],
         'På webbplatsens väntelista sparar vi din e-postadress om du själv fyller i den.',
@@ -76,7 +76,7 @@ export const privacyPolicy: LegalDocument = {
     {
       heading: 'Vem som ser vad',
       blocks: [
-        'Poster, spots, meets och din position syns bara för dina kompisar. Nya chattar kan bara startas mellan kompisar. Din profil (namn, användarnamn, profilbild och EPA:or) syns för andra inloggade användare så att ni kan hitta varandra. Ingenting syns för den som inte är inloggad. Vi säljer inte personuppgifter och använder dem inte för reklam.',
+        'Poster, spots, meets och din position syns bara för dina kompisar. Nya chattar kan bara startas mellan kompisar. Din profil (namn, användarnamn, profilbild och EPA:or) syns för andra inloggade användare så att ni kan hitta varandra. Rapporterat innehåll syns också för epaRadars admin, men admin ser inte din plats eller dina spots på kartan om ni inte är kompisar. Ingenting syns för den som inte är inloggad. Vi säljer inte personuppgifter och använder dem inte för reklam.',
       ],
     },
     {

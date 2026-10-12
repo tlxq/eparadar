@@ -8,6 +8,29 @@ export type Database = {
   };
   public: {
     Tables: {
+      admins: {
+        Row: {
+          created_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'admins_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: true;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       analytics_events: {
         Row: {
           created_at: string;
@@ -986,6 +1009,29 @@ export type Database = {
       };
     };
     Functions: {
+      admin_mark_report_handled: {
+        Args: { p_report_id: string };
+        Returns: undefined;
+      };
+      admin_open_reports: {
+        Args: never;
+        Returns: {
+          created_at: string;
+          details: string;
+          id: string;
+          reason: string;
+          reported_display_name: string;
+          reported_user_id: string;
+          reported_username: string;
+          snapshot: string;
+          target_id: string;
+          target_type: string;
+        }[];
+      };
+      admin_remove_reported_content: {
+        Args: { p_report_id: string };
+        Returns: boolean;
+      };
       block_user: {
         Args: { target_user_id: string };
         Returns: {
@@ -1042,6 +1088,7 @@ export type Database = {
         Args: { a: string; b: string };
         Returns: boolean;
       };
+      is_admin: { Args: never; Returns: boolean };
       is_blocked_between: { Args: { a: string; b: string }; Returns: boolean };
       is_blocked_direct_chat: {
         Args: { p_conversation_id: string; p_user_id: string };
