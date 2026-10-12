@@ -1,5 +1,6 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "@supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 type PushMessage = {
   to: string;
@@ -15,13 +16,35 @@ type WebhookPayload = {
   old_record?: Record<string, unknown> | null;
 };
 
-async function sendExpoPush(messages: PushMessage[]): Promise<void> {
-  if (messages.length === 0) return;
-  await fetch("https://exp.host/--/api/v2/push/send", {
+type PushTicket = { status: "ok" | "error"; details?: { error?: string } };
+
+async function sendExpoPush(messages: PushMessage[]): Promise<string[]> {
+  if (messages.length === 0) return [];
+  const response = await fetch("https://exp.host/--/api/v2/push/send", {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify(messages),
   });
+  if (!response.ok) return [];
+  const { data } = (await response.json().catch(() => ({}))) as { data?: PushTicket[] };
+  return (data ?? [])
+    .map((ticket, index) =>
+      ticket.status === "error" && ticket.details?.error === "DeviceNotRegistered"
+        ? messages[index].to
+        : null,
+    )
+    .filter((token): token is string => !!token);
+}
+
+async function blockedWith(supabase: SupabaseClient, userId: string): Promise<Set<string>> {
+  const { data } = await supabase
+    .from("friendships")
+    .select("requester_id, addressee_id")
+    .eq("status", "blocked")
+    .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
+  return new Set(
+    (data ?? []).map((row) => (row.requester_id === userId ? row.addressee_id : row.requester_id)),
+  );
 }
 
 export default {
@@ -30,6 +53,7 @@ export default {
     const supabase = ctx.supabaseAdmin;
 
     let recipientIds: string[] = [];
+    let actorId: string | null = null;
     let title = "";
     let body = "";
     let data: Record<string, unknown> = {};
@@ -54,8 +78,9 @@ export default {
         .single();
 
       recipientIds = (members ?? []).map((m) => m.user_id);
+      actorId = message.sender_id;
       title = sender?.display_name ?? "Nytt meddelande";
-      body = message.body.trim() || (message.image_path ? "Skickade en bild" : "");
+      body = message.image_path ? "Skickade en bild" : "Skickade ett meddelande";
       data = { type: "message", conversationId: message.conversation_id };
     } else if (payload.table === "friendships" && payload.type === "INSERT") {
       const friendship = payload.record as { requester_id: string; addressee_id: string; status: string };
@@ -67,6 +92,7 @@ export default {
         .single();
 
       recipientIds = [friendship.addressee_id];
+      actorId = friendship.requester_id;
       title = "Ny vänförfrågan";
       body = `${requester?.display_name ?? "Någon"} vill bli vän med dig`;
       data = { type: "friend_request" };
@@ -103,6 +129,7 @@ export default {
         .single();
 
       recipientIds = [meetup.creator_id];
+      actorId = interest.user_id;
       title = "Någon är intresserad";
       body = `${interested?.display_name ?? "Någon"} är intresserad av ${meetup.title}`;
       data = { type: "meetup_interest", meetupId: interest.meetup_id };
@@ -110,6 +137,10 @@ export default {
       return Response.json({ skipped: true });
     }
 
+    if (actorId) {
+      const blocked = await blockedWith(supabase, actorId);
+      recipientIds = recipientIds.filter((id) => !blocked.has(id));
+    }
     if (recipientIds.length === 0) return Response.json({ skipped: true });
 
     const { data: tokens } = await supabase
@@ -124,7 +155,10 @@ export default {
       data,
     }));
 
-    await sendExpoPush(messages);
-    return Response.json({ sent: messages.length });
+    const deadTokens = await sendExpoPush(messages);
+    if (deadTokens.length > 0) {
+      await supabase.from("push_tokens").delete().in("token", deadTokens);
+    }
+    return Response.json({ sent: messages.length, removed: deadTokens.length });
   }),
 };
