@@ -698,6 +698,60 @@ export type Database = {
           },
         ];
       };
+      reports: {
+        Row: {
+          created_at: string;
+          details: string | null;
+          id: string;
+          reason: string;
+          reported_user_id: string | null;
+          reporter_id: string;
+          snapshot: string | null;
+          status: string;
+          target_id: string;
+          target_type: string;
+        };
+        Insert: {
+          created_at?: string;
+          details?: string | null;
+          id?: string;
+          reason: string;
+          reported_user_id?: string | null;
+          reporter_id?: string;
+          snapshot?: string | null;
+          status?: string;
+          target_id: string;
+          target_type: string;
+        };
+        Update: {
+          created_at?: string;
+          details?: string | null;
+          id?: string;
+          reason?: string;
+          reported_user_id?: string | null;
+          reporter_id?: string;
+          snapshot?: string | null;
+          status?: string;
+          target_id?: string;
+          target_type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'reports_reported_user_id_fkey';
+            columns: ['reported_user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'reports_reporter_id_fkey';
+            columns: ['reporter_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       spot_photos: {
         Row: {
           author_id: string;
@@ -977,6 +1031,15 @@ export type Database = {
       };
       rename_conversation: {
         Args: { p_conversation_id: string; p_name: string };
+        Returns: undefined;
+      };
+      report_content: {
+        Args: {
+          p_details?: string;
+          p_reason: string;
+          p_target_id: string;
+          p_target_type: string;
+        };
         Returns: undefined;
       };
       request_storage_cleanup: { Args: never; Returns: undefined };

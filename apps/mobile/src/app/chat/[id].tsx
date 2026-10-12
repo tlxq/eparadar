@@ -45,6 +45,7 @@ import {
   TypingBubble,
 } from '@/features/chat/components/message-bubble';
 import { Common } from '@/constants/strings';
+import { openReport } from '@/store/report-sheet';
 export default function ConversationScreen() {
   const theme = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -260,7 +261,19 @@ export default function ConversationScreen() {
                 onPress: () => handleUnsend(selected),
               },
             ]
-          : []),
+          : [
+              {
+                label: Common.report,
+                icon: 'flag-outline' as const,
+                onPress: () =>
+                  openReport({
+                    type: 'message',
+                    id: selected.id,
+                    userId: selected.sender_id,
+                    name: selected.sender?.display_name ?? 'personen',
+                  }),
+              },
+            ]),
       ]
     : [];
 

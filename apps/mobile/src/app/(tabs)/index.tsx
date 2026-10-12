@@ -16,7 +16,6 @@ import { useTheme } from '@/hooks/use-theme';
 import { fetchPosts, POSTS_PAGE_SIZE, type FriendLocation, type Post } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { useFriendLocations } from '@/features/map/hooks';
-import { useUserId } from '@/hooks/use-user-id';
 import { useQueryErrorToast } from '@/hooks/use-query-error-toast';
 import { PostItem } from '@/features/feed/components/post-item';
 import { PostActionsSheet } from '@/features/feed/components/post-actions-sheet';
@@ -83,7 +82,6 @@ function FeedSkeleton() {
 }
 
 export default function FeedScreen() {
-  const userId = useUserId();
   const tabBarInset = useTabBarInset();
   const [selected, setSelected] = useState<Post | null>(null);
   const { data, isLoading, isError, refetch, isRefetching, fetchNextPage, hasNextPage } =
@@ -115,7 +113,7 @@ export default function FeedScreen() {
           renderItem={({ item }) => (
             <PostItem
               post={item}
-              onMore={item.author_id === userId ? () => setSelected(item) : undefined}
+              onMore={() => setSelected(item)}
             />
           )}
           contentContainerStyle={{ paddingBottom: tabBarInset + Spacing.six }}

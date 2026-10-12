@@ -6,6 +6,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { IconButton } from '@/components/icon-button';
+import { openReport } from '@/store/report-sheet';
 import { ScreenBackground } from '@/components/screen-background';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
@@ -204,7 +205,23 @@ export default function MeetupDetailScreen() {
                 onPress={handleDelete}
               />
             </View>
-          ) : null}
+          ) : (
+            <View style={styles.deleteButton}>
+              <Button
+                label="Rapportera träffen"
+                icon="flag-outline"
+                variant="ghost"
+                onPress={() =>
+                  openReport({
+                    type: 'meetup',
+                    id: meetup.id,
+                    userId: meetup.creator_id,
+                    name: meetup.creator?.display_name ?? 'skaparen',
+                  })
+                }
+              />
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
     </ScreenBackground>

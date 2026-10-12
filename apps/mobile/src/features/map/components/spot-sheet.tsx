@@ -14,6 +14,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { pickImage, type ImageSource } from '@/lib/pick-image';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
+import { openReport } from '@/store/report-sheet';
 
 type SpotSheetProps = {
   spot: Spot | null;
@@ -83,6 +84,13 @@ export function SpotSheet({ spot, hereNow, onClose }: SpotSheetProps) {
       icon: 'trash-outline',
       destructive: true,
       onPress: () => handleDelete(spot.id),
+    });
+  } else if (spot) {
+    actions.push({
+      label: Common.report,
+      icon: 'flag-outline',
+      onPress: () =>
+        openReport({ type: 'spot', id: spot.id, userId: spot.creator_id, name: 'skaparen' }),
     });
   }
 
