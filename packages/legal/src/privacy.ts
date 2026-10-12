@@ -29,7 +29,7 @@ export const privacyPolicy: LegalDocument = {
           'Innehåll: poster med bilder, chattmeddelanden, bilder i chatten, reaktioner och gruppchattar.',
           'Karta: din position, riktning och om du rör dig när platsdelning är på, din status, spots du placerar (Ragga och Varning) med bilder, meets du skapar, intresse och incheckningar.',
           'Radarn: din position i ungefär 20 sekunder medan du själv letar.',
-          'Rapporter: när du rapporterar något sparar vi en kopia av innehållet och din anledning.',
+          'Rapporter: när du rapporterar något sparar vi en kopia av innehållet, din anledning och det du skriver till oss.',
           'Teknik: en token för aviseringar, när du öppnar appen, och felrapporter om appen kraschar.',
         ],
         'På webbplatsens väntelista sparar vi din e-postadress om du själv fyller i den.',

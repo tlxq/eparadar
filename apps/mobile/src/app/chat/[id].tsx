@@ -6,6 +6,7 @@ import { FlatList, Image, Modal, Pressable, StyleSheet, TextInput, View } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ActionSheet, type SheetAction } from '@/components/action-sheet';
+import { DropdownButton } from '@/components/dropdown-menu';
 import { Avatar } from '@/components/avatar';
 import { ConversationAvatar } from '@/components/conversation-avatar';
 import { IconButton } from '@/components/icon-button';
@@ -55,6 +56,8 @@ const LOADING_BUBBLES = [
   { width: '35%', mine: true },
 ] as const;
 
+const VIEWER_CLOSE_MS = 250;
+
 export default function ConversationScreen() {
   const theme = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -64,7 +67,7 @@ export default function ConversationScreen() {
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
   const [selected, setSelected] = useState<Message | null>(null);
-  const [viewerUrl, setViewerUrl] = useState<string | null>(null);
+  const [viewer, setViewer] = useState<{ url: string; message: Message } | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const { data: myProfile } = useProfile();
   const myName = myProfile?.display_name ?? '';
@@ -262,6 +265,20 @@ export default function ConversationScreen() {
     }
   }
 
+  function reportImage(message: Message) {
+    setViewer(null);
+    setTimeout(
+      () =>
+        openReport({
+          type: 'message',
+          id: message.id,
+          userId: message.sender_id,
+          name: message.sender?.display_name ?? 'personen',
+        }),
+      VIEWER_CLOSE_MS,
+    );
+  }
+
   const selectedIsMine = !!selected && selected.sender_id === userId;
   const selectedIsRead =
     !!selected &&
@@ -376,7 +393,7 @@ export default function ConversationScreen() {
                   pressHaptic();
                   setSelected(message);
                 }}
-                onOpenImage={setViewerUrl}
+                onOpenImage={(url) => setViewer({ url, message: item })}
               />
             )}
             ListFooterComponent={
@@ -494,25 +511,37 @@ export default function ConversationScreen() {
           }
         />
         <Modal
-          visible={!!viewerUrl}
+          visible={!!viewer}
           transparent
           animationType="fade"
-          onRequestClose={() => setViewerUrl(null)}
+          onRequestClose={() => setViewer(null)}
         >
           <View style={[styles.viewer, { backgroundColor: theme.scrim }]}>
-            {viewerUrl ? (
+            {viewer ? (
               <Image
-                source={{ uri: viewerUrl }}
+                source={{ uri: viewer.url }}
                 style={styles.viewerImage}
                 resizeMode="contain"
                 accessibilityLabel="Bild i chatten"
               />
             ) : null}
             <SafeAreaView style={styles.viewerClose} edges={['top']}>
+              {viewer && viewer.message.sender_id !== userId ? (
+                <DropdownButton
+                  accessibilityLabel="Fler val för bilden"
+                  items={[
+                    {
+                      label: Common.report,
+                      icon: 'flag-outline',
+                      onPress: () => reportImage(viewer.message),
+                    },
+                  ]}
+                />
+              ) : null}
               <IconButton
                 icon="close"
                 accessibilityLabel="Stäng bilden"
-                onPress={() => setViewerUrl(null)}
+                onPress={() => setViewer(null)}
               />
             </SafeAreaView>
           </View>
@@ -552,7 +581,13 @@ const styles = StyleSheet.create({
   reactionEmoji: Typography.emoji,
   viewer: { flex: 1, justifyContent: 'center' },
   viewerImage: { width: '100%', height: '100%' },
-  viewerClose: { position: 'absolute', top: 0, right: Spacing.three },
+  viewerClose: {
+    position: 'absolute',
+    top: 0,
+    right: Spacing.three,
+    flexDirection: 'row',
+    gap: Spacing.two,
+  },
   bubblePressed: { opacity: 0.8 },
   center: { textAlign: 'center' },
   loadingThread: { gap: Spacing.two, paddingTop: Spacing.two },

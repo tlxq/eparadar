@@ -5,8 +5,8 @@ import type { ReportTargetType } from '@/features/moderation/api';
 export type ReportTarget = {
   type: ReportTargetType;
   id: string;
-  userId: string;
-  name: string;
+  userId: string | null;
+  name: string | null;
 };
 
 type ReportSheetState = {

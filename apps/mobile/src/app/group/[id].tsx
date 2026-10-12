@@ -32,6 +32,8 @@ import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast, showUndoToast } from '@/store/toast';
 import { useConversation } from '@/features/chat/hooks';
+import { openPerson } from '@/store/person-sheet';
+import { openReport } from '@/store/report-sheet';
 import { useUserId } from '@/hooks/use-user-id';
 import { pickImage } from '@/lib/pick-image';
 import { ModalHeader } from '@/components/modal-header';
@@ -293,6 +295,7 @@ export default function GroupInfoScreen() {
                             : member.profiles.display_name
                         }
                         subtitle={`@${member.profiles.username}`}
+                        onPress={isMe ? undefined : () => openPerson(member.user_id)}
                         leading={
                           <Avatar
                             name={member.profiles.display_name}
@@ -329,6 +332,14 @@ export default function GroupInfoScreen() {
 
         {conversation ? (
           <View style={styles.footer}>
+            <Button
+              label="Rapportera gruppen"
+              icon="flag-outline"
+              variant="ghost"
+              onPress={() =>
+                openReport({ type: 'conversation', id: conversation.id, userId: null, name: null })
+              }
+            />
             <Button
               label="Lämna gruppen"
               icon="exit-outline"
@@ -389,5 +400,5 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.half,
     borderRadius: Radius.pill,
   },
-  footer: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
+  footer: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two, gap: Spacing.one },
 });

@@ -6,12 +6,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
+import { DropdownButton } from '@/components/dropdown-menu';
 import { EmptyState } from '@/components/empty-state';
 import { ListRow } from '@/components/list-row';
 import { ScreenBackground } from '@/components/screen-background';
 import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
-import { Words } from '@/constants/strings';
+import { Common, Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { RadarHero } from '@/features/friends/components/radar-hero';
 import type { NearbyPerson } from '@/features/friends/nearby';
@@ -21,7 +22,10 @@ import { sendFriendRequest } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
-import { showToast } from '@/store/toast';
+import { useBlockPerson } from '@/features/moderation/use-block-person';
+import { useRadarIgnoreStore } from '@/store/radar-ignore';
+import { openReport } from '@/store/report-sheet';
+import { showToast, showUndoToast } from '@/store/toast';
 import { useUserId } from '@/hooks/use-user-id';
 import { ModalHeader } from '@/components/modal-header';
 
@@ -62,6 +66,17 @@ function Blips({ people }: { people: NearbyPerson[] }) {
 function PersonRow({ person, myUserId }: { person: NearbyPerson; myUserId: string }) {
   const theme = useTheme();
   const queryClient = useQueryClient();
+  const blockPerson = useBlockPerson();
+  const ignore = useRadarIgnoreStore((state) => state.ignore);
+  const unignore = useRadarIgnoreStore((state) => state.unignore);
+
+  function handleIgnore() {
+    ignore(person.user_id);
+    showUndoToast({
+      message: `${person.display_name} syns inte på din radar längre.`,
+      onUndo: () => unignore(person.user_id),
+    });
+  }
 
   const add = useMutation({
     mutationFn: () => sendFriendRequest(person.user_id),
@@ -98,28 +113,65 @@ function PersonRow({ person, myUserId }: { person: NearbyPerson; myUserId: strin
       }
       leading={<Avatar name={person.display_name} imageUrl={person.avatar_url} size={48} />}
       trailing={
-        accepted ? (
-          <View style={styles.sent}>
-            <Ionicons name="checkmark" size={16} color={theme.success} />
-            <ThemedText type="smallBold" themeColor="success">
-              {Words.friends}
-            </ThemedText>
-          </View>
-        ) : sent ? (
-          <View style={styles.sent}>
-            <Ionicons name="checkmark" size={16} color={theme.success} />
-            <ThemedText type="smallBold" themeColor="success">
-              Skickad
-            </ThemedText>
-          </View>
-        ) : (
-          <Button
-            label={person.request_state === 'received' ? 'Acceptera' : 'Lägg till'}
-            size="sm"
-            loading={add.isPending}
-            onPress={() => add.mutate()}
+        <View style={styles.trailing}>
+          {accepted ? (
+            <View style={styles.sent}>
+              <Ionicons name="checkmark" size={16} color={theme.success} />
+              <ThemedText type="smallBold" themeColor="success">
+                {Words.friends}
+              </ThemedText>
+            </View>
+          ) : sent ? (
+            <View style={styles.sent}>
+              <Ionicons name="checkmark" size={16} color={theme.success} />
+              <ThemedText type="smallBold" themeColor="success">
+                Skickad
+              </ThemedText>
+            </View>
+          ) : (
+            <Button
+              label={person.request_state === 'received' ? 'Acceptera' : 'Lägg till'}
+              size="sm"
+              loading={add.isPending}
+              onPress={() => add.mutate()}
+            />
+          )}
+          <DropdownButton
+            variant="plain"
+            size={36}
+            accessibilityLabel={`Fler val för ${person.display_name}`}
+            items={[
+              {
+                label: 'Ignorera',
+                icon: 'eye-off-outline',
+                hint: 'Döljs bara på din radar',
+                onPress: handleIgnore,
+              },
+              {
+                label: Common.report,
+                icon: 'flag-outline',
+                onPress: () =>
+                  openReport({
+                    type: 'profile',
+                    id: person.user_id,
+                    userId: person.user_id,
+                    name: person.display_name,
+                  }),
+              },
+              {
+                label: Common.block,
+                icon: 'ban-outline',
+                destructive: true,
+                onPress: async () => {
+                  const blocked = await blockPerson(person.user_id, person.display_name);
+                  if (blocked) {
+                    queryClient.invalidateQueries({ queryKey: queryKeys.allNearby(myUserId) });
+                  }
+                },
+              },
+            ]}
           />
-        )
+        </View>
       }
     />
   );
@@ -149,7 +201,15 @@ function PermissionPrompt({ blocked, onAllow }: { blocked: boolean; onAllow: () 
 export default function NearbyRadarScreen() {
   const theme = useTheme();
   const userId = useUserId();
-  const { permission, requestPermission, locating, people, isError } = useNearbyRadar(userId);
+  const {
+    permission,
+    requestPermission,
+    locating,
+    people: found,
+    isError,
+  } = useNearbyRadar(userId);
+  const ignored = useRadarIgnoreStore((state) => state.ignored);
+  const people = found.filter((person) => !ignored.includes(person.user_id));
   const needsPermission =
     permission === 'undetermined' || permission === 'denied' || permission === 'blocked';
 
@@ -246,6 +306,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingBottom: Spacing.one,
   },
+  trailing: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   sent: {
     flexDirection: 'row',
     alignItems: 'center',

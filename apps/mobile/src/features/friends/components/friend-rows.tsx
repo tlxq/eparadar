@@ -11,6 +11,7 @@ import { friendProfile, removeFriend, respondToFriendRequest, type Friendship } 
 import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
 import { openPerson } from '@/store/person-sheet';
+import { openReport } from '@/store/report-sheet';
 import { showToast } from '@/store/toast';
 import { confirmDestructive } from '@/lib/confirm';
 import { blockedText, Common } from '@/constants/strings';
@@ -69,6 +70,17 @@ export function RequestRow({ request, myUserId }: { request: Friendship; myUserI
                 label: 'Neka',
                 icon: 'close-circle-outline',
                 onPress: () => respond.mutate(false),
+              },
+              {
+                label: Common.report,
+                icon: 'flag-outline',
+                onPress: () =>
+                  openReport({
+                    type: 'profile',
+                    id: requester.id,
+                    userId: requester.id,
+                    name: requester.display_name,
+                  }),
               },
               {
                 label: Common.block,

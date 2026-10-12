@@ -17,6 +17,8 @@ import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
 import { openReport } from '@/store/report-sheet';
 
+const REPORT_DELAY_MS = 250;
+
 type SpotSheetProps = {
   spot: Spot | null;
   hereNow: number;
@@ -90,8 +92,7 @@ export function SpotSheet({ spot, hereNow, onClose }: SpotSheetProps) {
     actions.push({
       label: Common.report,
       icon: 'flag-outline',
-      onPress: () =>
-        openReport({ type: 'spot', id: spot.id, userId: spot.creator_id, name: 'skaparen' }),
+      onPress: () => openReport({ type: 'spot', id: spot.id, userId: spot.creator_id, name: null }),
     });
   }
 
@@ -118,7 +119,24 @@ export function SpotSheet({ spot, hereNow, onClose }: SpotSheetProps) {
               </ThemedText>
             ) : null}
             {spot.kind === 'ragg' && userId ? (
-              <SpotPhotoStrip spotId={spot.id} userId={userId} spotCreatorId={spot.creator_id} />
+              <SpotPhotoStrip
+                spotId={spot.id}
+                userId={userId}
+                spotCreatorId={spot.creator_id}
+                onReport={(photo) => {
+                  onClose();
+                  setTimeout(
+                    () =>
+                      openReport({
+                        type: 'spot_photo',
+                        id: photo.id,
+                        userId: photo.author_id,
+                        name: null,
+                      }),
+                    REPORT_DELAY_MS,
+                  );
+                }}
+              />
             ) : null}
           </View>
         ) : null
