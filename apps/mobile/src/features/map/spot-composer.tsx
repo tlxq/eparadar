@@ -108,7 +108,10 @@ export function SpotComposer({
           label="Namn"
           placeholder="Max-rondellen"
           value={name}
-          onChangeText={setName}
+          onChangeText={(text) => {
+            setName(text);
+            if (error) setError(null);
+          }}
           maxLength={40}
           autoFocus
           error={error}
@@ -137,7 +140,7 @@ export function SpotComposer({
         Bara dina kompisar ser den. Du kan ta bort den när du vill.
       </ThemedText>
 
-      <Button label={Words.place} onPress={handleSubmit} loading={saving} disabled={nameMissing} />
+      <Button label={Words.place} onPress={handleSubmit} loading={saving} />
     </FormSheet>
   );
 }

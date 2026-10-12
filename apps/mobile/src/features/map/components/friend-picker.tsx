@@ -36,7 +36,11 @@ export function FriendPicker({ mode, bottom, friends, onPick, onClose }: FriendP
         style={[
           styles.panel,
           mode === 'search' ? { top: insets.top + Spacing.three } : { bottom },
-          { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+          {
+            backgroundColor: theme.backgroundElement,
+            borderColor: theme.border,
+            shadowColor: theme.scrim,
+          },
         ]}
       >
         {mode === 'search' && (
@@ -47,7 +51,13 @@ export function FriendPicker({ mode, bottom, friends, onPick, onClose }: FriendP
           keyExtractor={(item) => item.user_id}
           style={styles.list}
           renderItem={({ item }) => (
-            <Pressable onPress={() => onPick(item)} style={styles.row} hitSlop={4}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Visa ${item.profile.display_name} på kartan`}
+              onPress={() => onPick(item)}
+              style={styles.row}
+              hitSlop={4}
+            >
               <Avatar
                 name={item.profile.display_name}
                 imageUrl={item.profile.avatar_url}
@@ -58,7 +68,9 @@ export function FriendPicker({ mode, bottom, friends, onPick, onClose }: FriendP
           )}
           ListEmptyComponent={
             <ThemedText type="small" themeColor="textSecondary" style={styles.empty}>
-              Inga kompisar delar sin plats just nu.
+              {mode === 'search' && query.trim() && (friends?.length ?? 0) > 0
+                ? `Ingen kompis matchar "${query.trim()}".`
+                : 'Inga kompisar delar sin plats just nu.'}
             </ThemedText>
           }
         />
@@ -77,7 +89,6 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     padding: Spacing.three,
     gap: Spacing.two,
-    shadowColor: '#000',
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },

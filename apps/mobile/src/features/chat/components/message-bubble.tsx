@@ -9,6 +9,7 @@ import { chatImageUrl, type Conversation, type Message } from '@/lib/api';
 import { readersOf } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
 import { formatDayDivider } from '@/lib/relative-time';
+import { SIGNED_URL_REFRESH_MS } from '@/lib/queryClient';
 
 const GROUP_WINDOW_MS = 5 * 60 * 1000;
 
@@ -36,8 +37,6 @@ const IMAGE_WIDTH = 220;
 
 const IMAGE_HEIGHT = 165;
 
-const SIGNED_URL_STALE_MS = 50 * 60 * 1000;
-
 function ChatImage({
   path,
   corners,
@@ -52,7 +51,8 @@ function ChatImage({
   const { data: url } = useQuery({
     queryKey: queryKeys.chatImage(path),
     queryFn: () => chatImageUrl(path),
-    staleTime: SIGNED_URL_STALE_MS,
+    staleTime: SIGNED_URL_REFRESH_MS,
+    refetchInterval: SIGNED_URL_REFRESH_MS,
   });
 
   return (

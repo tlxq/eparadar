@@ -27,7 +27,6 @@ export function LegalDocumentView({ doc }: { doc: LegalDocument }) {
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['bottom']}>
         <ScrollView contentContainerStyle={styles.content}>
-          <ThemedText type="title">{doc.title}</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             Senast uppdaterad: {doc.updated}
           </ThemedText>

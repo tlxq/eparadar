@@ -8,11 +8,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ActionSheet, type SheetAction } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
 import { ConversationAvatar } from '@/components/conversation-avatar';
+import { Button } from '@/components/button';
 import { IconButton } from '@/components/icon-button';
 import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ScreenBackground } from '@/components/screen-background';
+import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing, Typography } from '@/constants/theme';
+import { Radius, Spacing, Typography } from '@/constants/theme';
 import { useRealtimeTable } from '@/hooks/use-realtime-table';
 import { useTheme } from '@/hooks/use-theme';
 import {
@@ -46,6 +48,13 @@ import {
 } from '@/features/chat/components/message-bubble';
 import { Common } from '@/constants/strings';
 import { openReport } from '@/store/report-sheet';
+const LOADING_BUBBLES = [
+  { width: '55%', mine: false },
+  { width: '40%', mine: true },
+  { width: '65%', mine: false },
+  { width: '35%', mine: true },
+] as const;
+
 export default function ConversationScreen() {
   const theme = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -71,7 +80,12 @@ export default function ConversationScreen() {
 
   const { data: conversation, isError: conversationError } = useConversation(id);
 
-  const { data: messages } = useQuery({
+  const {
+    data: messages,
+    isError: messagesError,
+    refetch: refetchMessages,
+    isFetching: messagesFetching,
+  } = useQuery({
     queryKey: queryKeys.messages(id),
     queryFn: () => fetchMessages(id!),
     enabled: !!id,
@@ -365,7 +379,37 @@ export default function ConversationScreen() {
             contentContainerStyle={styles.list}
             onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
             ListEmptyComponent={
-              messages ? (
+              messagesError && !messages ? (
+                <View style={styles.emptyThread}>
+                  <ThemedText style={styles.center}>
+                    Meddelandena gick inte att hämta. Kolla nätet och försök igen.
+                  </ThemedText>
+                  <Button
+                    label={Common.retry}
+                    icon="refresh"
+                    variant="secondary"
+                    size="sm"
+                    loading={messagesFetching}
+                    onPress={() => refetchMessages()}
+                  />
+                </View>
+              ) : !messages ? (
+                <View
+                  style={styles.loadingThread}
+                  accessibilityLabel="Laddar meddelanden"
+                  accessibilityRole="progressbar"
+                >
+                  {LOADING_BUBBLES.map((bubble, index) => (
+                    <Skeleton
+                      key={index}
+                      width={bubble.width}
+                      height={36}
+                      radius={Radius.lg}
+                      style={{ alignSelf: bubble.mine ? 'flex-end' : 'flex-start' }}
+                    />
+                  ))}
+                </View>
+              ) : messages ? (
                 <View style={styles.emptyThread}>
                   {conversation && userId ? (
                     <ConversationAvatar conversation={conversation} myUserId={userId} size={72} />
@@ -449,7 +493,7 @@ export default function ConversationScreen() {
           animationType="fade"
           onRequestClose={() => setViewerUrl(null)}
         >
-          <View style={styles.viewer}>
+          <View style={[styles.viewer, { backgroundColor: theme.scrim }]}>
             {viewerUrl ? (
               <Image
                 source={{ uri: viewerUrl }}
@@ -500,10 +544,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   reactionEmoji: Typography.emoji,
-  viewer: { flex: 1, backgroundColor: '#000000', justifyContent: 'center' },
+  viewer: { flex: 1, justifyContent: 'center' },
   viewerImage: { width: '100%', height: '100%' },
   viewerClose: { position: 'absolute', top: 0, right: Spacing.three },
   bubblePressed: { opacity: 0.8 },
+  center: { textAlign: 'center' },
+  loadingThread: { gap: Spacing.two, paddingTop: Spacing.two },
   emptyThread: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.two },
   composer: {
     flexDirection: 'row',

@@ -10,7 +10,9 @@ import {
   fetchMeetups,
   setInterested,
 } from '@/features/meetups/api';
+import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
+import { showToast } from '@/store/toast';
 import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { useRealtimeTable } from '@/hooks/use-realtime-table';
 
@@ -90,7 +92,9 @@ export function useCreateMeetup() {
     mutationFn: createMeetup,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.meetups() });
+      showToast({ tone: 'success', message: 'Meeten ligger på kartan!' });
     },
+    onError: (error) => showToast({ tone: 'error', message: getErrorMessage(error) }),
   });
 }
 

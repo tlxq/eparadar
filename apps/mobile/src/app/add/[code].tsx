@@ -79,7 +79,8 @@ function copyFor(outcome: RedeemOutcome, name: string): Copy {
 
 export default function RedeemFriendCodeScreen() {
   const theme = useTheme();
-  const { code: rawCode } = useLocalSearchParams<{ code: string }>();
+  const { code: rawCode, via } = useLocalSearchParams<{ code: string; via?: string }>();
+  const typed = via === 'typed';
   const userId = useUserId();
   const queryClient = useQueryClient();
   const started = useRef(false);
@@ -166,9 +167,9 @@ export default function RedeemFriendCodeScreen() {
         <View style={styles.footer}>
           {failed ? (
             <Button
-              label="Skanna igen"
-              icon="scan-outline"
-              onPress={() => router.replace('/friends/scan')}
+              label={typed ? 'Skriv in igen' : 'Skanna igen'}
+              icon={typed ? 'keypad-outline' : 'scan-outline'}
+              onPress={() => router.replace(typed ? '/friends/enter-code' : '/friends/scan')}
             />
           ) : null}
           <Button

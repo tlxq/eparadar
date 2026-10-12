@@ -1,6 +1,14 @@
 import { useMemo, useState } from 'react';
 import { router } from 'expo-router';
-import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Avatar } from '@/components/avatar';
@@ -21,6 +29,8 @@ import { useFriendLocations } from '@/features/map/hooks';
 import { useQueryErrorToast } from '@/hooks/use-query-error-toast';
 import { PostItem } from '@/features/feed/components/post-item';
 import { PostActionsSheet } from '@/features/feed/components/post-actions-sheet';
+import { SIGNED_URL_REFRESH_MS } from '@/lib/queryClient';
+import { usePullRefresh } from '@/hooks/use-pull-refresh';
 const ON_MAP_AVATAR = 56;
 
 function OnMapNow({ friends }: { friends: FriendLocation[] }) {
@@ -82,12 +92,14 @@ function FeedSkeleton() {
 }
 
 export default function FeedScreen() {
+  const theme = useTheme();
   const tabBarInset = useTabBarInset();
   const [selected, setSelected] = useState<Post | null>(null);
-  const { data, isLoading, isError, refetch, isRefetching, fetchNextPage, hasNextPage } =
+  const { data, isLoading, isError, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
       queryKey: queryKeys.posts(),
       queryFn: ({ pageParam }) => fetchPosts(pageParam),
+      refetchInterval: SIGNED_URL_REFRESH_MS,
       initialPageParam: 0,
       getNextPageParam: (lastPage, pages) =>
         lastPage.length === POSTS_PAGE_SIZE ? pages.length : undefined,
@@ -95,6 +107,8 @@ export default function FeedScreen() {
   const posts = useMemo(() => data?.pages.flat() ?? [], [data]);
 
   const { data: friendLocations } = useFriendLocations();
+
+  const pull = usePullRefresh(refetch);
 
   useQueryErrorToast(isError, 'Kunde inte ladda flödet.', refetch);
 
@@ -106,13 +120,24 @@ export default function FeedScreen() {
         <FlatList
           data={posts}
           onEndReached={() => {
-            if (hasNextPage) fetchNextPage();
+            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
           }}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator
+                accessibilityLabel="Laddar fler poster"
+                color={theme.textSecondary}
+                style={styles.footerSpinner}
+              />
+            ) : null
+          }
           onEndReachedThreshold={0.5}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <PostItem post={item} onMore={() => setSelected(item)} />}
           contentContainerStyle={{ paddingBottom: tabBarInset + Spacing.six }}
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+          refreshControl={
+            <RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} />
+          }
           ListHeaderComponent={
             <View style={styles.headerBlock}>
               <ScreenHeader title="Flöde" />
@@ -161,4 +186,5 @@ const styles = StyleSheet.create({
   skeleton: { paddingHorizontal: Spacing.three, gap: Spacing.five, paddingTop: Spacing.two },
   skeletonPost: { gap: Spacing.three },
   skeletonLines: { flex: 1, gap: Spacing.two },
+  footerSpinner: { paddingVertical: Spacing.four },
 });

@@ -19,7 +19,7 @@ export function CodeEntry() {
   function submit() {
     if (!complete) return;
     setCode('');
-    router.push(`/add/${code}`);
+    router.push(`/add/${code}?via=typed`);
   }
 
   return (

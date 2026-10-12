@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { ScreenBackground } from '@/components/screen-background';
+import { Skeleton } from '@/components/skeleton';
 import { Switch } from '@/components/switch';
 import { ThemedText } from '@/components/themed-text';
 import { SectionLabel } from '@/components/section-label';
@@ -41,7 +42,7 @@ export default function SettingsScreen() {
   const { setSharing, busy } = useSharingToggle();
   const [error, setError] = useState<string | null>(null);
 
-  const { data: location, refetch } = useMyLocation();
+  const { data: location, refetch, isPending: locationLoading } = useMyLocation();
   const sharingEnabled = location?.sharing_enabled ?? false;
   const approximateEnabled = location?.approximate_enabled ?? false;
   const [approximateBusy, setApproximateBusy] = useState(false);
@@ -115,27 +116,35 @@ export default function SettingsScreen() {
                   Bara dina kompisar ser dig. Stäng av när du vill.
                 </ThemedText>
               </View>
-              <Switch
-                testID="sharing-toggle"
-                value={sharingEnabled}
-                onValueChange={handleToggle}
-                disabled={busy}
-              />
+              {locationLoading ? (
+                <Skeleton width={52} height={32} radius={Radius.pill} />
+              ) : (
+                <Switch
+                  testID="sharing-toggle"
+                  value={sharingEnabled}
+                  onValueChange={handleToggle}
+                  disabled={busy}
+                />
+              )}
             </View>
             <View style={[styles.separator, { backgroundColor: theme.separator }]} />
-            <View style={[styles.row, !sharingEnabled && styles.rowDisabled]}>
+            <View style={[styles.row, !sharingEnabled && !locationLoading && styles.rowDisabled]}>
               <View style={styles.rowText}>
                 <ThemedText type="headline">Ungefärlig plats</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
                   Visar ett område på ca 300 m i stället för exakt plats.
                 </ThemedText>
               </View>
-              <Switch
-                testID="approximate-toggle"
-                value={approximateEnabled}
-                onValueChange={handleApproximateToggle}
-                disabled={!sharingEnabled || approximateBusy}
-              />
+              {locationLoading ? (
+                <Skeleton width={52} height={32} radius={Radius.pill} />
+              ) : (
+                <Switch
+                  testID="approximate-toggle"
+                  value={approximateEnabled}
+                  onValueChange={handleApproximateToggle}
+                  disabled={!sharingEnabled || approximateBusy}
+                />
+              )}
             </View>
           </View>
           {error ? <ThemedText type="error">{error}</ThemedText> : null}

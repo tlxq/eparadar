@@ -31,11 +31,16 @@ export default function CreateMeetupScreen() {
   const [vibe, setVibe] = useState<MeetupVibe>('cruising');
   const [title, setTitle] = useState('');
   const [time, setTime] = useState<QuickTimeOption>('tonight');
+  const [titleError, setTitleError] = useState<string | null>(null);
 
   const createMeetup = useCreateMeetup();
 
   const handleSubmit = () => {
-    if (!userId || !title.trim() || !lat || !lng) return;
+    if (!title.trim()) {
+      setTitleError('Ge meeten ett namn först.');
+      return;
+    }
+    if (!userId || !lat || !lng) return;
     createMeetup.mutate(
       {
         creatorId: userId,
@@ -96,9 +101,13 @@ export default function CreateMeetupScreen() {
             <TextField
               label="Namn på meeten"
               value={title}
-              onChangeText={setTitle}
+              onChangeText={(text) => {
+                setTitle(text);
+                if (titleError) setTitleError(null);
+              }}
               placeholder='T.ex. "Cruising vid torget"'
               maxLength={60}
+              error={titleError}
             />
 
             <View style={styles.section}>
@@ -135,7 +144,6 @@ export default function CreateMeetupScreen() {
               label={Words.place}
               icon="location"
               onPress={handleSubmit}
-              disabled={!title.trim()}
               loading={createMeetup.isPending}
             />
           </View>

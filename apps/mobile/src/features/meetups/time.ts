@@ -21,15 +21,39 @@ export function quickTimeToDate(option: QuickTimeOption, now = new Date()): Date
 
 const WEEKDAYS = ['sön', 'mån', 'tis', 'ons', 'tors', 'fre', 'lör'];
 
+export const MEETUP_LIVE_HOURS = 3;
+
+function dayLabel(startsAt: Date, now: Date): string {
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (startsAt.toDateString() === now.toDateString()) {
+    return startsAt.getHours() >= 17 ? 'Ikväll' : 'Idag';
+  }
+  if (startsAt.toDateString() === tomorrow.toDateString()) return 'I morgon';
+  if (startsAt.toDateString() === yesterday.toDateString()) return 'Igår';
+  return `${WEEKDAYS[startsAt.getDay()]} ${startsAt.getDate()}/${startsAt.getMonth() + 1}`;
+}
+
+export function meetupPhase(startsAtIso: string, now = new Date()): 'upcoming' | 'live' | 'over' {
+  const startsAt = new Date(startsAtIso).getTime();
+  if (now.getTime() < startsAt) return 'upcoming';
+  if (now.getTime() < startsAt + MEETUP_LIVE_HOURS * 3_600_000) return 'live';
+  return 'over';
+}
+
 export function formatMeetupTime(startsAtIso: string, now = new Date()): string {
   const startsAt = new Date(startsAtIso);
   const time = startsAt.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
-  const isToday = startsAt.toDateString() === now.toDateString();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(now.getDate() + 1);
-  const isTomorrow = startsAt.toDateString() === tomorrow.toDateString();
-
-  if (isToday) return startsAt > now ? `Ikväll · ${time}` : `Pågår nu · ${time}`;
-  if (isTomorrow) return `I morgon · ${time}`;
-  return `${WEEKDAYS[startsAt.getDay()]} ${startsAt.getDate()}/${startsAt.getMonth() + 1} · ${time}`;
+  const phase = meetupPhase(startsAtIso, now);
+  if (phase === 'live') return `Pågår nu · ${time}`;
+  if (phase === 'over') {
+    const day =
+      startsAt.toDateString() === now.toDateString()
+        ? 'idag'
+        : dayLabel(startsAt, now).toLowerCase();
+    return `Slut · ${day} ${time}`;
+  }
+  return `${dayLabel(startsAt, now)} · ${time}`;
 }

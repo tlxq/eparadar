@@ -8,8 +8,7 @@ import {
   type Conversation,
 } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
-
-const SIGNED_URL_STALE_MS = 50 * 60 * 1000;
+import { SIGNED_URL_REFRESH_MS } from '@/lib/queryClient';
 
 type ConversationAvatarProps = {
   conversation: Conversation;
@@ -24,7 +23,8 @@ export function ConversationAvatar({ conversation, myUserId, size }: Conversatio
     queryKey: queryKeys.groupAvatar(groupPath),
     queryFn: () => groupAvatarUrl(groupPath!),
     enabled: !!groupPath,
-    staleTime: SIGNED_URL_STALE_MS,
+    staleTime: SIGNED_URL_REFRESH_MS,
+    refetchInterval: SIGNED_URL_REFRESH_MS,
   });
 
   const imageUrl = groupPath ? signedUrl : conversationAvatarUrl(conversation, myUserId);

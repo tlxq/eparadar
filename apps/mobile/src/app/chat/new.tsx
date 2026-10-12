@@ -63,7 +63,7 @@ export default function NewChatScreen() {
     mutationFn: () =>
       createConversation({
         otherUserIds: selected.map((u) => u.id),
-        groupName: selected.length > 1 ? groupName || null : null,
+        groupName: selected.length > 1 ? groupName.trim() || null : null,
       }),
     onSuccess: (conversationId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });
@@ -78,7 +78,11 @@ export default function NewChatScreen() {
         <>
           {error ? <ThemedText type="error">{error}</ThemedText> : null}
           <Button
-            label={selected.length > 1 ? `Starta grupp (${selected.length + 1})` : 'Starta chatt'}
+            label={
+              selected.length > 1
+                ? `Starta grupp med ${selected.length} ${Words.friends.toLowerCase()}`
+                : 'Starta chatt'
+            }
             onPress={() => mutation.mutate()}
             loading={mutation.isPending}
             disabled={selected.length === 0}
@@ -118,6 +122,7 @@ export default function NewChatScreen() {
           placeholder="Traktorgänget"
           value={groupName}
           onChangeText={setGroupName}
+          maxLength={40}
         />
       ) : null}
       {isLoading ? null : friends.length === 0 ? (

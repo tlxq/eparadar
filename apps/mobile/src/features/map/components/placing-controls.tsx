@@ -31,6 +31,7 @@ export function PlacingControls({ step, bottom, onCancel, onConfirm }: PlacingCo
       </View>
       <View style={[styles.bar, { bottom }]}>
         <Pressable
+          accessibilityRole="button"
           onPress={onCancel}
           style={[styles.button, { backgroundColor: theme.backgroundElement }]}
         >
@@ -40,6 +41,7 @@ export function PlacingControls({ step, bottom, onCancel, onConfirm }: PlacingCo
         </Pressable>
         {step === 'confirming' && (
           <Pressable
+            accessibilityRole="button"
             onPress={onConfirm}
             style={[styles.button, styles.primary, { backgroundColor: theme.brand }]}
           >

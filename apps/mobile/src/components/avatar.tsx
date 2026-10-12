@@ -33,6 +33,9 @@ export function Avatar({ name, size = 36, imageUrl }: AvatarProps) {
   if (imageUrl) {
     return (
       <Image
+        accessible
+        accessibilityRole="image"
+        accessibilityLabel={name}
         source={{ uri: imageUrl }}
         style={[styles.circle, { width: size, height: size, borderRadius: size / 2 }]}
       />
@@ -41,6 +44,9 @@ export function Avatar({ name, size = 36, imageUrl }: AvatarProps) {
 
   return (
     <View
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={name}
       style={[
         styles.circle,
         {

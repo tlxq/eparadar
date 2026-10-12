@@ -37,6 +37,7 @@ export function MapActionBar({
       ]}
     >
       <Pressable
+        accessibilityRole="button"
         onPress={() => toggle('search')}
         style={styles.button}
         hitSlop={8}
@@ -45,6 +46,7 @@ export function MapActionBar({
         <Ionicons name="search" size={22} color={picker === 'search' ? theme.brand : theme.text} />
       </Pressable>
       <Pressable
+        accessibilityRole="button"
         onPress={() => toggle('friends')}
         style={styles.button}
         hitSlop={8}
@@ -53,6 +55,7 @@ export function MapActionBar({
         <Ionicons name="people" size={22} color={picker === 'friends' ? theme.brand : theme.text} />
       </Pressable>
       <Pressable
+        accessibilityRole="button"
         onPress={onAdd}
         style={styles.button}
         hitSlop={8}
@@ -61,6 +64,7 @@ export function MapActionBar({
         <Ionicons name="add-circle" size={26} color={theme.brand} />
       </Pressable>
       <Pressable
+        accessibilityRole="button"
         onPress={onLocate}
         style={styles.button}
         hitSlop={8}
