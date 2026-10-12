@@ -24,7 +24,13 @@ export function readersOf(
     (member) =>
       member.user_id !== myUserId &&
       member.user_id !== message.sender_id &&
+      (!member.added_at || time(member.added_at) <= time(message.created_at)) &&
       !!member.last_read_at &&
       time(member.last_read_at) >= time(message.created_at),
   );
+}
+
+export function isMuted(conversation: Conversation, now = Date.now()): boolean {
+  if (!conversation.muted_until) return false;
+  return conversation.muted_until === 'infinity' || time(conversation.muted_until) > now;
 }

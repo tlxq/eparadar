@@ -26,7 +26,7 @@ export const privacyPolicy: LegalDocument = {
           'Konto: e-postadress, lösenord (krypterat) och födelseår. Födelseåret syns bara för dig.',
           'Profil: visningsnamn, användarnamn, profiltext, profilbild och dina EPA:or med bilder.',
           'Kompisar: vilka du är kompis med, kompisförfrågningar, blockeringar och tillfälliga kompiskoder (QR).',
-          'Innehåll: poster med bilder, reaktioner på poster, chattmeddelanden (även poster och meets du skickar i en chatt), bilder i chatten, reaktioner och gruppchattar.',
+          'Innehåll: poster med bilder, reaktioner på poster, chattmeddelanden (även poster och meets du skickar i en chatt), bilder i chatten, reaktioner, gruppchattar och vilka chattar du har tystat.',
           'Karta: din position, riktning och om du rör dig när platsdelning är på, din status, spots du placerar (Ragga och Varning) med bilder, om du svarar att en varning finns kvar eller är borta, poster du släpper på kartan, meets du skapar (namn, tid, plats och beskrivning), intresse och incheckningar.',
           'Radarn: din position i ungefär 20 sekunder medan du själv letar.',
           'Rapporter: när du rapporterar något sparar vi en kopia av innehållet, din anledning och det du skriver till oss. Rapporterna läses av epaRadars admin i appen, som kan ta bort innehåll som bryter mot reglerna. Den du rapporterar får aldrig veta vem som rapporterade.',
