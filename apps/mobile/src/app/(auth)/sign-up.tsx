@@ -9,8 +9,10 @@ import { ThemedText } from '@/components/themed-text';
 import { signUpWithProfile } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import { birthYearError } from '@/lib/age';
+import { useTheme } from '@/hooks/use-theme';
 
 export default function SignUpScreen() {
+  const theme = useTheme();
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
   const [birthYear, setBirthYear] = useState('');
@@ -58,6 +60,21 @@ export default function SignUpScreen() {
       subtitle="Hitta gänget, visa upp bilen och ses på träffar."
       footer={
         <>
+          <ThemedText type="caption" themeColor="textSecondary" style={styles.consent}>
+            Genom att skapa ett konto godkänner du{' '}
+            <Link href="/terms" style={{ color: theme.brandOnSurface }}>
+              användarvillkoren
+            </Link>{' '}
+            och{' '}
+            <Link href="/community" style={{ color: theme.brandOnSurface }}>
+              communityreglerna
+            </Link>
+            . Så hanterar vi dina uppgifter:{' '}
+            <Link href="/privacy" style={{ color: theme.brandOnSurface }}>
+              integritetspolicyn
+            </Link>
+            .
+          </ThemedText>
           <Button label="Skapa konto" onPress={handleSubmit} loading={loading} />
           <Link href="/(auth)/login" style={styles.link}>
             <ThemedText type="small" themeColor="textSecondary">
@@ -118,4 +135,5 @@ export default function SignUpScreen() {
 
 const styles = StyleSheet.create({
   link: { alignSelf: 'center', paddingVertical: 12 },
+  consent: { textAlign: 'center' },
 });

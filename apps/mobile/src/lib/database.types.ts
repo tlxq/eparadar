@@ -1004,6 +1004,7 @@ export type Database = {
           people: number;
         }[];
       };
+      export_my_data: { Args: never; Returns: Json };
       generate_friend_code: { Args: never; Returns: string };
       has_any_friendship_row: {
         Args: { a: string; b: string };

@@ -1,0 +1,11 @@
+---
+import { communityRules } from '@eparadar/legal';
+import LegalPage from '../components/LegalPage.astro';
+import { SITE } from '../config/site';
+---
+
+<LegalPage
+  doc={communityRules}
+  description="Reglerna som gäller för alla på epaRadar."
+  path={SITE.routes.community}
+/>

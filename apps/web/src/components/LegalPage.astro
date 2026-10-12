@@ -1,0 +1,108 @@
+---
+import type { LegalBlock, LegalDocument } from '@eparadar/legal';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+import { SITE } from '../config/site';
+
+interface Props {
+  doc: LegalDocument;
+  description: string;
+  path: string;
+}
+
+const { doc, description, path } = Astro.props;
+const isList = (block: LegalBlock): block is string[] => Array.isArray(block);
+---
+
+<BaseLayout title={`${doc.title} — epaRadar`} description={description} canonicalPath={path}>
+  <Header narrow>
+    <a class="back-link" href={SITE.routes.home}>← Tillbaka</a>
+  </Header>
+  <main>
+    <h1>{doc.title}</h1>
+    <p class="updated">Senast uppdaterad: {doc.updated}</p>
+    {
+      doc.intro.map((block) =>
+        isList(block) ? (
+          <ul>
+            {block.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>{block}</p>
+        ),
+      )
+    }
+    <slot />
+    {
+      doc.sections.map((section) => (
+        <section>
+          <h2>{section.heading}</h2>
+          {section.blocks.map((block) =>
+            isList(block) ? (
+              <ul>
+                {block.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>{block}</p>
+            ),
+          )}
+        </section>
+      ))
+    }
+  </main>
+  <Footer narrow currentPath={path} />
+</BaseLayout>
+
+<style>
+  .back-link {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+  }
+  .back-link:hover {
+    color: var(--text);
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px 24px 64px;
+    line-height: 1.65;
+  }
+  main :global(a) {
+    color: var(--brand);
+  }
+  h1 {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 8px 0 4px;
+  }
+  .updated {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0 0 32px;
+  }
+  h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 36px 0 10px;
+  }
+  main :global(p),
+  main :global(li) {
+    color: var(--text);
+    font-size: 0.98rem;
+  }
+  main :global(ul),
+  main :global(ol) {
+    margin: 0;
+    padding-left: 1.2em;
+  }
+  main :global(li) {
+    margin: 6px 0;
+  }
+</style>
