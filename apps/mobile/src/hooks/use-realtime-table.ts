@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 import { supabase } from '@/lib/supabase';
@@ -22,6 +22,7 @@ export function useRealtimeTable({
   enabled = true,
   onChange,
 }: UseRealtimeTableOptions) {
+  const instanceId = useId();
   const onChangeRef = useRef(onChange);
 
   useEffect(() => {
@@ -32,7 +33,7 @@ export function useRealtimeTable({
     if (!enabled) return;
 
     const channel = supabase
-      .channel(channelName)
+      .channel(`${channelName}:${instanceId}`)
       .on(
         'postgres_changes',
         filter ? { event, schema: 'public', table, filter } : { event, schema: 'public', table },
@@ -43,5 +44,5 @@ export function useRealtimeTable({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [channelName, table, event, filter, enabled]);
+  }, [channelName, instanceId, table, event, filter, enabled]);
 }
