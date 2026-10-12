@@ -1035,6 +1035,15 @@ export type Database = {
       };
       meetup_here_now_count: { Args: { p_meetup_id: string }; Returns: number };
       meetup_interest_count: { Args: { p_meetup_id: string }; Returns: number };
+      mutual_friends: {
+        Args: { p_user_id: string };
+        Returns: {
+          avatar_url: string;
+          display_name: string;
+          id: string;
+          username: string;
+        }[];
+      };
       prepare_account_deletion: {
         Args: { p_user_id: string };
         Returns: {

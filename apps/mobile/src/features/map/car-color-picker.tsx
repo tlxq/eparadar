@@ -3,10 +3,13 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
-import { CAR_COLORS } from '@/features/map/car-colors';
+import { Avatar } from '@/components/avatar';
+import { CAR_COLORS, carColorHex } from '@/features/map/car-colors';
+import { useProfile } from '@/features/profile/hooks';
 import { useTheme } from '@/hooks/use-theme';
 
 const SWATCH = 36;
+const MARKER = 30;
 const DARK_CHECK = new Set(['vit', 'gul', 'silver', 'orange', 'gron', 'rosa']);
 
 type CarColorPickerProps = {
@@ -18,13 +21,30 @@ type CarColorPickerProps = {
 export function CarColorPicker({ value, onChange, disabled }: CarColorPickerProps) {
   const theme = useTheme();
   const selected = CAR_COLORS.find((color) => color.key === value);
+  const { data: profile } = useProfile();
 
   return (
     <View style={styles.container}>
-      <ThemedText type="smallBold">Färg{selected ? ` · ${selected.label}` : ''}</ThemedText>
-      <ThemedText type="caption" themeColor="textSecondary">
-        Syns som ringen runt dig på kartan.
-      </ThemedText>
+      <View style={styles.header}>
+        <View style={styles.headerText}>
+          <ThemedText type="smallBold">
+            Färg på kartan{selected ? ` · ${selected.label}` : ''}
+          </ThemedText>
+          <ThemedText type="caption" themeColor="textSecondary">
+            Syns som ringen runt dig för dina kompisar.
+          </ThemedText>
+        </View>
+        <View
+          accessibilityLabel="Så ser du ut på kartan"
+          style={[styles.marker, { borderColor: carColorHex(value) }]}
+        >
+          <Avatar
+            name={profile?.display_name ?? '?'}
+            imageUrl={profile?.avatar_url}
+            size={MARKER}
+          />
+        </View>
+      </View>
       <View style={styles.row} accessibilityRole="radiogroup">
         {CAR_COLORS.map((color) => {
           const isSelected = color.key === value;
@@ -61,6 +81,9 @@ export function CarColorPicker({ value, onChange, disabled }: CarColorPickerProp
 
 const styles = StyleSheet.create({
   container: { gap: Spacing.one },
+  header: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  headerText: { flex: 1, gap: Spacing.one },
+  marker: { borderWidth: 3, borderRadius: MARKER, padding: Spacing.half },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.one },
   swatch: {
     width: SWATCH,

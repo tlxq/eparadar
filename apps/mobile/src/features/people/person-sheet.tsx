@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -25,7 +25,7 @@ import {
 import { getErrorMessage } from '@/lib/errors';
 import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
-import { usePersonSheetStore } from '@/store/person-sheet';
+import { openCar, openProfile, usePersonSheetStore } from '@/store/person-sheet';
 import { openReport } from '@/store/report-sheet';
 import { useBlockPerson } from '@/features/moderation/use-block-person';
 import { Common, Words } from '@/constants/strings';
@@ -140,7 +140,16 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
           onPress: requestFriend,
         },
       ];
-  const actions = [...primary, ...moderation];
+  const actions: SheetAction[] = [
+    {
+      label: 'Visa profil',
+      icon: 'person-circle-outline',
+      disabled: !profile,
+      onPress: () => openProfile(personId),
+    },
+    ...primary,
+    ...moderation,
+  ];
 
   return (
     <ActionSheet
@@ -160,9 +169,11 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
                   <ThemedText type="subtitle" numberOfLines={1}>
                     {name}
                   </ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
-                    @{profile.username}
-                  </ThemedText>
+                  {isFriend ? (
+                    <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+                      @{profile.username}
+                    </ThemedText>
+                  ) : null}
                 </>
               ) : (
                 <>
@@ -177,7 +188,7 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
               ) : null}
             </View>
           </View>
-          {profile?.bio ? (
+          {isFriend && profile?.bio ? (
             <ThemedText type="small" numberOfLines={3}>
               {profile.bio}
             </ThemedText>
@@ -189,7 +200,7 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
               contentContainerStyle={styles.cars}
             >
               {cars.map((car) => (
-                <CarTag key={car.id} car={car} />
+                <CarTag key={car.id} car={car} onPress={() => openCar(car.id)} onClose={onClose} />
               ))}
             </ScrollView>
           ) : null}
@@ -200,15 +211,27 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
   );
 }
 
-function CarTag({ car }: { car: Car }) {
+function CarTag({ car, onPress, onClose }: { car: Car; onPress: () => void; onClose: () => void }) {
   const theme = useTheme();
   return (
-    <View style={[styles.car, { backgroundColor: theme.background }]}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Visa ${car.nickname ?? `${car.make} ${car.model}`}`}
+      onPress={() => {
+        onClose();
+        onPress();
+      }}
+      style={({ pressed }) => [
+        styles.car,
+        { backgroundColor: theme.background },
+        pressed && styles.pressed,
+      ]}
+    >
       <View style={[styles.carDot, { backgroundColor: carColorHex(car.color) }]} />
       <ThemedText type="caption" numberOfLines={1}>
         {car.nickname ?? `${car.make} ${car.model}`}
       </ThemedText>
-    </View>
+    </Pressable>
   );
 }
 
@@ -238,5 +261,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one,
     borderRadius: Radius.pill,
   },
+  pressed: { opacity: 0.7 },
   carDot: { width: 10, height: 10, borderRadius: Radius.pill },
 });

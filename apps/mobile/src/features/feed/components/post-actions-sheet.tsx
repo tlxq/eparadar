@@ -11,7 +11,7 @@ import { openReport } from '@/store/report-sheet';
 import { useBlockPerson } from '@/features/moderation/use-block-person';
 import { useUserId } from '@/hooks/use-user-id';
 
-export function PostActionsSheet({ post, onClose }: { post: Post | null; onClose: () => void }) {
+export function usePostActions() {
   const queryClient = useQueryClient();
   const userId = useUserId();
   const blockPerson = useBlockPerson();
@@ -59,6 +59,12 @@ export function PostActionsSheet({ post, onClose }: { post: Post | null; onClose
     ];
   }
 
+  return actionsFor;
+}
+
+export function PostActionsSheet({ post, onClose }: { post: Post | null; onClose: () => void }) {
+  const userId = useUserId();
+  const actionsFor = usePostActions();
   return (
     <ActionSheet
       visible={!!post}

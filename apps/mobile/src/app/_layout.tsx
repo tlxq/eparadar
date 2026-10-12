@@ -123,6 +123,12 @@ function RootLayout() {
               name="cars/new"
               options={{ presentation: 'modal', headerShown: true, title: Words.addVehicle }}
             />
+            <Stack.Screen name="cars/[id]/index" />
+            <Stack.Screen
+              name="cars/[id]/edit"
+              options={{ presentation: 'modal', headerShown: true, title: 'Redigera EPA' }}
+            />
+            <Stack.Screen name="person/[id]" />
             <Stack.Screen
               name="chat/new"
               options={{ presentation: 'modal', headerShown: true, title: 'Ny chatt' }}
