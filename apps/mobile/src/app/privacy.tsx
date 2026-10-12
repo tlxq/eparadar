@@ -26,8 +26,8 @@ export default function PrivacyScreen() {
           <ThemedText type="default" style={styles.paragraph}>
             Vi behandlar uppgifter som behövs för appens funktioner och som du själv väljer att
             lämna: e-postadress och inloggningsuppgifter, födelseår (för att kontrollera att du är
-            minst 15 år, syns bara för dig), visningsnamn, profiltext, profilbild,
-            vänskaper och biluppgifter, inlägg, kommentarer, meddelanden, gruppmedlemskap, meetups,
+            minst 15 år, syns bara för dig), visningsnamn, profiltext, profilbild, vänskaper och
+            biluppgifter, inlägg, kommentarer, meddelanden, gruppmedlemskap, meetups,
             intressemarkeringar och frivilliga check-ins.
           </ThemedText>
           <ThemedText type="default" style={styles.paragraph}>
