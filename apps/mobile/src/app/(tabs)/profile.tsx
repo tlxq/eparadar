@@ -37,7 +37,7 @@ import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { uploadAvatar } from '@/lib/image-upload';
 import { queryKeys } from '@/lib/query-keys';
-import { showToast } from '@/store/toast';
+import { showToast, showUndoToast } from '@/store/toast';
 import { useMyCars, useMyPostCount, useMyPosts, useProfile } from '@/features/profile/hooks';
 import { PostItem } from '@/features/feed/components/post-item';
 import { PostActionsSheet } from '@/features/feed/components/post-actions-sheet';
@@ -112,23 +112,25 @@ export default function ProfileScreen() {
     }
   }
 
-  async function handleRemoveAvatar() {
+  function handleRemoveAvatar() {
     if (!userId || !profile) return;
-    const ok = await confirmDestructive({
-      title: 'Ta bort profilbilden?',
-      message: 'Din profil visas med din första bokstav i stället.',
-      confirmLabel: Common.remove,
+    const avatarUrl = profile.avatar_url;
+    const key = queryKeys.profile(userId);
+    queryClient.setQueryData<typeof profile>(key, (current) =>
+      current ? { ...current, avatar_url: null } : current,
+    );
+    showUndoToast({
+      message: 'Profilbilden är borttagen.',
+      onUndo: () => queryClient.invalidateQueries({ queryKey: key }),
+      onCommit: async () => {
+        try {
+          await removeAvatar(userId, avatarUrl);
+        } catch (error) {
+          showToast({ tone: 'error', message: getErrorMessage(error) });
+        }
+        queryClient.invalidateQueries({ queryKey: key });
+      },
     });
-    if (!ok) return;
-    setUploadingAvatar(true);
-    try {
-      await removeAvatar(userId, profile.avatar_url);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.profile(userId) });
-    } catch (error) {
-      showToast({ tone: 'error', message: getErrorMessage(error) });
-    } finally {
-      setUploadingAvatar(false);
-    }
   }
 
   async function handleCarColor(car: Car, color: string) {

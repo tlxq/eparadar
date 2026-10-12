@@ -7,11 +7,9 @@ import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { deleteSpotPhoto, fetchSpotPhotos, type SpotPhoto } from '@/features/map/spots';
 import { useTheme } from '@/hooks/use-theme';
-import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
-import { showToast } from '@/store/toast';
-import { Common } from '@/constants/strings';
+import { showToast, showUndoToast } from '@/store/toast';
 import { SIGNED_URL_REFRESH_MS } from '@/lib/queryClient';
 
 const THUMB_W = 132;
@@ -32,20 +30,27 @@ export function SpotPhotoStrip({ spotId, userId, spotCreatorId }: SpotPhotoStrip
     refetchInterval: SIGNED_URL_REFRESH_MS,
   });
 
-  async function handleRemove(photo: SpotPhoto) {
-    const ok = await confirmDestructive({
-      title: 'Ta bort bilden?',
-      message: 'Den försvinner från spotten för alla.',
-      confirmLabel: Common.remove,
+  function refresh() {
+    queryClient.invalidateQueries({ queryKey: queryKeys.spotPhotos(spotId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.spotPhotoCounts() });
+  }
+
+  function handleRemove(photo: SpotPhoto) {
+    queryClient.setQueryData<SpotPhoto[]>(queryKeys.spotPhotos(spotId), (current) =>
+      current?.filter((item) => item.id !== photo.id),
+    );
+    showUndoToast({
+      message: 'Bilden är borttagen.',
+      onUndo: refresh,
+      onCommit: async () => {
+        try {
+          await deleteSpotPhoto(photo);
+        } catch (error) {
+          showToast({ tone: 'error', message: getErrorMessage(error) });
+        }
+        refresh();
+      },
     });
-    if (!ok) return;
-    try {
-      await deleteSpotPhoto(photo);
-      queryClient.invalidateQueries({ queryKey: queryKeys.spotPhotos(spotId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.spotPhotoCounts() });
-    } catch (error) {
-      showToast({ tone: 'error', message: getErrorMessage(error) });
-    }
   }
 
   if (isLoading) {

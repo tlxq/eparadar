@@ -7,8 +7,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { EmptyState } from '@/components/empty-state';
+import { ErrorState } from '@/components/error-state';
 import { FormScreen } from '@/components/form-screen';
 import { ListRow } from '@/components/list-row';
+import { SkeletonList } from '@/components/skeleton';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Words } from '@/constants/strings';
@@ -31,7 +33,7 @@ export default function NewChatScreen() {
   const [groupName, setGroupName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const { data: friendships, isLoading } = useFriends();
+  const { data: friendships, isLoading, isError, refetch } = useFriends();
 
   const friends = useMemo(
     () =>
@@ -125,7 +127,14 @@ export default function NewChatScreen() {
           maxLength={40}
         />
       ) : null}
-      {isLoading ? null : friends.length === 0 ? (
+      {isLoading ? (
+        <SkeletonList style={styles.skeleton} />
+      ) : isError ? (
+        <ErrorState
+          message="Kompisarna gick inte att ladda. Kolla nätet och testa igen."
+          onRetry={refetch}
+        />
+      ) : friends.length === 0 ? (
         <EmptyState
           icon="people-outline"
           title="Inga kompisar än"
@@ -169,6 +178,7 @@ export default function NewChatScreen() {
 }
 
 const styles = StyleSheet.create({
+  skeleton: { paddingHorizontal: 0 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   chip: {
     flexDirection: 'row',

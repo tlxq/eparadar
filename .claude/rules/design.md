@@ -1,8 +1,8 @@
 ---
 paths:
-  - "apps/mobile/src/**/*.tsx"
-  - "apps/web/src/**"
-  - "packages/theme/**"
+  - 'apps/mobile/src/**/*.tsx'
+  - 'apps/web/src/**'
+  - 'packages/theme/**'
 ---
 
 # Design rules
@@ -31,11 +31,38 @@ Use what exists in `apps/mobile/src/components` before building something new:
 - Layout: `ScreenBackground`, `ScreenHeader`, `ModalHeader`, `ListRow`, `ActionSheet`,
   `SectionLabel` for the small-caps headings above a group
 - People: `Avatar`, `ConversationAvatar`
-- States: `Skeleton` while loading, `EmptyState` when there is nothing to show,
-  `showToast` for results and `useQueryErrorToast` for failed queries
-- Destructive actions ask first with `confirmDestructive`
+- Menus: `DropdownButton` (one button that opens a small anchored menu of `MenuItem`s; icon-only
+  `⋯` by default, or `label` for a pill with a chevron, or `children` for a custom trigger). For
+  a custom trigger use `useDropdown()` + `DropdownMenu` (`align` start/end, `placement`
+  auto/above/below). Use it instead of a row of several buttons.
+- States: `Skeleton`/`SkeletonList` while loading, `EmptyState` when there is nothing to show,
+  `ErrorState` when a load fails, `showToast` for results
 
 Icons are Ionicons.
+
+## App-wide patterns
+
+- Tabs: Flöde · Chatt · Karta · Kompisar · Profil. Karta stays in the middle.
+- Loading: every screen that loads data shows placeholder bars (`Skeleton`, `SkeletonList`),
+  never a blank screen or a lone spinner.
+- Load errors: when a query fails and there is nothing to show, render
+  `<ErrorState message="… gick inte att ladda. Kolla nätet och testa igen." onRetry={refetch} />`
+  in place of the content. `useQueryErrorToast` is only for failed refetches when data is
+  already on screen (`isError && !!data`).
+- Confirm: `await confirm({ title, message, confirmLabel, cancelLabel?, destructive?, icon? })`
+  from `lib/confirm` opens the app's own bottom sheet and resolves `true`/`false`.
+  `confirmDestructive(...)` is the same with `destructive: true`. Never use `Alert.alert`.
+  Open it after a sheet or menu has closed (`ActionSheet` and `DropdownMenu` already delay
+  `onPress` for that).
+- Deleting:
+  - Small stuff (status, photo, reaction): remove at once, no question, and call
+    `showUndoToast({ message, onUndo, onCommit? })` from `store/toast`. With `onCommit`, hide
+    the thing in the query cache first and do the real delete in `onCommit` (it runs when the
+    toast closes, is replaced or the app goes to the background); `onUndo` just refetches.
+    Without `onCommit`, delete right away and make `onUndo` put it back.
+  - Your content (post, spot, meet, EPA): a `⋯` menu (`DropdownButton` or `ActionSheet`) with
+    the delete item, then `confirmDestructive`. No big red delete buttons on screens.
+  - Account: only on its own screen (`/delete-account`).
 
 ## Text
 

@@ -15,6 +15,7 @@ import { useColorScheme } from 'react-native';
 
 import '@/lib/location-task';
 
+import { ConfirmSheetHost } from '@/components/confirm-sheet';
 import { ErrorFallback } from '@/components/error-fallback';
 import { ToastHost } from '@/components/toast-host';
 import { ReportSheetHost } from '@/features/moderation/report-sheet';
@@ -163,6 +164,7 @@ function RootLayout() {
         </Stack>
         {session ? <PersonSheetHost /> : null}
         {session ? <ReportSheetHost /> : null}
+        <ConfirmSheetHost />
         <ToastHost />
       </ThemeProvider>
     </QueryClientProvider>

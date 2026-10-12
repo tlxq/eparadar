@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Animated, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Animated,
+  StyleSheet,
+  View,
+  type DimensionValue,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 
-import { Radius } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -48,3 +55,31 @@ export function Skeleton({
     />
   );
 }
+
+type SkeletonListProps = {
+  rows?: number;
+  avatarSize?: number;
+  style?: StyleProp<ViewStyle>;
+};
+
+export function SkeletonList({ rows = 3, avatarSize = 52, style }: SkeletonListProps) {
+  return (
+    <View style={[listStyles.list, style]}>
+      {Array.from({ length: rows }, (_, key) => (
+        <View key={key} style={listStyles.row}>
+          <Skeleton width={avatarSize} height={avatarSize} radius={avatarSize / 2} />
+          <View style={listStyles.lines}>
+            <Skeleton width="45%" />
+            <Skeleton width="30%" />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const listStyles = StyleSheet.create({
+  list: { paddingHorizontal: Spacing.three, gap: Spacing.four, paddingTop: Spacing.two },
+  row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  lines: { flex: 1, gap: Spacing.two },
+});

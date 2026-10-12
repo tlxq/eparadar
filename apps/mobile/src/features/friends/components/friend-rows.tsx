@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ActionSheet } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
-import { IconButton } from '@/components/icon-button';
+import { DropdownButton } from '@/components/dropdown-menu';
 import { ListRow } from '@/components/list-row';
 import { Skeleton } from '@/components/skeleton';
 import { Spacing } from '@/constants/theme';
@@ -23,6 +21,7 @@ async function confirmBlock(name: string) {
     title: `Blockera ${name}?`,
     message: blockedText(name),
     confirmLabel: Common.block,
+    icon: 'ban-outline',
   });
 }
 
@@ -30,7 +29,6 @@ export function RequestRow({ request, myUserId }: { request: Friendship; myUserI
   const queryClient = useQueryClient();
   const requester = request.requester;
   const block = useBlockUser();
-  const [sheetOpen, setSheetOpen] = useState(false);
 
   const respond = useMutation({
     mutationFn: (accept: boolean) => respondToFriendRequest(request.id, accept),
@@ -48,54 +46,44 @@ export function RequestRow({ request, myUserId }: { request: Friendship; myUserI
   });
 
   return (
-    <>
-      <ListRow
-        title={requester.display_name}
-        subtitle={`@${requester.username}`}
-        leading={<Avatar name={requester.display_name} imageUrl={requester.avatar_url} size={52} />}
-        trailing={
-          <View style={styles.requestActions}>
-            <Button
-              label="Acceptera"
-              size="sm"
-              loading={respond.isPending && respond.variables === true}
-              disabled={respond.isPending}
-              onPress={() => respond.mutate(true)}
-            />
-            <IconButton
-              icon="close"
-              size={36}
-              accessibilityLabel={`Neka ${requester.display_name}`}
-              disabled={respond.isPending}
-              onPress={() => respond.mutate(false)}
-            />
-            <IconButton
-              icon="ellipsis-horizontal"
-              variant="plain"
-              size={36}
-              accessibilityLabel={`Fler val för ${requester.display_name}`}
-              onPress={() => setSheetOpen(true)}
-            />
-          </View>
-        }
-      />
-      <ActionSheet
-        visible={sheetOpen}
-        title={requester.display_name}
-        onClose={() => setSheetOpen(false)}
-        actions={[
-          {
-            label: Common.block,
-            icon: 'ban-outline',
-            destructive: true,
-            onPress: async () => {
-              const ok = await confirmBlock(requester.display_name);
-              if (ok) block.mutate(requester.id);
-            },
-          },
-        ]}
-      />
-    </>
+    <ListRow
+      title={requester.display_name}
+      subtitle={`@${requester.username}`}
+      leading={<Avatar name={requester.display_name} imageUrl={requester.avatar_url} size={52} />}
+      trailing={
+        <View style={styles.requestActions}>
+          <Button
+            label="Acceptera"
+            size="sm"
+            loading={respond.isPending && respond.variables === true}
+            disabled={respond.isPending}
+            onPress={() => respond.mutate(true)}
+          />
+          <DropdownButton
+            variant="plain"
+            size={36}
+            accessibilityLabel={`Fler val för ${requester.display_name}`}
+            disabled={respond.isPending}
+            items={[
+              {
+                label: 'Neka',
+                icon: 'close-circle-outline',
+                onPress: () => respond.mutate(false),
+              },
+              {
+                label: Common.block,
+                icon: 'ban-outline',
+                destructive: true,
+                onPress: async () => {
+                  const ok = await confirmBlock(requester.display_name);
+                  if (ok) block.mutate(requester.id);
+                },
+              },
+            ]}
+          />
+        </View>
+      }
+    />
   );
 }
 
@@ -140,7 +128,6 @@ export function FriendRow({ friendship, myUserId }: { friendship: Friendship; my
   const queryClient = useQueryClient();
   const friend = friendProfile(friendship, myUserId);
   const block = useBlockUser();
-  const [sheetOpen, setSheetOpen] = useState(false);
 
   const remove = useMutation({
     mutationFn: () => removeFriend(friendship.id),
@@ -153,45 +140,44 @@ export function FriendRow({ friendship, myUserId }: { friendship: Friendship; my
   });
 
   return (
-    <>
-      <ListRow
-        title={friend.display_name}
-        subtitle={`@${friend.username}`}
-        onPress={() => openPerson(friend.id)}
-        leading={<Avatar name={friend.display_name} imageUrl={friend.avatar_url} size={52} />}
-        trailing={
-          <IconButton
-            icon="ellipsis-horizontal"
-            variant="plain"
-            accessibilityLabel={`Fler val för ${friend.display_name}`}
-            disabled={remove.isPending || block.isPending}
-            onPress={() => setSheetOpen(true)}
-          />
-        }
-      />
-      <ActionSheet
-        visible={sheetOpen}
-        title={friend.display_name}
-        onClose={() => setSheetOpen(false)}
-        actions={[
-          {
-            label: 'Ta bort kompis',
-            icon: 'person-remove-outline',
-            destructive: true,
-            onPress: () => remove.mutate(),
-          },
-          {
-            label: Common.block,
-            icon: 'ban-outline',
-            destructive: true,
-            onPress: async () => {
-              const ok = await confirmBlock(friend.display_name);
-              if (ok) block.mutate(friend.id);
+    <ListRow
+      title={friend.display_name}
+      subtitle={`@${friend.username}`}
+      onPress={() => openPerson(friend.id)}
+      leading={<Avatar name={friend.display_name} imageUrl={friend.avatar_url} size={52} />}
+      trailing={
+        <DropdownButton
+          variant="plain"
+          accessibilityLabel={`Fler val för ${friend.display_name}`}
+          disabled={remove.isPending || block.isPending}
+          items={[
+            {
+              label: 'Ta bort kompis',
+              icon: 'person-remove-outline',
+              destructive: true,
+              onPress: async () => {
+                const ok = await confirmDestructive({
+                  title: `Ta bort ${friend.display_name}?`,
+                  message: `Ni slutar se varandra på kartan. Du kan lägga till ${friend.display_name} igen senare.`,
+                  confirmLabel: Common.remove,
+                  icon: 'person-remove-outline',
+                });
+                if (ok) remove.mutate();
+              },
             },
-          },
-        ]}
-      />
-    </>
+            {
+              label: Common.block,
+              icon: 'ban-outline',
+              destructive: true,
+              onPress: async () => {
+                const ok = await confirmBlock(friend.display_name);
+                if (ok) block.mutate(friend.id);
+              },
+            },
+          ]}
+        />
+      }
+    />
   );
 }
 

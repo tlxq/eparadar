@@ -3,10 +3,12 @@ export const Common = {
   block: 'Blockera',
   cancel: 'Avbryt',
   close: 'Stäng',
+  more: 'Fler val',
   remove: 'Ta bort',
   report: 'Rapportera',
   retry: 'Försök igen',
   save: 'Spara',
+  undo: 'Ångra',
 } as const;
 
 export const Words = {

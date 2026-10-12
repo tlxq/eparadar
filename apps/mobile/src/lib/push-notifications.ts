@@ -1,10 +1,11 @@
-import { Alert, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 
 import { Colors } from '@/constants/theme';
+import { confirm } from '@/lib/confirm';
 import { supabase } from '@/lib/supabase';
 
 const PROMPT_SHOWN_KEY = 'epaRadar/notificationPromptShown';
@@ -97,23 +98,20 @@ export async function maybeRequestNotificationPermission(userId: string): Promis
   if (alreadyPrompted) return;
   await AsyncStorage.setItem(PROMPT_SHOWN_KEY, '1');
 
-  Alert.alert(
-    'Aktivera aviseringar?',
-    'Få en avisering när du får ett nytt meddelande, en kompisförfrågan eller när någon vill med på din meet.',
-    [
-      { text: 'Inte nu', style: 'cancel' },
-      {
-        text: 'Aktivera',
-        onPress: async () => {
-          const result = await Notifications.requestPermissionsAsync();
-          if (result.status !== 'granted') return;
-          try {
-            await registerPushToken(userId);
-          } catch (err) {
-            console.warn('registerPushToken failed', err);
-          }
-        },
-      },
-    ],
-  );
+  const ok = await confirm({
+    title: 'Aktivera aviseringar?',
+    message:
+      'Få en avisering när du får ett nytt meddelande, en kompisförfrågan eller när någon vill med på din meet.',
+    confirmLabel: 'Aktivera',
+    cancelLabel: 'Inte nu',
+    icon: 'notifications-outline',
+  });
+  if (!ok) return;
+  const result = await Notifications.requestPermissionsAsync();
+  if (result.status !== 'granted') return;
+  try {
+    await registerPushToken(userId);
+  } catch (err) {
+    console.warn('registerPushToken failed', err);
+  }
 }

@@ -30,7 +30,7 @@ import {
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
-import { showToast } from '@/store/toast';
+import { showToast, showUndoToast } from '@/store/toast';
 import { useConversation } from '@/features/chat/hooks';
 import { useUserId } from '@/hooks/use-user-id';
 import { pickImage } from '@/lib/pick-image';
@@ -106,13 +106,17 @@ export default function GroupInfoScreen() {
     await changePhoto(uri);
   }
 
-  async function removePhoto() {
-    const ok = await confirmDestructive({
-      title: 'Ta bort gruppbilden?',
-      message: 'Gruppen visas med sin första bokstav igen.',
-      confirmLabel: Common.remove,
+  function removePhoto() {
+    if (!id || !conversation) return;
+    const key = queryKeys.conversation(id);
+    queryClient.setQueryData<typeof conversation>(key, (current) =>
+      current ? { ...current, avatar_path: null } : current,
+    );
+    showUndoToast({
+      message: 'Gruppbilden är borttagen.',
+      onUndo: refresh,
+      onCommit: () => changePhoto(null),
     });
-    if (ok) await changePhoto(null);
   }
 
   const photoActions: SheetAction[] = [
@@ -139,6 +143,7 @@ export default function GroupInfoScreen() {
       title: `Ta bort ${member.profiles.display_name}?`,
       message: `${member.profiles.display_name} kan inte längre läsa eller skriva i gruppen.`,
       confirmLabel: Common.remove,
+      icon: 'person-remove-outline',
     });
     if (!ok) return;
     setBusy(member.user_id);
@@ -159,6 +164,7 @@ export default function GroupInfoScreen() {
       message:
         'Du slutar få meddelanden från gruppen. För att vara med igen behöver någon starta en ny grupp med dig.',
       confirmLabel: 'Lämna',
+      icon: 'exit-outline',
     });
     if (!ok) return;
     setBusy('leave');

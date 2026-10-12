@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Animated, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, AppState, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -15,6 +15,7 @@ export function ToastHost() {
   const insets = useSafeAreaInsets();
   const toast = useToastStore((state) => state.toast);
   const dismiss = useToastStore((state) => state.dismiss);
+  const pressAction = useToastStore((state) => state.pressAction);
   const [progress] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
@@ -24,6 +25,13 @@ export function ToastHost() {
     const timer = setTimeout(dismiss, toast.action ? DURATION_MS * 1.5 : DURATION_MS);
     return () => clearTimeout(timer);
   }, [toast, dismiss, progress]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'background' && useToastStore.getState().toast) dismiss();
+    });
+    return () => subscription.remove();
+  }, [dismiss]);
 
   if (!toast) return null;
 
@@ -61,14 +69,7 @@ export function ToastHost() {
           {toast.message}
         </ThemedText>
         {toast.action ? (
-          <Pressable
-            accessibilityRole="button"
-            hitSlop={12}
-            onPress={() => {
-              toast.action?.onPress();
-              dismiss();
-            }}
-          >
+          <Pressable accessibilityRole="button" hitSlop={12} onPress={pressAction}>
             <ThemedText type="smallBold" themeColor="brandOnSurface">
               {toast.action.label}
             </ThemedText>

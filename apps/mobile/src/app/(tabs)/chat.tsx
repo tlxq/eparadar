@@ -23,6 +23,7 @@ import { formatChatTimestamp } from '@/lib/relative-time';
 import { activeTypists, typingLabel, useTypingStore } from '@/store/typing';
 import { useConversations } from '@/features/chat/hooks';
 import { useUserId } from '@/hooks/use-user-id';
+import { ErrorState } from '@/components/error-state';
 import { useQueryErrorToast } from '@/hooks/use-query-error-toast';
 import { usePullRefresh } from '@/hooks/use-pull-refresh';
 
@@ -119,7 +120,7 @@ export default function ChatListScreen() {
 
   const pull = usePullRefresh(refetch);
 
-  useQueryErrorToast(isError, 'Kunde inte ladda chattarna.', refetch);
+  useQueryErrorToast(isError && !!data, 'Kunde inte ladda chattarna.', refetch);
 
   const conversations = useMemo(() => {
     const all = data ?? [];
@@ -185,7 +186,12 @@ export default function ChatListScreen() {
           ListEmptyComponent={
             isLoading ? (
               <ChatListSkeleton />
-            ) : isError ? null : hasAny ? (
+            ) : isError ? (
+              <ErrorState
+                message="Chattarna gick inte att ladda. Kolla nätet och testa igen."
+                onRetry={refetch}
+              />
+            ) : hasAny ? (
               <ThemedText themeColor="textSecondary" style={styles.noMatch}>
                 Ingen chatt matchar &quot;{query.trim()}&quot;.
               </ThemedText>

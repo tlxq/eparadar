@@ -28,7 +28,9 @@ import { type FriendLocation } from '@/lib/api';
 import { pressHaptic } from '@/lib/haptics';
 import { queryKeys } from '@/lib/query-keys';
 import { openPerson } from '@/store/person-sheet';
-import { showToast } from '@/store/toast';
+import { showToast, showUndoToast } from '@/store/toast';
+import { setMapStatus } from '@/features/map/status';
+import { getErrorMessage } from '@/lib/errors';
 
 type LatLng = { lat: number; lng: number };
 
@@ -305,11 +307,23 @@ export default function MapScreen() {
             current={myLocation?.status_text ?? null}
             onClose={() => setStatusOpen(false)}
             onSaved={(text) => {
+              const previous = myLocation?.status_text ?? null;
               setStatusOpen(false);
               queryClient.invalidateQueries({ queryKey: queryKeys.myLocation(userId) });
-              showToast({
-                tone: 'success',
-                message: text ? 'Statusen är ute! Den syns i en timme.' : 'Statusen är borttagen.',
+              if (text || !previous) {
+                showToast({ tone: 'success', message: 'Statusen är ute! Den syns i en timme.' });
+                return;
+              }
+              showUndoToast({
+                message: 'Statusen är borttagen.',
+                onUndo: async () => {
+                  try {
+                    await setMapStatus(userId, previous);
+                  } catch (error) {
+                    showToast({ tone: 'error', message: getErrorMessage(error) });
+                  }
+                  queryClient.invalidateQueries({ queryKey: queryKeys.myLocation(userId) });
+                },
               });
             }}
           />

@@ -11,6 +11,7 @@ import { Spacing } from '@/constants/theme';
 import { useFriendRequests, useFriends, useOutgoingRequests } from '@/features/friends/hooks';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useUserId } from '@/hooks/use-user-id';
+import { ErrorState } from '@/components/error-state';
 import { useQueryErrorToast } from '@/hooks/use-query-error-toast';
 import {
   FriendRow,
@@ -32,7 +33,7 @@ export default function FriendsScreen() {
 
   const pull = usePullRefresh(refetch);
 
-  useQueryErrorToast(isError, 'Kunde inte ladda dina kompisar.', refetch);
+  useQueryErrorToast(isError && !!friends, 'Kunde inte ladda dina kompisar.', refetch);
 
   const friendCount = friends?.length ?? 0;
 
@@ -87,7 +88,12 @@ export default function FriendsScreen() {
           ListEmptyComponent={
             friendsLoading ? (
               <FriendsSkeleton />
-            ) : isError ? null : (
+            ) : isError ? (
+              <ErrorState
+                message="Kompisarna gick inte att ladda. Kolla nätet och testa igen."
+                onRetry={refetch}
+              />
+            ) : (
               <EmptyState
                 icon="people-outline"
                 title="Inga kompisar än"

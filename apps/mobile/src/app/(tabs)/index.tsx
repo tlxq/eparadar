@@ -26,6 +26,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { fetchPosts, POSTS_PAGE_SIZE, type FriendLocation, type Post } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { useFriendLocations } from '@/features/map/hooks';
+import { ErrorState } from '@/components/error-state';
 import { useQueryErrorToast } from '@/hooks/use-query-error-toast';
 import { PostItem } from '@/features/feed/components/post-item';
 import { PostActionsSheet } from '@/features/feed/components/post-actions-sheet';
@@ -110,7 +111,7 @@ export default function FeedScreen() {
 
   const pull = usePullRefresh(refetch);
 
-  useQueryErrorToast(isError, 'Kunde inte ladda flödet.', refetch);
+  useQueryErrorToast(isError && posts.length > 0, 'Kunde inte ladda flödet.', refetch);
 
   const onMap = friendLocations ?? [];
 
@@ -147,7 +148,12 @@ export default function FeedScreen() {
           ListEmptyComponent={
             isLoading ? (
               <FeedSkeleton />
-            ) : isError ? null : (
+            ) : isError ? (
+              <ErrorState
+                message="Flödet gick inte att ladda. Kolla nätet och testa igen."
+                onRetry={refetch}
+              />
+            ) : (
               <EmptyState
                 icon="newspaper-outline"
                 title="Inga poster än"
