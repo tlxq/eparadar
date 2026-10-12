@@ -1,6 +1,7 @@
 import { carColorHex } from '@/features/map/car-colors';
 import { meetupVibe, SPOT_ICONS, spotIconKey } from '@/features/map/map-icons';
 import { countHereNow, spotTitle, type Spot } from '@/features/map/spots';
+import type { MapPost } from '@/features/feed/api';
 import type { Meetup } from '@/features/meetups/api';
 import type { Car, FriendLocation, Profile } from '@/lib/api';
 import type { DbRow } from '@/lib/db-types';
@@ -117,5 +118,16 @@ export function spotMarkers(
     expiresAt: new Date(spot.expires_at).getTime(),
     createdAt: new Date(spot.created_at).getTime(),
     mine: !!myUserId && spot.creator_id === myUserId,
+  }));
+}
+
+export function postMarkers(posts: MapPost[] | undefined) {
+  return (posts ?? []).map((post) => ({
+    id: post.post_id,
+    lat: post.lat,
+    lng: post.lng,
+    label: post.author?.display_name ?? 'Post',
+    imageUrl: post.image_signed_url ?? post.author?.avatar_url ?? null,
+    expiresAt: new Date(post.expires_at).getTime(),
   }));
 }

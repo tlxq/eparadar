@@ -227,6 +227,7 @@ export default function ConversationScreen() {
       sender_id: userId,
       body: text,
       image_path: null,
+      post_id: null,
       created_at: new Date().toISOString(),
       sender: myProfile
         ? {

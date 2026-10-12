@@ -10,6 +10,7 @@ import { readersOf } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
 import { formatDayDivider } from '@/lib/relative-time';
 import { SIGNED_URL_REFRESH_MS } from '@/lib/queryClient';
+import { SharedPostCard } from '@/features/feed/components/shared-post-card';
 
 const GROUP_WINDOW_MS = 5 * 60 * 1000;
 
@@ -239,6 +240,9 @@ export function MessageBubble({
             message.pending && styles.pending,
           ]}
         >
+          {message.post_id ? (
+            <SharedPostCard postId={message.post_id} onLongPress={() => onLongPress(message)} />
+          ) : null}
           {message.image_path ? (
             <ChatImage
               path={message.image_path}

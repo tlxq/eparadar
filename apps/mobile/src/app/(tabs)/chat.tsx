@@ -30,7 +30,7 @@ import { usePullRefresh } from '@/hooks/use-pull-refresh';
 function previewText(conversation: Conversation, myUserId: string) {
   const lastMessage = conversation.messages?.[0];
   if (!lastMessage) return conversation.is_group ? 'Gruppen är skapad' : 'Säg hej!';
-  const text = lastMessage.body.trim() || Words.photo;
+  const text = lastMessage.body.trim() || (lastMessage.post_id ? Words.sharedPost : Words.photo);
   if (lastMessage.sender_id === myUserId) return `Du: ${text}`;
   if (!conversation.is_group) return text;
   const sender = conversation.conversation_members.find(

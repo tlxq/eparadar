@@ -83,6 +83,7 @@ export default {
         sender_id: string;
         body: string;
         image_path: string | null;
+        post_id: string | null;
       };
       const { data: members } = await supabase
         .from("conversation_members")
@@ -101,7 +102,7 @@ export default {
         .single();
 
       const senderName = sender?.display_name ?? "Någon";
-      const what = message.image_path ? "en bild" : "ett meddelande";
+      const what = message.post_id ? "en post" : message.image_path ? "en bild" : "ett meddelande";
       recipientIds = (members ?? []).map((m) => m.user_id);
       actorId = message.sender_id;
       if (conversation?.is_group) {

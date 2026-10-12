@@ -6,6 +6,7 @@ import { deletePost, type Post } from '@/lib/api';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
+import { openSharePost } from '@/store/share-post';
 import { showToast } from '@/store/toast';
 import { openReport } from '@/store/report-sheet';
 import { useBlockPerson } from '@/features/moderation/use-block-person';
@@ -33,8 +34,14 @@ export function usePostActions() {
   }
 
   function actionsFor(target: Post): SheetAction[] {
+    const share: SheetAction = {
+      label: 'Skicka i chatt',
+      icon: 'paper-plane-outline',
+      onPress: () => openSharePost(target.id),
+    };
     if (target.author_id === userId) {
       return [
+        share,
         {
           label: 'Ta bort post',
           icon: 'trash-outline',
@@ -45,6 +52,7 @@ export function usePostActions() {
     }
     const name = target.author?.display_name ?? 'personen';
     return [
+      share,
       {
         label: 'Rapportera post',
         icon: 'flag-outline',

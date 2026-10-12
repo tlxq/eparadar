@@ -31,7 +31,23 @@ export const MAP_HTML = `<!DOCTYPE html>
     .maplibregl-ctrl-attrib a, .maplibregl-ctrl-attrib-inner { color: ${NIGHT.textSecondary} !important; font-size: 9px; }
     .maplibregl-ctrl-attrib-button { filter: invert(1); }
     .mk { display: flex; align-items: center; justify-content: center; pointer-events: auto; }
-    .mk.spot, .mk.meet { z-index: 1; }
+    .mk.spot, .mk.meet, .mk.drop { z-index: 1; }
+    .photo-pin {
+      position: relative; width: 46px; height: 46px; border-radius: 12px; border: 2.5px solid ${NIGHT.text};
+      background: #1C2230; box-shadow: 0 0 0 2px #0E1320, 0 6px 16px rgba(0,0,0,0.55); transform: rotate(-4deg);
+    }
+    .photo-pin .clip {
+      position: absolute; inset: 0; border-radius: 9px; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .photo-pin img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo-pin::after {
+      content: ''; position: absolute; left: 50%; top: 100%; transform: translateX(-50%);
+      border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 7px solid ${NIGHT.text};
+    }
+    .z-town .photo-pin { width: 34px; height: 34px; border-radius: 9px; border-width: 2px; }
+    .z-town .photo-pin .clip { border-radius: 7px; }
+    .pdot { width: 12px; height: 12px; border-radius: 3px; background: ${NIGHT.text}; box-shadow: 0 0 0 2px #0E1320; }
     .mk.person { z-index: 2; }
     .mk.me { z-index: 3; }
     .below {
@@ -582,6 +598,36 @@ export const MAP_HTML = `<!DOCTYPE html>
     }
     setInterval(renderSpots, 30000);
 
+    const postMarkers = {};
+    let posts = [];
+    function postHtml(pt) {
+      if (step === 'region') return '<div class="pdot"></div>';
+      const inner = pt.imageUrl
+        ? '<img src="' + escapeHtml(pt.imageUrl) + '" alt="" />'
+        : '<span class="initials">' + initials(pt.label) + '</span>';
+      const chip = step === 'street' ? '<span class="below pill">' + escapeHtml(pt.label) + '</span>' : '';
+      return '<div class="photo-pin"><div class="clip">' + inner + '</div></div>' + chip;
+    }
+    function renderPosts() {
+      const now = Date.now();
+      const live = posts.filter(function (pt) { return pt.expiresAt > now; });
+      const ids = live.map(function (pt) { return pt.id; });
+      Object.keys(postMarkers).forEach(function (id) {
+        if (ids.indexOf(id) === -1) { postMarkers[id].remove(); delete postMarkers[id]; }
+      });
+      live.forEach(function (pt) {
+        if (postMarkers[pt.id]) {
+          postMarkers[pt.id].getElement().innerHTML = postHtml(pt);
+          postMarkers[pt.id].setLngLat([pt.lng, pt.lat]);
+          return;
+        }
+        const el = makeEl('mk drop', postHtml(pt));
+        el.addEventListener('click', function (e) { e.stopPropagation(); sendToNative({ type: 'POST_TAP', id: pt.id }); });
+        postMarkers[pt.id] = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([pt.lng, pt.lat]).addTo(map);
+      });
+    }
+    setInterval(renderPosts, 60000);
+
     map.on('zoom', function () {
       const next = stepFor(map.getZoom());
       if (next === step) return;
@@ -591,6 +637,7 @@ export const MAP_HTML = `<!DOCTYPE html>
       renderFriends();
       renderMeetups();
       renderSpots();
+      renderPosts();
     });
 
     let heatNoticed = false;
@@ -700,6 +747,7 @@ export const MAP_HTML = `<!DOCTYPE html>
       if (msg.type === 'STOP_FOLLOW') setFollowing(false);
       if (msg.type === 'SET_MEETUPS') { meetups = msg.meetups; renderMeetups(); }
       if (msg.type === 'SET_SPOTS') { spots = msg.spots; renderSpots(); }
+      if (msg.type === 'SET_POSTS') { posts = msg.posts; renderPosts(); }
       if (msg.type === 'SET_HEAT') { heatCells = msg.cells; renderHeat(); checkHeatInView(); }
       if (msg.type === 'SHOW_DRAFT_SPOT') showDraftSpot(msg.lat, msg.lng);
       if (msg.type === 'CLEAR_DRAFT_SPOT') clearDraftSpot();

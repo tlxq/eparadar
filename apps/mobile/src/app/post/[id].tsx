@@ -1,0 +1,68 @@
+import { useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
+
+import { EmptyState } from '@/components/empty-state';
+import { ErrorState } from '@/components/error-state';
+import { ScreenBackground } from '@/components/screen-background';
+import { Skeleton } from '@/components/skeleton';
+import { Radius, Spacing } from '@/constants/theme';
+import { PostActionsSheet } from '@/features/feed/components/post-actions-sheet';
+import { PostItem } from '@/features/feed/components/post-item';
+import { fetchPost, type Post } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
+import { SIGNED_URL_REFRESH_MS } from '@/lib/queryClient';
+
+export default function PostScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const [selected, setSelected] = useState<Post | null>(null);
+  const {
+    data: post,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: queryKeys.post(id),
+    queryFn: () => fetchPost(id!),
+    enabled: !!id,
+    refetchInterval: SIGNED_URL_REFRESH_MS,
+  });
+
+  return (
+    <ScreenBackground style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
+        {isLoading ? (
+          <View style={styles.skeleton}>
+            <Skeleton width="50%" />
+            <Skeleton height={260} radius={Radius.lg} />
+            <Skeleton width="80%" />
+          </View>
+        ) : isError && !post ? (
+          <ErrorState
+            message="Posten gick inte att ladda. Kolla nätet och testa igen."
+            onRetry={refetch}
+          />
+        ) : !post ? (
+          <EmptyState
+            icon="eye-off-outline"
+            title="Posten finns inte"
+            message="Den kan ha tagits bort, eller så syns den bara för personens kompisar."
+            action={{ label: 'Till flödet', onPress: () => router.navigate('/') }}
+          />
+        ) : (
+          <ScrollView>
+            <PostItem post={post} onMore={() => setSelected(post)} />
+          </ScrollView>
+        )}
+      </SafeAreaView>
+      <PostActionsSheet post={selected} onClose={() => setSelected(null)} />
+    </ScreenBackground>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  skeleton: { padding: Spacing.three, gap: Spacing.three },
+});

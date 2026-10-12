@@ -21,6 +21,7 @@ import { ToastHost } from '@/components/toast-host';
 import { useAuthLinks } from '@/features/auth/use-auth-links';
 import { ReportSheetHost } from '@/features/moderation/report-sheet';
 import { PersonSheetHost } from '@/features/people/person-sheet';
+import { ShareSheetHost } from '@/features/feed/components/share-sheet';
 import { Words } from '@/constants/strings';
 import { Colors, Typography } from '@/constants/theme';
 import { trackEvent } from '@/lib/analytics';
@@ -147,6 +148,7 @@ function RootLayout() {
             />
             <Stack.Screen name="add/[code]" options={{ presentation: 'modal' }} />
             <Stack.Screen name="group/[id]" />
+            <Stack.Screen name="post/[id]" options={{ headerShown: true, title: 'Post' }} />
             <Stack.Screen name="settings" options={{ headerShown: true, title: 'Inställningar' }} />
             <Stack.Screen name="admin" options={{ headerShown: true, title: 'Admin' }} />
             <Stack.Screen
@@ -178,6 +180,7 @@ function RootLayout() {
         </Stack>
         {session ? <PersonSheetHost /> : null}
         {session ? <ReportSheetHost /> : null}
+        {session ? <ShareSheetHost /> : null}
         <ConfirmSheetHost />
         <ToastHost />
       </ThemeProvider>

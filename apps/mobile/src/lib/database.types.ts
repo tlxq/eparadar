@@ -553,6 +553,7 @@ export type Database = {
           created_at: string;
           id: string;
           image_path: string | null;
+          post_id: string | null;
           sender_id: string;
         };
         Insert: {
@@ -561,6 +562,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           image_path?: string | null;
+          post_id?: string | null;
           sender_id: string;
         };
         Update: {
@@ -569,6 +571,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           image_path?: string | null;
+          post_id?: string | null;
           sender_id?: string;
         };
         Relationships: [
@@ -644,6 +647,84 @@ export type Database = {
             foreignKeyName: 'notification_settings_user_id_fkey';
             columns: ['user_id'];
             isOneToOne: true;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      post_places: {
+        Row: {
+          author_id: string;
+          created_at: string;
+          expires_at: string;
+          lat: number;
+          lng: number;
+          post_id: string;
+        };
+        Insert: {
+          author_id: string;
+          created_at?: string;
+          expires_at?: string;
+          lat: number;
+          lng: number;
+          post_id: string;
+        };
+        Update: {
+          author_id?: string;
+          created_at?: string;
+          expires_at?: string;
+          lat?: number;
+          lng?: number;
+          post_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'post_places_author_id_fkey';
+            columns: ['author_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'post_places_post_id_fkey';
+            columns: ['post_id'];
+            isOneToOne: true;
+            referencedRelation: 'posts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      post_reactions: {
+        Row: {
+          created_at: string;
+          emoji: string;
+          post_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          emoji: string;
+          post_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          emoji?: string;
+          post_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'post_reactions_post_id_fkey';
+            columns: ['post_id'];
+            isOneToOne: false;
+            referencedRelation: 'posts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'post_reactions_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
@@ -1131,6 +1212,7 @@ export type Database = {
         }[];
       };
       purge_expired_map_data: { Args: never; Returns: undefined };
+      purge_expired_post_places: { Args: never; Returns: undefined };
       redeem_friend_code: {
         Args: { friend_code: string };
         Returns: {

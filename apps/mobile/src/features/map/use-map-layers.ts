@@ -2,7 +2,14 @@ import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useFriendLocations, useMyLocation } from '@/features/map/hooks';
-import { friendMarkers, meetupMarkers, meMarker, spotMarkers } from '@/features/map/markers';
+import { useMapPosts } from '@/features/feed/hooks';
+import {
+  friendMarkers,
+  meetupMarkers,
+  meMarker,
+  postMarkers,
+  spotMarkers,
+} from '@/features/map/markers';
 import { fetchSpotPhotoCounts, fetchSpots } from '@/features/map/spots';
 import { fetchEveningHeat, type HeatCell } from '@/features/map/status';
 import { useDevicePosition } from '@/features/map/use-device-position';
@@ -36,6 +43,7 @@ export function useMapLayers() {
     enabled: !!userId,
     refetchInterval: 60000,
   });
+  const { data: mapPosts } = useMapPosts();
   const { data: photoCounts } = useQuery({
     queryKey: queryKeys.spotPhotoCounts(),
     queryFn: fetchSpotPhotoCounts,
@@ -83,6 +91,7 @@ export function useMapLayers() {
     [device.position, device.motion, myLocation, myProfile, myCars],
   );
   const meetupLayer = useMemo(() => meetupMarkers(meetups), [meetups]);
+  const postLayer = useMemo(() => postMarkers(mapPosts), [mapPosts]);
   const spotLayer = useMemo(
     () => spotMarkers(spots, friends, me, photoCounts, userId),
     [spots, friends, me, photoCounts, userId],
@@ -97,6 +106,6 @@ export function useMapLayers() {
     myProfile,
     spots,
     heat: heatCells ?? NO_HEAT,
-    layers: { friends, me, meetups: meetupLayer, spots: spotLayer },
+    layers: { friends, me, meetups: meetupLayer, spots: spotLayer, posts: postLayer },
   };
 }

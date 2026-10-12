@@ -28,6 +28,7 @@ export const Words = {
   publishPost: 'Posta',
   myPosts: 'Dina poster',
   photo: '📷 Bild',
+  sharedPost: '🔗 Post',
 } as const;
 
 export function plural(count: number, one: string, many: string) {
