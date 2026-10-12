@@ -105,6 +105,7 @@ function RootLayout() {
           </Stack.Protected>
           <Stack.Protected guard={!!session}>
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="age" options={{ gestureEnabled: false, animation: 'fade' }} />
             <Stack.Screen
               name="onboarding"
               options={{ gestureEnabled: false, animation: 'fade' }}

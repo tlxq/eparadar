@@ -8,10 +8,12 @@ import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { signUpWithProfile } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
+import { birthYearError } from '@/lib/age';
 
 export default function SignUpScreen() {
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
+  const [birthYear, setBirthYear] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -19,8 +21,19 @@ export default function SignUpScreen() {
 
   async function handleSubmit() {
     setError(null);
-    if (!displayName.trim() || !username.trim() || !email.trim() || !password) {
+    if (
+      !displayName.trim() ||
+      !username.trim() ||
+      !birthYear.trim() ||
+      !email.trim() ||
+      !password
+    ) {
       setError('Fyll i alla fält.');
+      return;
+    }
+    const ageError = birthYearError(birthYear);
+    if (ageError) {
+      setError(ageError);
       return;
     }
     setLoading(true);
@@ -30,6 +43,7 @@ export default function SignUpScreen() {
         password,
         username: username.trim(),
         displayName: displayName.trim(),
+        birthYear: Number(birthYear.trim()),
       });
     } catch (err) {
       setError(getErrorMessage(err));
@@ -70,6 +84,15 @@ export default function SignUpScreen() {
         autoComplete="username"
         value={username}
         onChangeText={setUsername}
+      />
+      <TextField
+        label="Födelseår"
+        placeholder="2009"
+        keyboardType="number-pad"
+        maxLength={4}
+        value={birthYear}
+        onChangeText={setBirthYear}
+        hint="Du måste vara minst 15 år. Bara du ser ditt födelseår."
       />
       <TextField
         label="E-post"

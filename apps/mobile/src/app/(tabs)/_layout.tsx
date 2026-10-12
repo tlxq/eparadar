@@ -9,6 +9,7 @@ import { isUnread } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
 import { subscribeTyping } from '@/lib/typing';
 import { useProfile } from '@/features/profile/hooks';
+import { useMyBirthYear } from '@/features/profile/age';
 import { useFriendRequests } from '@/features/friends/hooks';
 import { useConversations } from '@/features/chat/hooks';
 import { useUserId } from '@/hooks/use-user-id';
@@ -18,6 +19,7 @@ export default function TabsLayout() {
   const queryClient = useQueryClient();
 
   const { data: profile } = useProfile();
+  const { data: birthYear, isSuccess: birthYearLoaded } = useMyBirthYear();
 
   const { data: pendingRequests } = useFriendRequests();
   const pendingCount = pendingRequests?.length ?? 0;
@@ -88,6 +90,10 @@ export default function TabsLayout() {
     enabled: !!userId,
     onChange: invalidateFriendships,
   });
+
+  if (birthYearLoaded && birthYear === null) {
+    return <Redirect href="/age" />;
+  }
 
   if (profile && !profile.onboarded_at) {
     return <Redirect href="/onboarding" />;

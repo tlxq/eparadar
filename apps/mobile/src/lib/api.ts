@@ -18,6 +18,7 @@ export async function signUpWithProfile(input: {
   password: string;
   username: string;
   displayName: string;
+  birthYear: number;
 }) {
   const { data, error } = await supabase.auth.signUp({
     email: input.email,
@@ -26,6 +27,7 @@ export async function signUpWithProfile(input: {
       data: {
         username: input.username,
         display_name: input.displayName,
+        birth_year: String(input.birthYear),
       },
     },
   });

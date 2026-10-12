@@ -12,6 +12,7 @@ export const queryKeys = {
   myPostCount: (userId: string | undefined) => ['posts', 'count', userId] as const,
   cars: (userId: string | undefined) => ['cars', userId] as const,
   profile: (userId: string | undefined) => ['profile', userId] as const,
+  birthYear: (userId: string | undefined) => ['birthYear', userId] as const,
   conversations: (userId: string | undefined) => ['conversations', userId] as const,
   conversation: (conversationId: string | undefined) => ['conversation', conversationId] as const,
   messages: (conversationId: string | undefined) => ['messages', conversationId] as const,
