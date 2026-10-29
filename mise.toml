@@ -4,3 +4,11 @@ node = "22.23.2"
 "npm:eas-cli" = "24.3.0"
 java = "temurin-17.0.20+8"
 "android-sdk" = "latest"
+
+[tasks.check]
+description = "Everything CI and pre-push run: mobile lint + typecheck + tests, web typecheck + build"
+run = ["[ -d node_modules ] || npm ci", "npm run check", "npm run build --workspace apps/web"]
+
+[tasks.format]
+description = "Prettier on the files given (pre-commit passes the staged ones and restages them)"
+run = "npx prettier --write --ignore-unknown"

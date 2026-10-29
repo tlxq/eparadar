@@ -12,8 +12,6 @@
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
-    "husky": "^9.1.7",
-    "lint-staged": "^17.6.0",
     "prettier": "^3.9.9",
     "typescript": "~6.0.3"
   },
@@ -27,8 +25,7 @@
     "gen:types": "supabase gen types typescript --linked --schema public > apps/mobile/src/lib/database.types.ts",
     "db:test": "supabase test db --local",
     "commit": "cz",
-    "commitlint": "commitlint",
-    "prepare": "node .husky/install.mjs"
+    "commitlint": "commitlint"
   },
   "config": {
     "commitizen": {

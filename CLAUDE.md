@@ -33,7 +33,7 @@ Open work: `ROADMAP.md`.
 ## Workflow
 
 - Run commands through `mise exec --`.
-- Before a PR: `npm run check` and `supabase test db --local`.
+- Before a PR: `mise run check` (mobile lint, typecheck, tests; web typecheck and build; the pre-push hook and CI run it too) and `supabase test db --local`. Git hooks are lefthook: `lefthook install` once per clone.
 - Work on a branch (`feat/`, `fix/`, `chore/`) and open a PR. Conventional Commits.
 - One reviewed commit per change. No AI co-author trailers or AI attribution.
 - No comments in code. All app text in Swedish.

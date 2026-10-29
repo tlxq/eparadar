@@ -59,7 +59,10 @@ import SettingsScreen from '@/app/settings';
 
 async function renderSettings() {
   const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    defaultOptions: {
+      queries: { retry: false, gcTime: Infinity },
+      mutations: { retry: false, gcTime: Infinity },
+    },
   });
   const screen = await render(
     <QueryClientProvider client={client}>
