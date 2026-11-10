@@ -4,11 +4,11 @@ import { supabase } from '@/lib/supabase';
 
 export const RESEND_COOLDOWN_S = 60;
 
-export function authRedirectUrl(path: '/' | '/reset-password') {
+function authRedirectUrl(path: '/' | '/reset-password') {
   return Linking.createURL(path);
 }
 
-export type SignUpResult = { needsConfirmation: boolean };
+type SignUpResult = { needsConfirmation: boolean };
 
 export async function signUpWithProfile(input: {
   email: string;
@@ -93,7 +93,7 @@ export function authParams(url: string): Record<string, string> {
   return params;
 }
 
-export type AuthLinkResult =
+type AuthLinkResult =
   { kind: 'session'; type: string | null } | { kind: 'error'; code: string | null } | null;
 
 export async function handleAuthLink(url: string): Promise<AuthLinkResult> {

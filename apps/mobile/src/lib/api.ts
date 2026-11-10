@@ -192,7 +192,7 @@ export async function removeCarPhoto(url: string | null): Promise<void> {
   await removeStoredFile('car-photos', url);
 }
 
-export type MutualFriend = Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
+type MutualFriend = Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
 
 export async function fetchMutualFriends(userId: string): Promise<MutualFriend[]> {
   const { data, error } = await supabase.rpc('mutual_friends', { p_user_id: userId });

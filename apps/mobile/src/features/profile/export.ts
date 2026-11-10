@@ -2,7 +2,7 @@ import { Platform, Share } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
 
-export async function exportMyData(): Promise<string> {
+async function exportMyData(): Promise<string> {
   const { data, error } = await supabase.rpc('export_my_data');
   if (error) throw error;
   return JSON.stringify(data, null, 2);

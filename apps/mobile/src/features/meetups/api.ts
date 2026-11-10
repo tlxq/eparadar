@@ -18,7 +18,7 @@ export type Meetup = {
   here_now_count: number;
 };
 
-export type MeetupDetail = Meetup & {
+type MeetupDetail = Meetup & {
   creator: Pick<Profile, 'id' | 'display_name' | 'avatar_url'> | null;
   interested: Pick<Profile, 'id' | 'display_name' | 'avatar_url'>[];
   hereNow: Pick<Profile, 'id' | 'display_name' | 'avatar_url'>[];

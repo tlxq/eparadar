@@ -2,7 +2,7 @@ export type EveningKind = 'ragg' | 'varning' | 'meet';
 
 export type EveningPoint = { id: string; kind: EveningKind; lat: number; lng: number };
 
-export type PlottedPoint = EveningPoint & { x: number; y: number };
+type PlottedPoint = EveningPoint & { x: number; y: number };
 
 const EVENING_START_HOUR = 18;
 const EVENING_END_HOUR = 4;

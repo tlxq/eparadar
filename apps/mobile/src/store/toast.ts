@@ -2,9 +2,9 @@ import { create } from 'zustand';
 
 import { Common } from '@/constants/strings';
 
-export type ToastTone = 'info' | 'success' | 'error';
+type ToastTone = 'info' | 'success' | 'error';
 
-export type Toast = {
+type Toast = {
   id: number;
   message: string;
   tone: ToastTone;

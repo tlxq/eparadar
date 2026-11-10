@@ -1,7 +1,7 @@
 export const MIN_PASSWORD_LENGTH = 8;
-export const USERNAME_MIN = 3;
-export const USERNAME_MAX = 20;
-export const DISPLAY_NAME_MAX = 40;
+const USERNAME_MIN = 3;
+const USERNAME_MAX = 20;
+const DISPLAY_NAME_MAX = 40;
 
 export function displayNameError(input: string): string | null {
   const value = input.trim();

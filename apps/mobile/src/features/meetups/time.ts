@@ -45,7 +45,7 @@ export function exactTimeText(date: Date): string {
   return `${shortDayText(date)} · ${clockText(date)}`;
 }
 
-export const MAX_DAYS_AHEAD = 60;
+const MAX_DAYS_AHEAD = 60;
 
 export function isPickableTime(date: Date, now = new Date()): boolean {
   const ahead = date.getTime() - now.getTime();
@@ -54,7 +54,7 @@ export function isPickableTime(date: Date, now = new Date()): boolean {
 
 const WEEKDAYS = ['sön', 'mån', 'tis', 'ons', 'tors', 'fre', 'lör'];
 
-export const MEETUP_LIVE_HOURS = 3;
+const MEETUP_LIVE_HOURS = 3;
 
 function dayLabel(startsAt: Date, now: Date): string {
   const tomorrow = new Date(now);

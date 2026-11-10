@@ -1,6 +1,6 @@
 import { useConfirmStore, type ConfirmRequest } from '@/store/confirm';
 
-export type ConfirmOptions = Omit<ConfirmRequest, 'resolve'>;
+type ConfirmOptions = Omit<ConfirmRequest, 'resolve'>;
 
 export function confirm(options: ConfirmOptions): Promise<boolean> {
   return new Promise((resolve) => {

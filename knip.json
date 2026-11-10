@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignore": ["apps/mobile/src/lib/database.types.ts", "supabase/functions/**"],
+  "ignoreBinaries": ["supabase"],
+  "ignoreDependencies": ["expo-updates"],
+  "workspaces": {
+    "apps/mobile": {
+      "entry": ["src/**/*.web.{ts,tsx}"]
+    },
+    "apps/web": {
+      "entry": ["api/*.ts"]
+    }
+  }
+}

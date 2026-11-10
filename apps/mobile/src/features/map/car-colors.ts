@@ -11,8 +11,6 @@ export const CAR_COLORS = [
   { key: 'svart', label: 'Svart', hex: '#2A2F3A' },
 ] as const;
 
-export type CarColorKey = (typeof CAR_COLORS)[number]['key'];
-
 export const DEFAULT_RING_HEX = '#2F6FED';
 
 export function carColorHex(key: string | null | undefined): string {

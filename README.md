@@ -43,13 +43,13 @@ mise exec -- npm run phone
 This finds the phone over Wi-Fi or USB, rebuilds the app only when native code changed, starts
 Metro and opens the app. Code changes then show up on the phone right away.
 
-| Need              | Command                                   |
-| ----------------- | ----------------------------------------- |
-| Force a rebuild   | `npm run phone -- --build`                |
-| Pick a phone      | `npm run phone -- --device S928`          |
-| Not on home Wi-Fi | `npm run phone -- <port>` (via Tailscale) |
-| Website           | `npm run web`                             |
-| Local database    | `supabase start`                          |
+| Need              | Command                                               |
+| ----------------- | ----------------------------------------------------- |
+| Force a rebuild   | `npm run phone -- --build`                            |
+| Pick a phone      | `npm run phone -- --device S928`                      |
+| Not on home Wi-Fi | `PHONE_HOST=<tailscale name> npm run phone -- <port>` |
+| Website           | `npm run web`                                         |
+| Local database    | `supabase start`                                      |
 
 Run every command through `mise exec --` so the pinned Node, Java and Android versions are used.
 

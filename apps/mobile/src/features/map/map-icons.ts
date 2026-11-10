@@ -34,7 +34,7 @@ export const SPOT_ICONS = {
   ),
 } as const;
 
-export type SpotIconKey = keyof typeof SPOT_ICONS;
+type SpotIconKey = keyof typeof SPOT_ICONS;
 
 export function spotIconKey(spot: { kind: string; warning_type: string | null }): SpotIconKey {
   if (spot.kind === 'ragg') return 'ragg';

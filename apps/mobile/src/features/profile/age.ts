@@ -4,7 +4,7 @@ import { useUserId } from '@/hooks/use-user-id';
 import { queryKeys } from '@/lib/query-keys';
 import { supabase } from '@/lib/supabase';
 
-export async function fetchMyBirthYear(userId: string): Promise<number | null> {
+async function fetchMyBirthYear(userId: string): Promise<number | null> {
   const { data, error } = await supabase
     .from('user_ages')
     .select('birth_year')

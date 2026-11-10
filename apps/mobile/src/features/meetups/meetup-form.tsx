@@ -31,7 +31,7 @@ const TIME_OPTIONS: { value: QuickTimeOption; label: string }[] = [
 
 const DESCRIPTION_MAX = 300;
 
-export type MeetupFormValues = {
+type MeetupFormValues = {
   vibe: MeetupVibe;
   title: string;
   description: string;

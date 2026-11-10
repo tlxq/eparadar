@@ -5,7 +5,7 @@ import { useIsFocused } from 'expo-router/react-navigation';
 
 import { motionFromCoords } from '@/features/map/motion';
 
-export type LocationAccess = 'checking' | 'granted' | 'ask' | 'blocked' | 'off';
+type LocationAccess = 'checking' | 'granted' | 'ask' | 'blocked' | 'off';
 
 async function readLocationAccess(): Promise<LocationAccess> {
   const [permission, servicesOn] = await Promise.all([

@@ -1,9 +1,9 @@
 import type { RpcRow } from '@/lib/db-types';
 import { supabase } from '@/lib/supabase';
 
-export type MeetupSuggestion = RpcRow<'suggested_friends_from_meetups'>;
+type MeetupSuggestion = RpcRow<'suggested_friends_from_meetups'>;
 
-export type MutualSuggestion = RpcRow<'suggested_friends_mutual'>;
+type MutualSuggestion = RpcRow<'suggested_friends_mutual'>;
 
 export async function fetchMeetupSuggestions(): Promise<MeetupSuggestion[]> {
   const { data, error } = await supabase.rpc('suggested_friends_from_meetups');

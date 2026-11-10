@@ -3,8 +3,6 @@ import { supabase } from '@/lib/supabase';
 
 export const POST_REACTIONS = ['🔥', '😂', '👍'] as const;
 
-export type PostEmoji = (typeof POST_REACTIONS)[number];
-
 export async function addPostReaction(postId: string, userId: string, emoji: string) {
   const { error } = await supabase
     .from('post_reactions')

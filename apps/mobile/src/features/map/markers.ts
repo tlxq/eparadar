@@ -36,7 +36,7 @@ export function friendMarkers(friends: FriendLocation[] | undefined) {
   }));
 }
 
-export type FriendMarker = ReturnType<typeof friendMarkers>[number];
+type FriendMarker = ReturnType<typeof friendMarkers>[number];
 
 export function meMarker({
   devicePosition,
@@ -73,7 +73,7 @@ export function meMarker({
   };
 }
 
-export type MeMarker = ReturnType<typeof meMarker>;
+type MeMarker = ReturnType<typeof meMarker>;
 
 const WEEKDAYS = ['sön', 'mån', 'tis', 'ons', 'tor', 'fre', 'lör'];
 

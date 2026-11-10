@@ -1,6 +1,8 @@
+import { CONTACT_EMAIL } from '@eparadar/legal';
+
 export const SITE = {
   url: 'https://eparadar.se',
-  contactEmail: 'contact@eparadar.se',
+  contactEmail: CONTACT_EMAIL,
   routes: {
     home: '/',
     privacy: '/integritetspolicy',

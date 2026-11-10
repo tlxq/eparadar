@@ -3,7 +3,7 @@ import { create } from 'zustand';
 
 export type MapLayer = 'friends' | 'ragg' | 'meets' | 'warnings';
 
-export const MAP_LAYERS: MapLayer[] = ['friends', 'ragg', 'meets', 'warnings'];
+const MAP_LAYERS: MapLayer[] = ['friends', 'ragg', 'meets', 'warnings'];
 
 const FILTERS_KEY = 'eparadar.map.hiddenLayers';
 

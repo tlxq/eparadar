@@ -1,4 +1,4 @@
-export const MINIMUM_AGE = 15;
+import { MINIMUM_AGE } from '@eparadar/legal';
 
 export function birthYearError(input: string, now = new Date()): string | null {
   const value = input.trim();

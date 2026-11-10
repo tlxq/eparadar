@@ -111,7 +111,7 @@ function ChatImage({
   );
 }
 
-export function groupReactions(reactions: Message['reactions'], myUserId: string | undefined) {
+function groupReactions(reactions: Message['reactions'], myUserId: string | undefined) {
   const groups: { emoji: string; count: number; mine: boolean }[] = [];
   for (const reaction of reactions) {
     let group = groups.find((item) => item.emoji === reaction.emoji);
@@ -200,7 +200,7 @@ export function TypingBubble({ label }: { label: string }) {
   );
 }
 
-export function clock(iso: string) {
+function clock(iso: string) {
   return new Date(iso).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
 }
 

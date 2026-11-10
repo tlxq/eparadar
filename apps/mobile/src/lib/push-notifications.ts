@@ -90,7 +90,7 @@ export function setNotificationNavigationReady(ready: boolean): void {
   if (response) handleNotificationResponse(response);
 }
 
-export type NotificationPromptReason = 'chat' | 'friend_request' | 'friend_accepted' | 'meetup';
+type NotificationPromptReason = 'chat' | 'friend_request' | 'friend_accepted' | 'meetup';
 
 const PROMPT_DELAY_MS = 700;
 

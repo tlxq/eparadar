@@ -6,7 +6,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
 
-export type MuteChoice = '1h' | '8h' | 'forever';
+type MuteChoice = '1h' | '8h' | 'forever';
 
 export const MUTE_CHOICES: { key: MuteChoice; label: string }[] = [
   { key: '1h', label: '1 timme' },

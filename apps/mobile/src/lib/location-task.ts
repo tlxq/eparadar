@@ -6,7 +6,7 @@ import { motionFromCoords } from '@/features/map/motion';
 import { upsertLocation } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
-export const LOCATION_TASK_NAME = 'eparadar-background-location';
+const LOCATION_TASK_NAME = 'eparadar-background-location';
 
 TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
   if (error) {
@@ -33,7 +33,7 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
   }
 });
 
-export type PermissionResult = { granted: true } | { granted: false; reason: string };
+type PermissionResult = { granted: true } | { granted: false; reason: string };
 
 export async function requestLocationPermissions(): Promise<PermissionResult> {
   const foreground = await Location.requestForegroundPermissionsAsync();

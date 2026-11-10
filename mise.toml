@@ -6,7 +6,7 @@ java = "temurin-17.0.20+8"
 "android-sdk" = "latest"
 
 [tasks.check]
-description = "Everything CI and pre-push run: mobile lint + typecheck + tests, web typecheck + build"
+description = "Everything CI and pre-push run: mobile lint + typecheck + tests, web typecheck + build, unused code (knip)"
 run = ["[ -d node_modules ] || npm ci", "npm run check", "npm run build --workspace apps/web"]
 
 [tasks.format]

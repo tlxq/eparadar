@@ -19,7 +19,7 @@ export type MenuItem = {
   onPress: () => void;
 };
 
-export type MenuAnchor = { x: number; y: number; width: number; height: number };
+type MenuAnchor = { x: number; y: number; width: number; height: number };
 
 type Align = 'start' | 'end';
 type Placement = 'auto' | 'above' | 'below';

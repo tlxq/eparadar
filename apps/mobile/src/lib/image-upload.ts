@@ -26,11 +26,7 @@ export async function uploadFile(bucket: string, pathPrefix: string, uri: string
   return path;
 }
 
-export async function uploadImage(
-  bucket: string,
-  pathPrefix: string,
-  uri: string,
-): Promise<string> {
+async function uploadImage(bucket: string, pathPrefix: string, uri: string): Promise<string> {
   const path = await uploadFile(bucket, pathPrefix, uri);
 
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);

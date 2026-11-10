@@ -51,7 +51,7 @@ export function useWarningVote(spotId: string, onDone?: () => void) {
   return { votes: votes.data, vote };
 }
 
-export function votesText(votes: WarningVotes | undefined): string {
+function votesText(votes: WarningVotes | undefined): string {
   if (!votes || (votes.stillThere === 0 && votes.gone === 0)) {
     return `Ingen har svarat än. ${WARNING_CLEAR_VOTES} "borta" tar bort den.`;
   }

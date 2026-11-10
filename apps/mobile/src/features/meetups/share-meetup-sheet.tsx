@@ -20,7 +20,7 @@ import { successHaptic } from '@/lib/haptics';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
 
-export function meetupShareText(meetup: Pick<Meetup, 'title' | 'starts_at'>): string {
+function meetupShareText(meetup: Pick<Meetup, 'title' | 'starts_at'>): string {
   return `Häng med på ${meetup.title}! ${formatMeetupTime(meetup.starts_at)}.`;
 }
 

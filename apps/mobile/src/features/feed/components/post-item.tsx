@@ -18,7 +18,7 @@ export function carLabel(car: Post['car']) {
   return car ? (car.nickname ?? `${car.make} ${car.model}`) : null;
 }
 
-export function showOnMap(place: NonNullable<Post['place']>) {
+function showOnMap(place: NonNullable<Post['place']>) {
   router.navigate({
     pathname: '/karta',
     params: { focusLat: String(place.lat), focusLng: String(place.lng) },

@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { distanceMeters } from '@/features/map/spots';
 
-export const NEARBY_WARNING_METERS = 300;
+const NEARBY_WARNING_METERS = 300;
 
 const SEEN_KEY = 'eparadar.map.warningsSeen';
 const AHEAD_DEGREES = 60;
@@ -20,7 +20,7 @@ type WarningSpot = LatLng & {
 
 export type NearbyWarning = { id: string; title: string; meters: number; ahead: boolean };
 
-export function bearingDegrees(from: LatLng, to: LatLng): number {
+function bearingDegrees(from: LatLng, to: LatLng): number {
   const toRad = (deg: number) => (deg * Math.PI) / 180;
   const dLng = toRad(to.lng - from.lng);
   const y = Math.sin(dLng) * Math.cos(toRad(to.lat));

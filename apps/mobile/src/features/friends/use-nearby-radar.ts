@@ -9,7 +9,7 @@ import { queryKeys } from '@/lib/query-keys';
 
 const SCAN_INTERVAL_MS = 5000;
 
-export type RadarPermission = 'checking' | 'undetermined' | 'granted' | 'denied' | 'blocked';
+type RadarPermission = 'checking' | 'undetermined' | 'granted' | 'denied' | 'blocked';
 
 function toRadarPermission(response: Location.LocationPermissionResponse): RadarPermission {
   if (response.granted) return 'granted';

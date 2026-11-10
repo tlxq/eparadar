@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 PACKAGE="com.tlxq.eparadar"
-PHONE_HOST="${PHONE_HOST:-phone}"
+PHONE_HOST="${PHONE_HOST:-}"
 METRO_PORT=8081
 
 force_build=0
@@ -40,7 +40,7 @@ while IFS=$'\t' read -r _ type addr; do
   fi
 done < <(adb mdns services | tail -n +2)
 
-if [ -z "$(devices)" ] && [ -n "$port" ]; then
+if [ -z "$(devices)" ] && [ -n "$port" ] && [ -n "$PHONE_HOST" ]; then
   phone_ip="$(tailscale ip -4 "$PHONE_HOST" 2>/dev/null || true)"
   if [ -n "$phone_ip" ]; then
     adb connect "$phone_ip:$port" >/dev/null || true
