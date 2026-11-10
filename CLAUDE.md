@@ -25,7 +25,7 @@ Open work: `ROADMAP.md`.
 - Safe to make public at any time: test and seed data are made up (names, emails, a neutral public
   place). Real accounts, family, home and device names never go in files, commit messages, issues or
   PR text. Screenshots come from demo data and live in `docs/assets/`. `tools/public-guard` checks
-  this at commit and in CI.
+  this at commit.
 
 ## Database changes
 
@@ -37,7 +37,7 @@ Open work: `ROADMAP.md`.
 ## Workflow
 
 - Run commands through `mise exec --`.
-- Before a PR: `mise run check` (mobile lint, typecheck, tests; web typecheck and build; unused code with knip; the pre-push hook and CI run it too) and `supabase test db --local`. Git hooks are lefthook: `lefthook install` once per clone.
+- Before a PR: `mise run check` (mobile lint, typecheck, tests; web typecheck and build; unused code with knip; the pre-push hook runs it) and `supabase test db --local`. GitHub CI is off (Actions minutes, Tom 11-10): both run on the desk before merge and the PR says so. Git hooks are lefthook: `lefthook install` once per clone.
 - Work on a branch (`feat/`, `fix/`, `chore/`) and open a PR. Conventional Commits.
 - One reviewed commit per change. No AI co-author trailers or AI attribution.
 - No comments in code. All app text in Swedish.
