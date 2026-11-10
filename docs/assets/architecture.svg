@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 600" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif">
+  <rect width="1280" height="600" rx="16" fill="#24252a"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#8fb0ff"/></marker></defs>
+  <g fill="none" stroke="#f2f0ea" stroke-opacity=".35" stroke-width="2">
+    <rect x="60" y="120" width="260" height="120" rx="12"/>
+    <rect x="60" y="320" width="260" height="120" rx="12"/>
+    <rect x="440" y="60" width="444" height="440" rx="16" stroke="#8fb0ff" stroke-opacity=".8"/>
+    <rect x="1000" y="120" width="220" height="120" rx="12"/>
+    <rect x="1000" y="320" width="220" height="120" rx="12"/>
+  </g>
+  <g fill="#f2f0ea" font-size="26" font-weight="600">
+    <text x="84" y="170">The app</text>
+    <text x="84" y="370">The website</text>
+    <text x="468" y="106" fill="#8fb0ff">Supabase</text>
+    <text x="1024" y="170">Expo Push</text>
+    <text x="1024" y="370">Resend</text>
+  </g>
+  <g fill="#f2f0ea" fill-opacity=".7" font-size="20">
+    <text x="84" y="204">React Native, Expo</text>
+    <text x="84" y="404">Astro on Vercel</text>
+    <text x="1024" y="204">notifications</text>
+    <text x="1024" y="404">reports, waitlist</text>
+  </g>
+  <g font-size="21" fill="#f2f0ea">
+    <rect x="468" y="132" width="398" height="150" rx="10" fill="#f2f0ea" fill-opacity=".06"/>
+    <text x="490" y="170" font-weight="600">Postgres</text>
+    <text x="490" y="204" fill-opacity=".7">row-level security on every table</text>
+    <text x="490" y="234" fill-opacity=".7">friends only, checked on every read</text>
+    <text x="490" y="264" fill-opacity=".7">pg_cron clears old places every 10 min</text>
+    <text x="490" y="330">Auth · Realtime · Storage</text>
+    <text x="490" y="390" font-weight="600">Edge Functions</text>
+    <text x="490" y="422" fill-opacity=".7">push, reports, delete account,</text>
+    <text x="490" y="452" fill-opacity=".7">clean up stored files</text>
+  </g>
+  <g stroke="#8fb0ff" stroke-width="2.5" fill="none">
+    <path d="M320 180H436" marker-end="url(#a)" marker-start="url(#a)"/>
+    <path d="M320 380H436" marker-end="url(#a)"/>
+    <path d="M884 180H996" marker-end="url(#a)"/>
+    <path d="M884 380H996" marker-end="url(#a)"/>
+    <path d="M190 440V548H1110V444" marker-end="url(#a)"/>
+  </g>
+  <g font-size="17" fill="#f2f0ea" fill-opacity=".6">
+    <text x="330" y="168">signed in</text>
+    <text x="330" y="368">waitlist</text>
+    <text x="560" y="538">waitlist email</text>
+  </g>
+</svg>

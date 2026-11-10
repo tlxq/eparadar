@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,7 +7,6 @@ import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 
 type AuthShellProps = {
   title: string;
@@ -17,17 +17,13 @@ type AuthShellProps = {
 };
 
 function BrandMark() {
-  const theme = useTheme();
   return (
-    <View
+    <Image
+      source={require('@/assets/images/icon.png')}
       accessibilityRole="image"
       accessibilityLabel="epaRadar"
-      style={[styles.mark, { backgroundColor: theme.brand }]}
-    >
-      <View style={[styles.markRing, { borderColor: theme.brandText }]}>
-        <View style={[styles.markDot, { backgroundColor: theme.brandText }]} />
-      </View>
-    </View>
+      style={styles.mark}
+    />
   );
 }
 
@@ -69,20 +65,5 @@ const styles = StyleSheet.create({
   titles: { gap: Spacing.one },
   fields: { gap: Spacing.three },
   footer: { gap: Spacing.two },
-  mark: {
-    width: 56,
-    height: 56,
-    borderRadius: Radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  markRing: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  markDot: { width: 10, height: 10, borderRadius: 5 },
+  mark: { width: 56, height: 56, borderRadius: Radius.lg },
 });

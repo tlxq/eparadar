@@ -27,7 +27,7 @@ while [ $# -gt 0 ]; do
 done
 
 devices() {
-  adb devices -l | awk 'NR > 1 && $2 == "device" {
+  adb devices -l | awk 'NR > 1 && $2 == "device" && $1 !~ /\._adb-tls-connect\._tcp$/ {
     model = ""
     for (i = 3; i <= NF; i++) if ($i ~ /^model:/) model = substr($i, 7)
     print $1, model

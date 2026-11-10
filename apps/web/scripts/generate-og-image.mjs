@@ -6,12 +6,10 @@ const WIDTH = 1200;
 const HEIGHT = 630;
 
 const photoPath = fileURLToPath(new URL('../src/assets/park-bokeh.webp', import.meta.url));
-const iconPath = fileURLToPath(import.meta.resolve('@eparadar/theme/assets/icon.svg'));
+const iconPath = fileURLToPath(new URL('../public/favicon.svg', import.meta.url));
 const outputPath = fileURLToPath(new URL('../public/og-image.jpg', import.meta.url));
 
-const iconMarkup = readFileSync(iconPath, 'utf8')
-  .replace(/<\/?svg[^>]*>/g, '')
-  .replace(/currentColor/g, '#2F6FED');
+const iconMarkup = readFileSync(iconPath, 'utf8').replace(/<\/?svg[^>]*>/g, '');
 
 const overlay = `
 <svg width="${WIDTH}" height="${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
