@@ -33,8 +33,8 @@ insert into public.meetup_checkins (meetup_id, user_id) values
 insert into public.posts (id, author_id, body) values
   ('ab0000bb-0000-0000-0000-000000000001', 'ab000001-0000-0000-0000-000000000001', 'Ny lack');
 
-insert into public.likes (post_id, user_id) values
-  ('ab0000bb-0000-0000-0000-000000000001', 'ab000001-0000-0000-0000-000000000001');
+insert into public.post_reactions (post_id, user_id, emoji) values
+  ('ab0000bb-0000-0000-0000-000000000001', 'ab000001-0000-0000-0000-000000000001', '🔥');
 
 select is(
   (select count(*)::int from pg_policies
@@ -78,9 +78,9 @@ select is(
 );
 
 select is(
-  (select count(*)::int from public.likes),
+  (select count(*)::int from public.post_reactions),
   0,
-  'a logged-out caller reads no likes'
+  'a logged-out caller reads no reactions'
 );
 
 select throws_ok(
@@ -136,10 +136,10 @@ select is(
 );
 
 select is(
-  (select count(*)::int from public.likes
+  (select count(*)::int from public.post_reactions
     where post_id = 'ab0000bb-0000-0000-0000-000000000001'),
   0,
-  'a stranger does not see likes on a post they cannot read'
+  'a stranger does not see reactions on a post they cannot read'
 );
 
 set local request.jwt.claim.sub = 'ab000003-0000-0000-0000-000000000003';
@@ -168,10 +168,10 @@ select is(
 );
 
 select is(
-  (select count(*)::int from public.likes
+  (select count(*)::int from public.post_reactions
     where post_id = 'ab0000bb-0000-0000-0000-000000000001'),
   1,
-  'a friend sees likes on a post they can read'
+  'a friend sees reactions on a post they can read'
 );
 
 set local request.jwt.claim.sub = 'ab000001-0000-0000-0000-000000000001';
