@@ -33,7 +33,7 @@ check_words() {
   local where="$1" n=0 w
   while IFS= read -r w; do
     n=$((n + 1))
-    if grep -iwF -- "$w" "$tmp/text" >"$tmp/hits"; then
+    if grep -aiwF -- "$w" "$tmp/text" >"$tmp/hits"; then
       while IFS= read -r line; do
         if [ -n "${NEVER_PUBLIC_WORDS:-}" ]; then bad "$where: list word $n in: ${line%%$'\t'*}"
         else bad "$where: \"$w\" in: ${line%%$'\t'*}"; fi
@@ -44,7 +44,7 @@ check_words() {
 
 check_ai() {
   local where="$1"
-  if grep -iE -- "$AI_RE" "$tmp/text" >"$tmp/hits"; then
+  if grep -aiE -- "$AI_RE" "$tmp/text" >"$tmp/hits"; then
     while IFS= read -r line; do bad "$where: AI attribution in ${line%%$'\t'*}"; done <"$tmp/hits"
   fi
 }
@@ -62,12 +62,12 @@ check_image() {
   fi
 }
 
-added_lines() { awk '/^\+\+\+ b\//{f=substr($0,7);next} /^@@/{split($3,a,/[,+]/);n=a[2];next} /^\+/{print f":"n"\t"substr($0,2);n++}'; }
+added_lines() { LC_ALL=C awk '/^\+\+\+ b\//{f=substr($0,7);next} /^@@/{split($3,a,/[,+]/);n=a[2];next} /^\+/{print f":"n"\t"substr($0,2);n++}'; }
 
 case "${1:-}" in
   staged)
     load_words
-    { git diff --cached -U0 --no-color --src-prefix=a/ --dst-prefix=b/ --diff-filter=ACMR | added_lines | { grep -v '^tools/public-guard:' || true; }
+    { git diff --cached -U0 --no-color --src-prefix=a/ --dst-prefix=b/ --diff-filter=ACMR | added_lines | { grep -av '^tools/public-guard:' || true; }
       git diff --cached --name-only --diff-filter=AR | sed 's/^/file name\t/'; } >"$tmp/text"
     check_words staged
     check_ai staged
@@ -78,7 +78,7 @@ case "${1:-}" in
   msg)
     [ -r "${2:-}" ] || { say "usage: public-guard msg <file>"; exit 2; }
     load_words
-    grep -v '^#' "$2" | nl -ba -w1 -s$'\t' | sed 's/^/message line /' >"$tmp/text"
+    grep -av '^#' "$2" | nl -ba -w1 -s$'\t' | sed 's/^/message line /' >"$tmp/text"
     check_words message
     check_ai message
     ;;
@@ -86,7 +86,7 @@ case "${1:-}" in
     base="${2:-}"
     [ -n "$base" ] || { say "usage: public-guard range <base>"; exit 2; }
     load_words
-    git log -p --no-color -U0 --src-prefix=a/ --dst-prefix=b/ --format='COMMIT %h' "$base..HEAD" | added_lines | grep -v '^tools/public-guard:' >"$tmp/text" || true
+    git log -p --no-color -U0 --src-prefix=a/ --dst-prefix=b/ --format='COMMIT %h' "$base..HEAD" | added_lines | grep -av '^tools/public-guard:' >"$tmp/text" || true
     git log --format='%h' "$base..HEAD" | while IFS= read -r c; do
       git log -1 --format=%B "$c" | sed "s/^/commit $c message\t/"
       git diff-tree -r --no-commit-id --name-only --diff-filter=AR "$c" | sed 's/^/file name\t/'
