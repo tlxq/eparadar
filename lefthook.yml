@@ -4,6 +4,8 @@ pre-commit:
   jobs:
     - name: secrets
       run: gitleaks git --pre-commit --staged --redact --no-banner
+    - name: public
+      run: tools/public-guard staged
     - name: format
       run: mise run format {staged_files}
       stage_fixed: true
@@ -12,6 +14,8 @@ commit-msg:
   jobs:
     - name: conventional commit
       run: npx --no -- commitlint --edit {1}
+    - name: public
+      run: tools/public-guard msg {1}
 
 pre-push:
   jobs:

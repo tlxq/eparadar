@@ -22,6 +22,10 @@ Open work: `ROADMAP.md`.
   in the same PR, in both `apps/web/src/pages/integritetspolicy.astro` and
   `apps/mobile/src/app/privacy.tsx`.
 - Secrets never go in the repo or the app. The service-role key is server-side only.
+- Safe to make public at any time: test and seed data are made up (names, emails, a neutral public
+  place). Real accounts, family, home and device names never go in files, commit messages, issues or
+  PR text. Screenshots come from demo data and live in `docs/assets/`. `tools/public-guard` checks
+  this at commit and in CI.
 
 ## Database changes
 

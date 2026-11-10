@@ -37,6 +37,13 @@ jobs:
       - env:
           BASE: ${{ github.base_ref }}
         run: mise exec gitleaks@8.30.1 -- gitleaks git --redact --no-banner --log-opts="origin/$BASE..HEAD"
+      - run: sudo apt-get install -y -qq libimage-exiftool-perl >/dev/null
+      - env:
+          BASE: ${{ github.base_ref }}
+          NEVER_PUBLIC_WORDS: ${{ secrets.NEVER_PUBLIC_WORDS }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: tools/public-guard range "origin/$BASE"
 
   pr-title:
     if: github.event_name == 'pull_request'

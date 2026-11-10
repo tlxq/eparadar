@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# Repo kit (~/.1dot/kit, copied by `dot kit`; change it there). Keeps a repo safe to make public at any time:
+# no private words, no AI attribution, no stray or tagged images.
+#   public-guard staged            pre-commit: staged lines, file names and new images
+#   public-guard msg <file>        commit-msg: the message
+#   public-guard range <base>      CI: every commit after <base>, plus PR_TITLE and PR_BODY from the environment
+# Words come from $NEVER_PUBLIC_WORDS (CI secret) or ~/.1dot/kit/never-public.txt: one per line, whole word, any case.
+set -euo pipefail
+export LC_ALL=C.UTF-8
+
+AI_RE='Co-Authored-By:.*(Claude|Anthropic)|Claude-Session:|claude\.ai/code/session|Generated with \[?Claude'
+IMG_RE='\.(png|jpe?g|webp|gif|heic|avif|tiff?)$'
+IMG_OK_RE='(^|/)(assets|public)/'
+TAG_RE='$GPSLatitude or $GPSPosition or $Make or $Model or $SerialNumber or $DateTimeOriginal or $OwnerName or $Artist'
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+fail=0
+
+say() { printf 'public-guard: %s\n' "$*" >&2; }
+bad() { say "$*"; fail=1; }
+
+load_words() {
+  local file="${NEVER_PUBLIC_FILE:-$HOME/.1dot/kit/never-public.txt}"
+  if [ -n "${NEVER_PUBLIC_WORDS:-}" ]; then printf '%s\n' "$NEVER_PUBLIC_WORDS"
+  elif [ -r "$file" ]; then cat "$file"
+  else say "no word list: set NEVER_PUBLIC_WORDS or add $file"; exit 2
+  fi | sed 's/\r$//; s/^[[:space:]]*//; s/[[:space:]]*$//' | grep -vE '^(#|$)' >"$tmp/words" || true
+  [ -s "$tmp/words" ] || { say "the word list is empty"; exit 2; }
+}
+
+check_words() {
+  local where="$1" n=0 w
+  while IFS= read -r w; do
+    n=$((n + 1))
+    if grep -iwF -- "$w" "$tmp/text" >"$tmp/hits"; then
+      while IFS= read -r line; do
+        if [ -n "${NEVER_PUBLIC_WORDS:-}" ]; then bad "$where: list word $n in: ${line%%$'\t'*}"
+        else bad "$where: \"$w\" in: ${line%%$'\t'*}"; fi
+      done <"$tmp/hits"
+    fi
+  done <"$tmp/words"
+}
+
+check_ai() {
+  local where="$1"
+  if grep -iE -- "$AI_RE" "$tmp/text" >"$tmp/hits"; then
+    while IFS= read -r line; do bad "$where: AI attribution in ${line%%$'\t'*}"; done <"$tmp/hits"
+  fi
+}
+
+check_image() {
+  local path="$1" file="$2"
+  [[ $path =~ $IMG_RE ]] || return 0
+  [[ $path =~ $IMG_OK_RE ]] || bad "$path: images live in an assets/ or public/ folder (screenshots: docs/assets/)"
+  if command -v exiftool >/dev/null; then
+    if [ -n "$(exiftool -q -q -if "$TAG_RE" -p '$FileName' "$file" 2>/dev/null)" ]; then
+      bad "$path: has camera, place or owner tags; strip them: exiftool -all= $path"
+    fi
+  else
+    bad "$path: exiftool isn't installed, so its tags can't be checked"
+  fi
+}
+
+added_lines() { awk '/^\+\+\+ b\//{f=substr($0,7);next} /^@@/{split($3,a,/[,+]/);n=a[2];next} /^\+/{print f":"n"\t"substr($0,2);n++}'; }
+
+case "${1:-}" in
+  staged)
+    load_words
+    { git diff --cached -U0 --no-color --src-prefix=a/ --dst-prefix=b/ --diff-filter=ACMR | added_lines | { grep -v '^tools/public-guard:' || true; }
+      git diff --cached --name-only --diff-filter=AR | sed 's/^/file name\t/'; } >"$tmp/text"
+    check_words staged
+    check_ai staged
+    while IFS= read -r path; do
+      git show ":$path" >"$tmp/img" 2>/dev/null && check_image "$path" "$tmp/img"
+    done < <(git diff --cached --name-only --diff-filter=AR)
+    ;;
+  msg)
+    [ -r "${2:-}" ] || { say "usage: public-guard msg <file>"; exit 2; }
+    load_words
+    grep -v '^#' "$2" | nl -ba -w1 -s$'\t' | sed 's/^/message line /' >"$tmp/text"
+    check_words message
+    check_ai message
+    ;;
+  range)
+    base="${2:-}"
+    [ -n "$base" ] || { say "usage: public-guard range <base>"; exit 2; }
+    load_words
+    git log -p --no-color -U0 --src-prefix=a/ --dst-prefix=b/ --format='COMMIT %h' "$base..HEAD" | added_lines | grep -v '^tools/public-guard:' >"$tmp/text" || true
+    git log --format='%h' "$base..HEAD" | while IFS= read -r c; do
+      git log -1 --format=%B "$c" | sed "s/^/commit $c message\t/"
+      git diff-tree -r --no-commit-id --name-only --diff-filter=AR "$c" | sed 's/^/file name\t/'
+    done >>"$tmp/text"
+    { [ -n "${PR_TITLE:-}" ] && printf '%s\n' "$PR_TITLE" | sed 's/^/PR title\t/'
+      [ -n "${PR_BODY:-}" ] && printf '%s\n' "$PR_BODY" | sed 's/^/PR body\t/'; } >>"$tmp/text" || true
+    check_words "$base..HEAD"
+    check_ai "$base..HEAD"
+    while IFS= read -r path; do
+      [ -f "$path" ] && check_image "$path" "$path"
+    done < <(git diff --name-only --diff-filter=AR "$base...HEAD")
+    ;;
+  *) say "usage: public-guard staged | msg <file> | range <base>"; exit 2 ;;
+esac
+
+[ "$fail" = 0 ] || { say "stopped: this would not be safe in a public repo"; exit 1; }
