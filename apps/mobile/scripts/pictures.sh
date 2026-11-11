@@ -52,8 +52,10 @@ count="$(find "$here" -maxdepth 1 -name '*.png' | wc -l)"
 }
 
 if [ "$branch" = master ] || [ "$save_base" = 1 ]; then
-  rm -rf "$base"
-  cp -r "$here" "$base"
+  if [ "$here" != "$base" ]; then
+    rm -rf "$base"
+    cp -r "$here" "$base"
+  fi
   echo "Sparade $count bilder som jämförelse."
   exit 0
 fi
