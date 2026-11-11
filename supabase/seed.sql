@@ -62,13 +62,13 @@ values
 
 insert into cars (id, owner_id, make, model, year, nickname, color)
 values
-  ('00000000-0000-4000-c000-000000000001', '00000000-0000-4000-a000-000000000001', 'Volvo', '740 GL', 1989, 'Tegelstenen', 'rod'),
+  ('00000000-0000-4000-c000-000000000001', '00000000-0000-4000-a000-000000000001', 'Volvo', '740 GL', 1989, 'Tegelstenen', 'silver'),
   ('00000000-0000-4000-c000-000000000002', '00000000-0000-4000-a000-000000000002', 'Volvo', '245', 1987, 'Kombin', 'bla'),
-  ('00000000-0000-4000-c000-000000000003', '00000000-0000-4000-a000-000000000003', 'BMW', '318i', 1991, null, 'svart'),
-  ('00000000-0000-4000-c000-000000000004', '00000000-0000-4000-a000-000000000004', 'Saab', '900', 1990, 'Gamla gröna', 'gron'),
+  ('00000000-0000-4000-c000-000000000003', '00000000-0000-4000-a000-000000000003', 'BMW', '318i', 1991, null, 'rod'),
+  ('00000000-0000-4000-c000-000000000004', '00000000-0000-4000-a000-000000000004', 'Saab', '900', 1987, 'Svarten', 'svart'),
   ('00000000-0000-4000-c000-000000000005', '00000000-0000-4000-a000-000000000005', 'Mercedes-Benz', '230E', 1984, null, 'silver'),
-  ('00000000-0000-4000-c000-000000000007', '00000000-0000-4000-a000-000000000007', 'Volvo', '940', 1995, 'Lilla lila', 'lila'),
-  ('00000000-0000-4000-c000-000000000008', '00000000-0000-4000-a000-000000000008', 'Volvo', '242', 1982, null, 'orange');
+  ('00000000-0000-4000-c000-000000000007', '00000000-0000-4000-a000-000000000007', 'Volvo', '240', 1988, 'Vita damen', 'vit'),
+  ('00000000-0000-4000-c000-000000000008', '00000000-0000-4000-a000-000000000008', 'Volvo', '242', 1982, null, 'gul');
 
 insert into locations (user_id, lat, lng, sharing_enabled, approximate_enabled, heading, moving, status_text, updated_at)
 values
@@ -165,3 +165,13 @@ values
   ('00000000-0000-4000-f000-000000000002', '00000000-0000-4000-a000-000000000002', 'Ja! Jag tankar först.', now() - interval '1 hour 50 minutes', null),
   ('00000000-0000-4000-f000-000000000002', '00000000-0000-4000-a000-000000000003', 'Lagt upp en träff.', now() - interval '1 hour 40 minutes', '00000000-0000-4000-b000-000000000003'),
   ('00000000-0000-4000-f000-000000000002', '00000000-0000-4000-a000-000000000008', 'Jag är med om tändstiften sitter i 😅', now() - interval '20 minutes', null);
+
+update profiles
+set avatar_url = 'http://127.0.0.1:54321/storage/v1/object/public/avatars/' || id || '/avatar.jpg'
+where id in (select owner_id from cars);
+
+update cars
+set photo_url = 'http://127.0.0.1:54321/storage/v1/object/public/car-photos/' || owner_id || '/car.jpg';
+
+update posts set image_url = author_id || '/kvallsrunda.jpg' where id = '00000000-0000-4000-d000-000000000002';
+update posts set image_url = author_id || '/tvattad.jpg' where id = '00000000-0000-4000-d000-000000000004';

@@ -60,7 +60,7 @@ select is(
 );
 
 select is(
-  (select count(*)::int from storage.objects where bucket_id = 'avatars'),
+  (select count(*)::int from storage.objects where bucket_id = 'avatars' and name = '5b000001-0000-0000-0000-000000000001/avatar.jpg'),
   1,
   'a logged-in user can read avatars'
 );

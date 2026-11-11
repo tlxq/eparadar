@@ -123,6 +123,24 @@ file_size_limit = "50MiB"
 # allowed_mime_types = ["image/png", "image/jpeg"]
 # objects_path = "./images"
 
+[storage.buckets.avatars]
+public = true
+file_size_limit = "10MiB"
+allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]
+objects_path = "./seed/assets/avatars"
+
+[storage.buckets.car-photos]
+public = true
+file_size_limit = "10MiB"
+allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]
+objects_path = "./seed/assets/car-photos"
+
+[storage.buckets.post-images]
+public = false
+file_size_limit = "10MiB"
+allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]
+objects_path = "./seed/assets/post-images"
+
 # Allow connections via S3 compatible clients
 [storage.s3_protocol]
 enabled = true
