@@ -27,6 +27,10 @@ Start the local database with `mise exec -- supabase start` and fill in `apps/mo
 URL and anon key from `supabase status`. Store builds use the hosted project's values, set in EAS.
 Never put a service-role key in `.env`.
 
+The Android build needs a Firebase project for push: download its `google-services.json` and put
+it in `apps/mobile/`. It stays out of git; EAS builds read it from the file variable
+`GOOGLE_SERVICES_JSON`.
+
 Pair the phone the first time (the phone shows the address and code under **Pair device with
 pairing code**):
 
