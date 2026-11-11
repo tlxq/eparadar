@@ -11,4 +11,6 @@ name: Chatta med en kompis
     visible: 'Skriv ett meddelande.*'
     timeout: 15000
 - assertVisible: Ses vid macken
+- hideKeyboard
+- takeScreenshot: chatt
 - back

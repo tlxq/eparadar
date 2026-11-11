@@ -3,6 +3,8 @@ name: Skriv en post
 ---
 - runFlow: ../subflows/open-app.yaml
 - tapOn: Flöde
+- runFlow: ../subflows/settle.yaml
+- takeScreenshot: flode
 - tapOn: Ny post
 - tapOn: Post
 - inputText: Maestro testar kärran

@@ -17,3 +17,7 @@ run = "npx prettier --write --ignore-unknown"
 [tasks.e2e]
 description = "Maestro flows on the desk emulator against the local demo data (starts Supabase, emulator and Metro if needed)"
 run = "bash apps/mobile/scripts/e2e.sh"
+
+[tasks.pictures]
+description = "Maestro flows with pictures: on master they become the baseline, on a branch a before/after page"
+run = "bash apps/mobile/scripts/pictures.sh"

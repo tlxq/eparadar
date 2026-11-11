@@ -1,0 +1,8 @@
+appId: com.tlxq.eparadar
+---
+- extendedWaitUntil:
+    visible: Laddar aldrig
+    timeout: 8000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000

@@ -3,7 +3,10 @@ name: Spökläge med ett tryck
 ---
 - runFlow: ../subflows/open-app.yaml
 - tapOn: Karta
+- runFlow: ../subflows/settle-map.yaml
+- takeScreenshot: karta
 - tapOn: 'Spökläge, kompisarna slutar se dig'
 - assertVisible: Spökläge på
+- takeScreenshot: karta-spoklage
 - tapOn: 'Spökläge är på. Kompisarna ser dig inte'
 - assertNotVisible: Spökläge på

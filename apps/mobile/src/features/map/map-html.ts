@@ -706,6 +706,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     }
     function followMe(first) {
       if (!following || !me) return;
+      if (!first && map.isMoving()) return;
       const opts = { center: [me.lng, me.lat], duration: first ? 1200 : 1000, easing: function (t) { return t; }, essential: true };
       if (me.moving) {
         opts.zoom = Math.max(map.getZoom(), 16);

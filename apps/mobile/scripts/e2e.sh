@@ -22,16 +22,22 @@ Allt körs på datorn, inget går via GitHub. En riktig telefon rörs aldrig.
 
   --no-reset   behåll databasen som den är (annars: supabase db reset)
   --setup      skapa emulatorn eparadar_play om den saknas (bygg sedan appen en gång)
+  --pictures K spara flödenas bilder i katalogen K
 EOF
 }
 
 reset=1
 setup=0
+pictures=""
 flows=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --no-reset) reset=0 ;;
     --setup) setup=1 ;;
+    --pictures)
+      pictures="$2"
+      shift
+      ;;
     -h | --help)
       usage
       exit 0
@@ -106,21 +112,39 @@ if [ "$reset" = 1 ]; then
 fi
 device reverse "tcp:$METRO_PORT" "tcp:$METRO_PORT" >/dev/null
 device reverse tcp:54321 tcp:54321 >/dev/null
-device emu geo fix 18.0450 59.3150 >/dev/null
 for permission in ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION POST_NOTIFICATIONS; do
   device shell pm grant "$PACKAGE" "android.permission.$permission" 2>/dev/null || true
 done
+
+device shell settings put global sysui_demo_allowed 1
+demo() { device shell am broadcast -a com.android.systemui.demo -e command "$@" >/dev/null; }
+demo enter
+demo clock -e hhmm 1200
+demo battery -e level 100 -e plugged false
+demo network -e wifi show -e level 4 -e fully true
+demo network -e mobile hide
+demo notifications -e visible false
+
+(
+  while true; do
+    device emu geo fix 18.0450 59.3150 >/dev/null 2>&1 || true
+    sleep 3
+  done
+) &
+gps_pid=$!
 
 metro_running() { curl -fs "http://localhost:$METRO_PORT/status" 2>/dev/null | grep -q running; }
 
 step "Metro"
 metro_pid=""
-stop_metro() {
+cleanup() {
+  kill "$gps_pid" 2>/dev/null || true
+  demo exit || true
   if [ -n "$metro_pid" ]; then
     kill -- "-$metro_pid" 2>/dev/null || true
   fi
 }
-trap stop_metro EXIT
+trap cleanup EXIT
 if ! metro_running; then
   anon_key="$(supabase status -o env 2>/dev/null | sed -n 's/^ANON_KEY="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' || true)"
   [ -n "$anon_key" ] || fail "Hittade ingen anon-nyckel i supabase status."
@@ -154,4 +178,10 @@ step "Maestro"
 if [ "${#flows[@]}" -eq 0 ]; then
   flows=(.maestro)
 fi
-maestro --device "$serial" test --format junit --output "$LOG_DIR/report.xml" "${flows[@]}"
+output=()
+if [ -n "$pictures" ]; then
+  rm -rf "$pictures"
+  mkdir -p "$pictures"
+  output=(--test-output-dir "$pictures")
+fi
+maestro --device "$serial" test --format junit --output "$LOG_DIR/report.xml" "${output[@]}" "${flows[@]}"

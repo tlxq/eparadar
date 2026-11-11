@@ -3,9 +3,12 @@ name: Blockera finns på varje kompis
 ---
 - runFlow: ../subflows/open-app.yaml
 - tapOn: 'Kompisar.*'
+- runFlow: ../subflows/settle.yaml
+- takeScreenshot: kompisar
 - tapOn: Fler val för Liam Berg
 - assertVisible: Blockera
 - assertVisible: Ta bort kompis
+- takeScreenshot: kompis-meny
 - back
 - tapOn: Fler val för Ines Kvist
 - assertVisible: Rapportera

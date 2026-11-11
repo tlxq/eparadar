@@ -7,4 +7,5 @@ name: Lägg till en kompis
 - assertVisible: 'Skanna.*'
 - assertVisible: 'Min kod.*'
 - assertVisible: 'Skriv kod.*'
+- takeScreenshot: lagg-till-kompis
 - back
