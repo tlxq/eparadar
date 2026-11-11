@@ -1,0 +1,44 @@
+appId: com.tlxq.eparadar
+---
+- launchApp:
+    stopApp: true
+- openLink: exp+eparadar://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081
+- extendedWaitUntil:
+    visible:
+      text: 'Flöde|Välkommen tillbaka|Continue|Go home|Development Build'
+    timeout: 60000
+- runFlow:
+    when:
+      visible: Development Build
+    commands:
+      - openLink: exp+eparadar://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081
+      - extendedWaitUntil:
+          visible:
+            text: 'Flöde|Välkommen tillbaka|Continue|Go home'
+          timeout: 90000
+- runFlow: close-dev-menu.yaml
+- runFlow:
+    when:
+      visible: Välkommen tillbaka
+    commands:
+      - tapOn: E-post
+      - eraseText: 60
+      - inputText: test@test.se
+      - tapOn: Lösenord
+      - eraseText: 60
+      - inputText: testtest
+      - hideKeyboard
+      - tapOn: Logga in
+- extendedWaitUntil:
+    visible: Flöde
+    timeout: 30000
+- runFlow: close-dev-menu.yaml
+- runFlow:
+    when:
+      visible: Tools
+    commands:
+      - tapOn: Tools
+      - scrollUntilVisible:
+          element: Tools button
+      - tapOn: Tools button
+      - back

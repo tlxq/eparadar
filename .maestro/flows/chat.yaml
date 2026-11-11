@@ -1,0 +1,14 @@
+appId: com.tlxq.eparadar
+name: Chatta med en kompis
+---
+- runFlow: ../subflows/open-app.yaml
+- tapOn: 'Chatt.*'
+- tapOn: Saga Lind
+- tapOn: 'Skriv ett meddelande.*'
+- inputText: Ses vid macken
+- tapOn: Skicka
+- extendedWaitUntil:
+    visible: 'Skriv ett meddelande.*'
+    timeout: 15000
+- assertVisible: Ses vid macken
+- back

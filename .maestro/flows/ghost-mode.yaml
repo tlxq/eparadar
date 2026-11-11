@@ -1,0 +1,9 @@
+appId: com.tlxq.eparadar
+name: Spökläge med ett tryck
+---
+- runFlow: ../subflows/open-app.yaml
+- tapOn: Karta
+- tapOn: 'Spökläge, kompisarna slutar se dig'
+- assertVisible: Spökläge på
+- tapOn: 'Spökläge är på. Kompisarna ser dig inte'
+- assertNotVisible: Spökläge på

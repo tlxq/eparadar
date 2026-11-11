@@ -1,0 +1,13 @@
+appId: com.tlxq.eparadar
+name: Blockera finns på varje kompis
+---
+- runFlow: ../subflows/open-app.yaml
+- tapOn: 'Kompisar.*'
+- tapOn: Fler val för Liam Berg
+- assertVisible: Blockera
+- assertVisible: Ta bort kompis
+- back
+- tapOn: Fler val för Ines Kvist
+- assertVisible: Rapportera
+- assertVisible: Blockera
+- back

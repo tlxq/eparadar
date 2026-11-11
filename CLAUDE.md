@@ -37,7 +37,7 @@ Open work: `ROADMAP.md`.
 ## Workflow
 
 - Run commands through `mise exec --`.
-- Before a PR: `mise run check` (mobile lint, typecheck, tests; web typecheck and build; unused code with knip; the pre-push hook runs it) and `supabase test db --local`. GitHub CI is off (Actions minutes, Tom 11-10): both run on the desk before merge and the PR says so. Git hooks are lefthook: `lefthook install` once per clone.
+- Before a PR: `mise run check` (mobile lint, typecheck, tests; web typecheck and build; unused code with knip; the pre-push hook runs it) and `supabase test db --local`. A PR that touches `apps/mobile/src` also runs `mise run e2e` (Maestro flows in `.maestro/` on the desk emulator against the local demo data; it starts its own Metro against the demo data and refuses an already running Metro it can't prove is local). GitHub CI is off (Actions minutes, Tom 11-10): both run on the desk before merge and the PR says so. Git hooks are lefthook: `lefthook install` once per clone.
 - Work on a branch (`feat/`, `fix/`, `chore/`) and open a PR. Conventional Commits.
 - One reviewed commit per change. No AI co-author trailers or AI attribution.
 - No comments in code. All app text in Swedish.

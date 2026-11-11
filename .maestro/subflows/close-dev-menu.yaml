@@ -1,0 +1,14 @@
+appId: com.tlxq.eparadar
+---
+- waitForAnimationToEnd:
+    timeout: 3000
+- runFlow:
+    when:
+      visible: Continue
+    commands:
+      - tapOn: Continue
+- runFlow:
+    when:
+      visible: Go home
+    commands:
+      - back

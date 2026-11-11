@@ -1,0 +1,14 @@
+appId: com.tlxq.eparadar
+name: Placera en varning
+---
+- runFlow: ../subflows/open-app.yaml
+- tapOn: Karta
+- tapOn: Placera på kartan
+- tapOn: Varning där jag är
+- tapOn: Halka
+- tapOn:
+    text: Placera
+    index: -1
+- extendedWaitUntil:
+    visible: '.*Tack!'
+    timeout: 15000

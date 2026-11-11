@@ -1,0 +1,10 @@
+appId: com.tlxq.eparadar
+name: Lägg till en kompis
+---
+- runFlow: ../subflows/open-app.yaml
+- tapOn: 'Kompisar.*'
+- tapOn: Lägg till kompis
+- assertVisible: 'Skanna.*'
+- assertVisible: 'Min kod.*'
+- assertVisible: 'Skriv kod.*'
+- back

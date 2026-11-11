@@ -50,8 +50,9 @@ mise exec -- npm run phone
 ```
 
 Put the local URL and anon key from `supabase status` in `apps/mobile/.env`, then sign in as
-`test@test.se` with the password `testtest`. Everything else is in
-[docs/development.md](docs/development.md).
+`test@test.se` with the password `testtest`. `mise run check` runs lint, types and unit tests,
+and `mise run e2e` clicks through the main tasks with [Maestro](https://maestro.dev) on an Android
+emulator. Everything else is in [docs/development.md](docs/development.md).
 
 ## Licence
 

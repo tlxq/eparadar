@@ -4,6 +4,7 @@ node = "22.23.2"
 "npm:eas-cli" = "24.3.0"
 java = "temurin-17.0.20+8"
 "android-sdk" = "latest"
+maestro = "cli-2.12.1"
 
 [tasks.check]
 description = "Everything CI and pre-push run: mobile lint + typecheck + tests, web typecheck + build, unused code (knip)"
@@ -12,3 +13,7 @@ run = ["[ -d node_modules ] || npm ci", "npm run check", "npm run build --worksp
 [tasks.format]
 description = "Prettier on the files given (pre-commit passes the staged ones and restages them)"
 run = "npx prettier --write --ignore-unknown"
+
+[tasks.e2e]
+description = "Maestro flows on the desk emulator against the local demo data (starts Supabase, emulator and Metro if needed)"
+run = "bash apps/mobile/scripts/e2e.sh"

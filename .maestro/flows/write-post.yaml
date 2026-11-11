@@ -1,0 +1,13 @@
+appId: com.tlxq.eparadar
+name: Skriv en post
+---
+- runFlow: ../subflows/open-app.yaml
+- tapOn: Flöde
+- tapOn: Ny post
+- tapOn: Post
+- inputText: Maestro testar kärran
+- hideKeyboard
+- tapOn: Posta
+- extendedWaitUntil:
+    visible: Maestro testar kärran
+    timeout: 15000
