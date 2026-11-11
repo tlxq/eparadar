@@ -12,8 +12,6 @@ type MapActionBarProps = {
   bottom: number;
   ghost: boolean;
   ghostBusy: boolean;
-  onSearch: () => void;
-  onFriendList: () => void;
   onToggleGhost: () => void;
   onAddRagga: () => void;
   onAddWarning: () => void;
@@ -30,6 +28,8 @@ type BarButtonProps = {
   accessibilityLabel: string;
   expanded?: boolean;
   selected?: boolean;
+  checked?: boolean;
+  disabled?: boolean;
   anchorRef?: RefObject<View | null>;
   onPress: () => void;
 };
@@ -41,15 +41,18 @@ function BarButton({
   accessibilityLabel,
   expanded,
   selected,
+  checked,
+  disabled,
   anchorRef,
   onPress,
 }: BarButtonProps) {
   return (
     <View ref={anchorRef} collapsable={false} style={styles.slot}>
       <Pressable
-        accessibilityRole="button"
+        accessibilityRole={checked === undefined ? 'button' : 'switch'}
         accessibilityLabel={accessibilityLabel}
-        accessibilityState={{ expanded, selected }}
+        accessibilityState={{ expanded, selected, checked, disabled }}
+        disabled={disabled}
         onPress={onPress}
         hitSlop={8}
         style={({ pressed }) => [styles.button, pressed && styles.pressed]}
@@ -67,8 +70,6 @@ export function MapActionBar({
   bottom,
   ghost,
   ghostBusy,
-  onSearch,
-  onFriendList,
   onToggleGhost,
   onAddRagga,
   onAddWarning,
@@ -78,25 +79,7 @@ export function MapActionBar({
   locating,
 }: MapActionBarProps) {
   const theme = useTheme();
-  const people = useDropdown();
   const add = useDropdown();
-
-  const peopleItems: MenuItem[] = [
-    { label: 'Sök kompis', icon: 'search-outline', onPress: onSearch },
-    {
-      label: 'Kompislista',
-      icon: 'people-outline',
-      hint: 'Alla som delar sin plats just nu',
-      onPress: onFriendList,
-    },
-    {
-      label: ghost ? 'Stäng av spökläge' : 'Slå på spökläge',
-      icon: ghost ? 'eye-outline' : 'eye-off-outline',
-      hint: ghost ? 'Kompisarna ser dig igen' : 'Kompisarna slutar se dig direkt',
-      disabled: ghostBusy,
-      onPress: onToggleGhost,
-    },
-  ];
 
   const addItems: MenuItem[] = [
     {
@@ -123,13 +106,15 @@ export function MapActionBar({
         ]}
       >
         <BarButton
-          anchorRef={people.ref}
-          icon={ghost ? 'eye-off' : 'people'}
-          label={ghost ? 'Spökläge' : Words.friends}
-          color={people.anchor ? theme.brandOnSurface : theme.text}
-          accessibilityLabel="Kompisar, sök och spökläge"
-          expanded={!!people.anchor}
-          onPress={people.open}
+          icon={ghost ? 'eye-off' : 'eye-outline'}
+          label="Spökläge"
+          color={ghost ? theme.brandOnSurface : theme.text}
+          accessibilityLabel={
+            ghost ? 'Spökläge är på. Kompisarna ser dig inte' : 'Spökläge, kompisarna slutar se dig'
+          }
+          checked={ghost}
+          disabled={ghostBusy}
+          onPress={onToggleGhost}
         />
         <BarButton
           anchorRef={add.ref}
@@ -155,14 +140,6 @@ export function MapActionBar({
           onPress={onLocate}
         />
       </View>
-      <DropdownMenu
-        anchor={people.anchor}
-        items={peopleItems}
-        onClose={people.close}
-        align="start"
-        placement="auto"
-        title={Words.friends}
-      />
       <DropdownMenu
         anchor={add.anchor}
         items={addItems}

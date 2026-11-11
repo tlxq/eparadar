@@ -34,9 +34,9 @@ export function PlacingControls({
       >
         <ThemedText type="smallBold">
           {step === 'placing'
-            ? 'Tryck där meeten ska vara'
+            ? 'Tryck där träffen ska vara'
             : moving
-              ? 'Dra pinnen dit meeten ska flytta'
+              ? 'Dra pinnen dit träffen ska flytta'
               : 'Dra pinnen för att justera'}
         </ThemedText>
       </View>

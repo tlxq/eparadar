@@ -18,7 +18,7 @@ const KINDS: { kind: NotificationKind; title: string; hint: string }[] = [
     title: 'Kompisförfrågningar',
     hint: 'När någon vill bli kompis med dig.',
   },
-  { kind: 'meets', title: 'Meets', hint: 'När någon vill med på din meet.' },
+  { kind: 'meets', title: 'Träffar', hint: 'När någon vill med på din träff.' },
 ];
 
 export function NotificationSection() {

@@ -23,7 +23,7 @@ const TITLES: Record<ReportTarget['type'], string> = {
   profile: 'Varför rapporterar du personen?',
   spot: 'Varför rapporterar du spotten?',
   spot_photo: 'Varför rapporterar du bilden?',
-  meetup: 'Varför rapporterar du meeten?',
+  meetup: 'Varför rapporterar du träffen?',
   status: 'Varför rapporterar du statusen?',
   conversation: 'Varför rapporterar du gruppens namn eller bild?',
 };

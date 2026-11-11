@@ -32,7 +32,7 @@ export function MeetupCard({ meetupId, onLongPress }: MeetupCardProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={meetup ? `Öppna meeten ${meetup.title}` : 'Meeten går inte att öppna'}
+      accessibilityLabel={meetup ? `Öppna träffen ${meetup.title}` : 'Träffen går inte att öppna'}
       disabled={!meetup}
       onPress={() => meetup && router.push(`/meetups/${meetup.id}`)}
       onLongPress={onLongPress}
@@ -52,7 +52,7 @@ export function MeetupCard({ meetupId, onLongPress }: MeetupCardProps) {
       </View>
       <View style={styles.text}>
         <ThemedText type="smallBold" numberOfLines={1}>
-          {meetup ? meetup.title : 'Meeten finns inte längre'}
+          {meetup ? meetup.title : 'Träffen finns inte längre'}
         </ThemedText>
         <ThemedText type="caption" themeColor="textSecondary" numberOfLines={1}>
           {meetup ? formatMeetupTime(meetup.starts_at) : 'Eller så är den bara för andra kompisar.'}

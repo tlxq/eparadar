@@ -92,7 +92,7 @@ export function useCreateMeetup() {
     mutationFn: createMeetup,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.meetups() });
-      showToast({ tone: 'success', message: 'Meeten ligger på kartan!' });
+      showToast({ tone: 'success', message: 'Träffen ligger på kartan!' });
     },
     onError: (error) => showToast({ tone: 'error', message: getErrorMessage(error) }),
   });

@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/themed-text';
+import { Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { useMapFilters, type MapLayer } from '@/features/map/use-map-filters';
 import { useTheme } from '@/hooks/use-theme';
@@ -19,8 +20,8 @@ const CHIPS: {
   color: ThemeColor;
 }[] = [
   { layer: 'friends', label: 'Kompisar', icon: 'people', color: 'text' },
-  { layer: 'ragg', label: 'Ragga', icon: 'sparkles', color: 'accent' },
-  { layer: 'meets', label: 'Meets', icon: 'calendar', color: 'brandOnSurface' },
+  { layer: 'ragg', label: Words.ragga, icon: 'sparkles', color: 'accent' },
+  { layer: 'meets', label: 'Träffar', icon: 'calendar', color: 'brandOnSurface' },
   { layer: 'warnings', label: 'Varningar', icon: 'warning', color: 'warning' },
 ];
 

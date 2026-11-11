@@ -22,7 +22,7 @@ const WHAT_GOES = [
   'Alla dina poster och bilder',
   'Dina kompisar och din plats på kartan',
   'Dina 1:1-chattar, och du lämnar alla gruppchattar',
-  'Meets du har skapat',
+  'Träffar du har skapat',
 ];
 
 export default function DeleteAccountScreen() {

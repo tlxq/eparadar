@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -12,7 +12,6 @@ import { ScreenBackground } from '@/components/screen-background';
 import { Words } from '@/constants/strings';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { FriendPicker } from '@/features/map/components/friend-picker';
 import { MapActionBar } from '@/features/map/components/map-action-bar';
 import { MapBanner } from '@/features/map/components/map-banner';
 import { FILTER_ROW_HEIGHT, MapFilterChips } from '@/features/map/components/map-filter-chips';
@@ -33,7 +32,6 @@ import { useSharingToggle } from '@/features/map/use-sharing-toggle';
 import { updateMeetup } from '@/features/meetups/api';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useUserId } from '@/hooks/use-user-id';
-import { type FriendLocation } from '@/lib/api';
 import { pressHaptic } from '@/lib/haptics';
 import { queryKeys } from '@/lib/query-keys';
 import { openPerson } from '@/store/person-sheet';
@@ -43,10 +41,7 @@ import { getErrorMessage } from '@/lib/errors';
 
 type LatLng = { lat: number; lng: number };
 
-type PickerMode = 'none' | 'search' | 'list';
-
 const TOP_GAP = Spacing.two;
-const BELOW_CHIPS = TOP_GAP + FILTER_ROW_HEIGHT + Spacing.two;
 
 export default function MapScreen() {
   const tabBarInset = useTabBarInset();
@@ -54,6 +49,9 @@ export default function MapScreen() {
   const webviewRef = useRef<WebView>(null);
   const queryClient = useQueryClient();
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  const chipsTop = insets.top + TOP_GAP;
+  const belowChips = chipsTop + FILTER_ROW_HEIGHT + Spacing.two;
   const {
     devicePosition,
     deviceMotion,
@@ -95,7 +93,6 @@ export default function MapScreen() {
   const [statusOpen, setStatusOpen] = useState(false);
   const [composer, setComposer] = useState<{ at: LatLng; kind: SpotKind } | null>(null);
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
-  const [picker, setPicker] = useState<PickerMode>('none');
   const [placingStep, setPlacingStep] = useState<'idle' | 'placing' | 'confirming'>('idle');
   const [draftPin, setDraftPin] = useState<LatLng | null>(null);
   const [locating, setLocating] = useState(false);
@@ -206,7 +203,6 @@ export default function MapScreen() {
   const beginMove = useCallback(
     (meetupId: string, at: LatLng) => {
       setMovingMeetupId(meetupId);
-      setPicker('none');
       setPlacingStep('placing');
       setDraftPin(null);
       postToMap({ type: 'START_PLACING', lat: at.lat, lng: at.lng });
@@ -288,13 +284,7 @@ export default function MapScreen() {
     );
   };
 
-  const centerOnFriend = (friend: FriendLocation) => {
-    postToMap({ type: 'CENTER_ON', lat: friend.lat, lng: friend.lng, zoom: 15 });
-    setPicker('none');
-  };
-
   const startPlacing = () => {
-    setPicker('none');
     setPlacingStep('placing');
     setDraftPin(null);
     postToMap({ type: 'START_PLACING' });
@@ -314,7 +304,7 @@ export default function MapScreen() {
       await updateMeetup(meetupId, { lat: at.lat, lng: at.lng });
       queryClient.invalidateQueries({ queryKey: queryKeys.meetups() });
       queryClient.invalidateQueries({ queryKey: queryKeys.meetupDetail(meetupId) });
-      showToast({ tone: 'success', message: 'Meeten är flyttad!' });
+      showToast({ tone: 'success', message: 'Träffen är flyttad!' });
       router.push(`/meetups/${meetupId}`);
     } catch (error) {
       showToast({ tone: 'error', message: getErrorMessage(error) });
@@ -360,7 +350,6 @@ export default function MapScreen() {
         setSelectedSpotId(msg.id);
       } else if (msg.type === 'MAP_LONG_PRESS') {
         pressHaptic();
-        setPicker('none');
         postToMap({ type: 'SHOW_DRAFT_SPOT', lat: msg.lat, lng: msg.lng });
         setHoldPoint({ lat: msg.lat, lng: msg.lng });
       } else if (msg.type === 'HEAT_IN_VIEW') {
@@ -383,7 +372,7 @@ export default function MapScreen() {
           <EmptyState
             icon="map-outline"
             title="Kartan finns i appen"
-            message="Öppna epaRadar på din telefon för att se kompisar och meets på kartan."
+            message="Öppna epaRadar på din telefon för att se kompisar och träffar på kartan."
           />
         </SafeAreaView>
       </ScreenBackground>
@@ -406,11 +395,11 @@ export default function MapScreen() {
           onMessage={handleWebViewMessage}
         />
 
-        <MapFilterChips top={TOP_GAP} />
+        <MapFilterChips top={chipsTop} />
 
         {locationOff ? (
           <MapBanner
-            top={BELOW_CHIPS}
+            top={belowChips}
             icon="location-outline"
             iconColor={theme.accent}
             title={
@@ -427,12 +416,12 @@ export default function MapScreen() {
         ) : nearbyWarning.warning && placingStep === 'idle' ? (
           <WarningNearbyBanner
             warning={nearbyWarning.warning}
-            top={BELOW_CHIPS}
+            top={belowChips}
             onClose={nearbyWarning.dismiss}
           />
         ) : heatHint.visible ? (
           <MapBanner
-            top={BELOW_CHIPS}
+            top={belowChips}
             icon="flame-outline"
             iconColor={theme.accent}
             title="Här brukar folk vara på kvällen"
@@ -451,31 +440,18 @@ export default function MapScreen() {
             onConfirm={confirmPlacement}
           />
         ) : (
-          <>
-            {picker !== 'none' && (
-              <FriendPicker
-                top={BELOW_CHIPS}
-                autoFocus={picker === 'search'}
-                friends={friendLocations}
-                onPick={centerOnFriend}
-                onClose={() => setPicker('none')}
-              />
-            )}
-            <MapActionBar
-              bottom={tabBarInset}
-              ghost={ghost}
-              ghostBusy={ghostBusy}
-              onSearch={() => setPicker('search')}
-              onFriendList={() => setPicker('list')}
-              onToggleGhost={toggleGhost}
-              onAddRagga={() => dropHere('ragg')}
-              onAddWarning={() => dropHere('varning')}
-              onAddMeet={startPlacing}
-              onLocate={centerOnMe}
-              following={following}
-              locating={locating}
-            />
-          </>
+          <MapActionBar
+            bottom={tabBarInset}
+            ghost={ghost}
+            ghostBusy={ghostBusy}
+            onToggleGhost={toggleGhost}
+            onAddRagga={() => dropHere('ragg')}
+            onAddWarning={() => dropHere('varning')}
+            onAddMeet={startPlacing}
+            onLocate={centerOnMe}
+            following={following}
+            locating={locating}
+          />
         )}
         <ActionSheet
           visible={!!holdPoint}
@@ -485,7 +461,7 @@ export default function MapScreen() {
             {
               label: Words.ragga,
               icon: 'sparkles-outline',
-              hint: 'Ett ställe där folk brukar ragga',
+              hint: 'Ett ställe där folk brukar hänga',
               onPress: () => addAtHoldPoint('ragg'),
             },
             {

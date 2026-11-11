@@ -90,7 +90,7 @@ export function MeetupForm({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      setTitleError('Ge meeten ett namn först.');
+      setTitleError('Ge träffen ett namn först.');
       return;
     }
     const timeChanged = !initial || time.date.getTime() !== initial.startsAt.getTime();
@@ -146,7 +146,7 @@ export function MeetupForm({
             </View>
 
             <TextField
-              label="Namn på meeten"
+              label="Namn på träffen"
               value={title}
               onChangeText={(text) => {
                 setTitle(text);

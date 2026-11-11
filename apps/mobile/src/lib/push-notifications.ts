@@ -111,9 +111,9 @@ const PROMPT_COPY: Record<NotificationPromptReason, { title: string; message: st
       'Slå på aviseringar så plingar det när en kompis skriver till dig. Du styr dem i Inställningar.',
   },
   meetup: {
-    title: 'Få koll på meeten?',
+    title: 'Få koll på träffen?',
     message:
-      'Slå på aviseringar så plingar det när det händer något på meeten. Du styr dem i Inställningar.',
+      'Slå på aviseringar så plingar det när det händer något på träffen. Du styr dem i Inställningar.',
   },
 };
 

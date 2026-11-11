@@ -4,7 +4,7 @@ export const privacyPolicy: LegalDocument = {
   title: 'Integritetspolicy',
   updated: '12 oktober 2026',
   intro: [
-    'Den här policyn beskriver hur epaRadar hanterar personuppgifter i mobilappen och på eparadar.se. epaRadar är en app för dig med EPA-traktor: du kan skapa en profil, visa upp din EPA, hitta kompisar, chatta, ordna meets och dela din plats med kompisar.',
+    'Den här policyn beskriver hur epaRadar hanterar personuppgifter i mobilappen och på eparadar.se. epaRadar är en app för dig med EPA-traktor: du kan skapa en profil, visa upp din EPA, hitta kompisar, chatta, ordna träffar och dela din plats med kompisar.',
   ],
   sections: [
     {
@@ -26,8 +26,8 @@ export const privacyPolicy: LegalDocument = {
           'Konto: e-postadress, lösenord (krypterat) och födelseår. Födelseåret syns bara för dig.',
           'Profil: visningsnamn, användarnamn, profiltext, profilbild och dina EPA:or med bilder.',
           'Kompisar: vilka du är kompis med, kompisförfrågningar, blockeringar och tillfälliga kompiskoder (QR).',
-          'Innehåll: poster med bilder, reaktioner på poster, chattmeddelanden (även poster och meets du skickar i en chatt), bilder i chatten, reaktioner, gruppchattar och vilka chattar du har tystat.',
-          'Karta: din position, riktning och om du rör dig när platsdelning är på, din status, spots du placerar (Ragga och Varning) med bilder, om du svarar att en varning finns kvar eller är borta, poster du släpper på kartan, meets du skapar (namn, tid, plats och beskrivning), intresse och incheckningar.',
+          'Innehåll: poster med bilder, reaktioner på poster, chattmeddelanden (även poster och träffar du skickar i en chatt), bilder i chatten, reaktioner, gruppchattar och vilka chattar du har tystat.',
+          'Karta: din position, riktning och om du rör dig när platsdelning är på, din status, spots du placerar (Häng och Varning) med bilder, om du svarar att en varning finns kvar eller är borta, poster du släpper på kartan, träffar du skapar (namn, tid, plats och beskrivning), intresse och incheckningar.',
           'Radarn: din position i ungefär 20 sekunder medan du själv letar.',
           'Rapporter: när du rapporterar något sparar vi en kopia av innehållet, din anledning och det du skriver till oss. Rapporterna läses av epaRadars admin i appen, som kan ta bort innehåll som bryter mot reglerna. Den du rapporterar får aldrig veta vem som rapporterade.',
           'Teknik: en token för aviseringar, vilka sorters aviseringar du har stängt av, när du öppnar appen, och felrapporter om appen kraschar.',
@@ -38,7 +38,7 @@ export const privacyPolicy: LegalDocument = {
     {
       heading: 'Varför vi behandlar uppgifterna',
       blocks: [
-        'För att driva ditt konto, visa ditt och dina kompisars innehåll, leverera chatt, karta och meets, skicka aviseringar, hålla appen säker, hantera rapporter och hitta fel.',
+        'För att driva ditt konto, visa ditt och dina kompisars innehåll, leverera chatt, karta och träffar, skicka aviseringar, hålla appen säker, hantera rapporter och hitta fel.',
       ],
     },
     {
@@ -54,7 +54,7 @@ export const privacyPolicy: LegalDocument = {
           'Platsdelning är av från början och slås bara på om du själv väljer det.',
           'När den är på ser bara dina kompisar var du är, med exakt position. Du kan välja ungefärlig position i Inställningar.',
           'Bakgrundsplats används bara om du har gett telefonen den behörigheten och har platsdelning på. Telefonen visar då en avisering.',
-          'Spots och meets du placerar på kartan syns bara för dina kompisar.',
+          'Spots och träffar du placerar på kartan syns bara för dina kompisar.',
           'Väljer du att släppa en post på kartan sparas platsen där du var när du postade. Bara dina kompisar ser den, och platsen raderas efter 24 timmar. Posten finns kvar i flödet utan plats. Har du valt ungefärlig position avrundas platsen.',
           'Du stänger av delningen genom att trycka på dig själv på kartan eller i Inställningar.',
         ],
@@ -65,7 +65,7 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         [
           'Din position: raderas efter 12 timmar utan uppdatering.',
-          'Status: 1 timme. Varningar: 2 timmar, eller tills fem har svarat att den är borta. Dina svar på en varning raderas med varningen. Ragga-spots, bilder på dem och platsen för poster på kartan: 24 timmar.',
+          'Status: 1 timme. Varningar: 2 timmar, eller tills fem har svarat att den är borta. Dina svar på en varning raderas med varningen. Häng-spots, bilder på dem och platsen för poster på kartan: 24 timmar.',
           'Träffar raderas ett dygn efter att de började, tillsammans med intresse och incheckningar.',
           'Radarn: 2 minuter.',
           'Konto, profil, poster, reaktioner och meddelanden: tills du tar bort dem eller raderar kontot.',
@@ -77,7 +77,7 @@ export const privacyPolicy: LegalDocument = {
     {
       heading: 'Vem som ser vad',
       blocks: [
-        'Poster, spots, meets och din position syns bara för dina kompisar. Nya chattar kan bara startas mellan kompisar. Din profil (namn, användarnamn, profilbild och EPA:or) syns för andra inloggade användare så att ni kan hitta varandra. Rapporterat innehåll syns också för epaRadars admin, men admin ser inte din plats eller dina spots på kartan om ni inte är kompisar. Ingenting syns för den som inte är inloggad. Vi säljer inte personuppgifter och använder dem inte för reklam.',
+        'Poster, spots, träffar och din position syns bara för dina kompisar. Nya chattar kan bara startas mellan kompisar. Din profil (namn, användarnamn, profilbild och EPA:or) syns för andra inloggade användare så att ni kan hitta varandra. Rapporterat innehåll syns också för epaRadars admin, men admin ser inte din plats eller dina spots på kartan om ni inte är kompisar. Ingenting syns för den som inte är inloggad. Vi säljer inte personuppgifter och använder dem inte för reklam.',
       ],
     },
     {

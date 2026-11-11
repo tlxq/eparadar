@@ -68,7 +68,7 @@ export function EveningCard({ friendsOut }: { friendsOut: FriendLocation[] }) {
   const parts = [
     plural(friendsOut.length, 'kompis ute', 'kompisar ute'),
     spotCount > 0 ? plural(spotCount, 'spot', 'spots') : null,
-    tonight.length > 0 ? plural(tonight.length, 'meet', 'meets') : null,
+    tonight.length > 0 ? plural(tonight.length, 'träff', 'träffar') : null,
   ].filter(Boolean);
   const calm = friendsOut.length === 0 && points.length === 0;
 

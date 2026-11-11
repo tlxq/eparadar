@@ -57,10 +57,10 @@ export default function AddFriendScreen() {
           </View>
 
           <SuggestionSection
-            title="Möttes på en meet"
+            title="Möttes på en träff"
             isLoading={meetupSuggestions.isLoading}
             isEmpty={!meetupSuggestions.data?.length}
-            emptyText="Inga meets än. Gå på en meet eller skanna någons kod för att lägga till dem."
+            emptyText="Inga träffar än. Gå på en träff eller skanna någons kod för att lägga till dem."
           >
             {meetupSuggestions.data?.map((candidate) => (
               <CandidateRow

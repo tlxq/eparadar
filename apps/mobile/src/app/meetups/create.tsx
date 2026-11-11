@@ -12,7 +12,7 @@ export default function CreateMeetupScreen() {
 
   return (
     <MeetupForm
-      heading="Ny meet"
+      heading="Ny träff"
       submitLabel={Words.place}
       submitIcon="location"
       pending={createMeetup.isPending}

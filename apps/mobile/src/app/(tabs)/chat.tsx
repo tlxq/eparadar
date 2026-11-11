@@ -285,7 +285,7 @@ export default function ChatListScreen() {
               <EmptyState
                 icon="chatbubbles-outline"
                 title="Inga chattar än"
-                message="Skriv till en kompis eller starta en grupp inför nästa meet."
+                message="Skriv till en kompis eller starta en grupp inför nästa träff."
                 action={{ label: 'Ny chatt', icon: 'add', onPress: () => router.push('/chat/new') }}
               />
             )

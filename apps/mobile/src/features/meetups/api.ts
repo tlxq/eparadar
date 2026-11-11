@@ -143,13 +143,13 @@ export async function updateMeetup(
     .eq('id', meetupId)
     .select('id');
   if (error) throw error;
-  if (!data?.length) throw new Error('Bara den som skapade meeten kan ändra den.');
+  if (!data?.length) throw new Error('Bara den som skapade träffen kan ändra den.');
 }
 
 export async function deleteMeetup(meetupId: string): Promise<void> {
   const { data, error } = await supabase.from('meetups').delete().eq('id', meetupId).select('id');
   if (error) throw error;
-  if (!data?.length) throw new Error('Bara den som skapade meeten kan ta bort den.');
+  if (!data?.length) throw new Error('Bara den som skapade träffen kan ta bort den.');
 }
 
 export async function setInterested(

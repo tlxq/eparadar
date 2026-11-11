@@ -169,7 +169,7 @@ export default {
 
       recipientIds = [meetup.creator_id];
       actorId = interest.user_id;
-      title = "Din meet";
+      title = "Din träff";
       body = `${interested?.display_name ?? "Någon"} vill med på ${meetup.title}`;
       kind = "meets";
       data = { type: "meetup_interest", meetupId: interest.meetup_id };

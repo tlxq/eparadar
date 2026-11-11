@@ -45,15 +45,15 @@ export default function MeetupDetailScreen() {
   async function handleDelete() {
     if (!id) return;
     const ok = await confirmDestructive({
-      title: 'Ta bort meeten?',
+      title: 'Ta bort träffen?',
       message:
-        'Meeten försvinner från kartan för alla, tillsammans med intresseanmälningar och incheckningar.',
+        'Träffen försvinner från kartan för alla, tillsammans med intresseanmälningar och incheckningar.',
       confirmLabel: Common.remove,
     });
     if (!ok) return;
     try {
       await deleteMeetup.mutateAsync(id);
-      showToast({ message: 'Meeten är borttagen.' });
+      showToast({ message: 'Träffen är borttagen.' });
       if (router.canDismiss()) router.dismiss();
       else router.replace('/karta');
     } catch (error) {
@@ -72,7 +72,7 @@ export default function MeetupDetailScreen() {
           />
         </View>
         <ErrorState
-          message="Meeten gick inte att hämta. Den kan ha tagits bort, eller så strular nätet."
+          message="Träffen gick inte att hämta. Den kan ha tagits bort, eller så strular nätet."
           onRetry={refetch}
         />
       </ScreenBackground>
@@ -111,7 +111,7 @@ export default function MeetupDetailScreen() {
             onPress: () => router.push({ pathname: '/meetups/edit', params: { id: meetup.id } }),
           },
           {
-            label: 'Ta bort meeten',
+            label: 'Ta bort träffen',
             icon: 'trash-outline',
             destructive: true,
             disabled: deleteMeetup.isPending,
@@ -120,7 +120,7 @@ export default function MeetupDetailScreen() {
         ]
       : [
           {
-            label: 'Rapportera meeten',
+            label: 'Rapportera träffen',
             icon: 'flag-outline',
             onPress: () =>
               openReport({
@@ -136,7 +136,7 @@ export default function MeetupDetailScreen() {
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <DropdownButton items={menuItems} accessibilityLabel="Fler val för meeten" />
+          <DropdownButton items={menuItems} accessibilityLabel="Fler val för träffen" />
           <IconButton
             icon="close"
             accessibilityLabel={Common.close}

@@ -50,7 +50,7 @@ export function ShareMeetupSheet({ meetup, onClose }: ShareMeetupSheetProps) {
       queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });
       showToast({
         tone: 'success',
-        message: `Meeten är skickad till ${conversationTitle(conversation, userId)}!`,
+        message: `Träffen är skickad till ${conversationTitle(conversation, userId)}!`,
       });
       onClose();
     } catch (error) {
@@ -63,7 +63,7 @@ export function ShareMeetupSheet({ meetup, onClose }: ShareMeetupSheetProps) {
   return (
     <FormSheet title="Dela till en chatt" onClose={onClose} gap="two">
       <ThemedText type="small" themeColor="textSecondary">
-        Bara kompisar till den som skapade meeten kan öppna den.
+        Bara kompisar till den som skapade träffen kan öppna den.
       </ThemedText>
       {isLoading ? (
         <SkeletonList rows={4} />
@@ -76,7 +76,7 @@ export function ShareMeetupSheet({ meetup, onClose }: ShareMeetupSheetProps) {
         <EmptyState
           icon="chatbubbles-outline"
           title="Inga chattar än"
-          message="Starta en chatt med en kompis först, sen kan du dela meeten."
+          message="Starta en chatt med en kompis först, sen kan du dela träffen."
         />
       ) : (
         <View style={styles.list}>
@@ -88,7 +88,7 @@ export function ShareMeetupSheet({ meetup, onClose }: ShareMeetupSheetProps) {
               leading={
                 <ConversationAvatar conversation={conversation} myUserId={userId} size={44} />
               }
-              accessibilityLabel={`Skicka meeten till ${conversationTitle(conversation, userId)}`}
+              accessibilityLabel={`Skicka träffen till ${conversationTitle(conversation, userId)}`}
               onPress={() => share(conversation)}
             />
           ))}

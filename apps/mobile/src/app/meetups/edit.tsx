@@ -40,7 +40,7 @@ export default function EditMeetupScreen() {
     return (
       <ScreenBackground style={styles.center}>
         <ErrorState
-          message="Meeten gick inte att ladda. Kolla nätet och testa igen."
+          message="Träffen gick inte att ladda. Kolla nätet och testa igen."
           onRetry={refetch}
         />
       </ScreenBackground>
@@ -70,7 +70,7 @@ export default function EditMeetupScreen() {
 
   return (
     <MeetupForm
-      heading="Redigera meet"
+      heading="Redigera träff"
       submitLabel={Common.save}
       submitIcon="checkmark"
       pending={saving}
@@ -102,7 +102,7 @@ export default function EditMeetupScreen() {
           });
           queryClient.invalidateQueries({ queryKey: queryKeys.meetups() });
           queryClient.invalidateQueries({ queryKey: queryKeys.meetupDetail(id) });
-          showToast({ tone: 'success', message: 'Meeten är uppdaterad!' });
+          showToast({ tone: 'success', message: 'Träffen är uppdaterad!' });
           router.back();
         } catch (error) {
           showToast({ tone: 'error', message: getErrorMessage(error) });

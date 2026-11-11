@@ -99,7 +99,7 @@ export default function FriendsScreen() {
               <EmptyState
                 icon="people-outline"
                 title="Inga kompisar än"
-                message="Lägg till folk du träffat på en meet eller som dina kompisar redan känner."
+                message="Lägg till folk du mött på en träff eller som dina kompisar redan känner."
                 action={{
                   label: Words.addFriend,
                   icon: 'person-add-outline',

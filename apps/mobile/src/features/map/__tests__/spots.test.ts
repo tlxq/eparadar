@@ -25,11 +25,11 @@ describe('countHereNow', () => {
 });
 
 describe('spotTitle', () => {
-  it('uses the name for a Ragga spot and the type for a warning', () => {
+  it('uses the name for a Häng spot and the type for a warning', () => {
     expect(spotTitle({ kind: 'ragg', name: 'Max-rondellen', warning_type: null })).toBe(
       'Max-rondellen',
     );
-    expect(spotTitle({ kind: 'ragg', name: null, warning_type: null })).toBe('Ragga');
+    expect(spotTitle({ kind: 'ragg', name: null, warning_type: null })).toBe('Häng');
     expect(spotTitle({ kind: 'varning', name: null, warning_type: 'halka' })).toBe('Halka');
   });
 });

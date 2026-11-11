@@ -25,7 +25,7 @@ export const TARGET_LABELS: Record<ReportTargetType, string> = {
   profile: 'Profil',
   spot: 'Spot',
   spot_photo: 'Bild på spot',
-  meetup: 'Meet',
+  meetup: 'Träff',
   status: 'Status',
   conversation: 'Grupp',
 };
