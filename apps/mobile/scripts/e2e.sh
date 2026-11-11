@@ -116,14 +116,7 @@ for permission in ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION POST_NOTIFICATIONS
   device shell pm grant "$PACKAGE" "android.permission.$permission" 2>/dev/null || true
 done
 
-device shell settings put global sysui_demo_allowed 1
 demo() { device shell am broadcast -a com.android.systemui.demo -e command "$@" >/dev/null; }
-demo enter
-demo clock -e hhmm 1200
-demo battery -e level 100 -e plugged false
-demo network -e wifi show -e level 4 -e fully true
-demo network -e mobile hide
-demo notifications -e visible false
 
 (
   while true; do
@@ -175,6 +168,13 @@ else
 fi
 
 step "Maestro"
+device shell settings put global sysui_demo_allowed 1
+demo enter
+demo clock -e hhmm 1200
+demo battery -e level 100 -e plugged false
+demo network -e wifi show -e level 4 -e fully true
+demo network -e mobile hide
+demo notifications -e visible false
 if [ "${#flows[@]}" -eq 0 ]; then
   flows=(.maestro)
 fi

@@ -9,6 +9,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ActionSheet } from '@/components/action-sheet';
 import { EmptyState } from '@/components/empty-state';
 import { ScreenBackground } from '@/components/screen-background';
+import { ThemedText } from '@/components/themed-text';
 import { Words } from '@/constants/strings';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -413,6 +414,17 @@ export default function MapScreen() {
           onMessage={handleWebViewMessage}
         />
 
+        {mapReady ? null : (
+          <View
+            pointerEvents="none"
+            style={[styles.mapLoading, { backgroundColor: theme.background }]}
+          >
+            <ThemedText type="small" themeColor="textSecondary">
+              {Words.mapLoading}
+            </ThemedText>
+          </View>
+        )}
+
         {placingStep === 'idle' ? <MapFilterChips top={chipsTop} /> : null}
 
         {locationOff ? (
@@ -564,4 +576,5 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   webview: { flex: 1 },
+  mapLoading: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
 });

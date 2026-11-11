@@ -1,6 +1,9 @@
 appId: com.tlxq.eparadar
 ---
 - extendedWaitUntil:
+    notVisible: Kartan laddar…
+    timeout: 60000
+- extendedWaitUntil:
     visible: Laddar aldrig
-    timeout: 20000
+    timeout: 8000
     optional: true

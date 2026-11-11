@@ -18,6 +18,7 @@ export const Words = {
   startRadar: 'Starta radarn',
   place: 'Placera',
   placeOnMap: 'Placera på kartan',
+  mapLoading: 'Kartan laddar…',
   ragga: 'Häng',
   meet: 'Träff',
   warning: 'Varning',
