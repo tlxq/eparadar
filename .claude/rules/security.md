@@ -1,8 +1,8 @@
 ---
 paths:
-  - "supabase/**"
-  - "apps/mobile/src/lib/**"
-  - "apps/web/api/**"
+  - 'supabase/**'
+  - 'apps/mobile/src/lib/**'
+  - 'apps/web/api/**'
 ---
 
 # Security rules
@@ -69,8 +69,8 @@ stranger cases must return zero rows.
 
 ## Client
 
-- Every `EXPO_PUBLIC_*` value is bundled into the app. Only the Supabase URL, the
-  anon key and the Sentry DSN belong there.
+- Every `EXPO_PUBLIC_*` value is bundled into the app. Only the Supabase URL and the
+  anon key belong there.
 - Do not log positions, tokens or message text.
 
 ## Live project
