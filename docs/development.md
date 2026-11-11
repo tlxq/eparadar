@@ -65,7 +65,7 @@ mise exec -- supabase test db --local
 ```
 
 Work on a branch (`feat/…`, `fix/…`, `chore/…`), open a PR, and merge once both checks
-above pass on your machine (the pre-push hook runs the first; GitHub CI is off). Commit with
+above pass on your machine (the pre-push hook runs the first; GitHub Actions is off, everything runs locally). Commit with
 `npm run commit` for a guided Conventional Commit message.
 
 ## Store builds

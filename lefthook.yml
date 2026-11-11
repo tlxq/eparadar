@@ -1,4 +1,4 @@
-# Repo kit (~/.1dot/kit, applied by `dot kit`). The same `mise run check` runs in CI.
+# Repo kit (~/.1dot/kit, applied by `dot kit`). Everything runs here; GitHub Actions is off.
 pre-commit:
   parallel: true
   jobs:

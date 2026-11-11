@@ -14,6 +14,10 @@ run = ["[ -d node_modules ] || npm ci", "npm run check", "npm run build --worksp
 description = "Prettier on the files given (pre-commit passes the staged ones and restages them)"
 run = "npx prettier --write --ignore-unknown"
 
+[tasks.deps]
+description = "Outdated packages and Expo SDK mismatches (runs locally instead of Dependabot)"
+run = ["npm outdated --workspaces --include-workspace-root || true", "cd apps/mobile && npx expo install --check || true"]
+
 [tasks.e2e]
 description = "Maestro flows on the desk emulator against the local demo data (starts Supabase, emulator and Metro if needed)"
 run = "bash apps/mobile/scripts/e2e.sh"
