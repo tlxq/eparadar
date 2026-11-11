@@ -87,7 +87,6 @@ export const privacyPolicy: LegalDocument = {
           'Supabase lagrar databas, bilder och inloggning i EU (Irland).',
           'Expo skickar aviseringar vidare till Google (Android) och Apple (iOS). Aviseringar för meddelanden innehåller bara avsändarens namn och, i grupper, gruppens namn, aldrig texten. Du väljer vilka sorters aviseringar du får under Inställningar → Aviseringar.',
           'Resend skickar e-post från väntelistan, mejl när du bekräftar din e-post eller byter lösenord, och rapporter till oss.',
-          'Sentry tar emot felrapporter när appen eller webbplatsen kraschar.',
           'Kartan använder MapLibre (laddas från unpkg) och kartbilder från OpenFreeMap. De ser din IP-adress men inte vem du är.',
           'Webbplatsen laddar typsnittet Inter från Google Fonts och ligger hos Vercel.',
         ],

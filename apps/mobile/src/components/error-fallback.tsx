@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import * as Sentry from '@sentry/react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { StyleSheet, View } from 'react-native';
 
@@ -15,13 +14,12 @@ type ErrorFallbackProps = {
   retry: () => Promise<void>;
 };
 
-export function ErrorFallback({ error, retry }: ErrorFallbackProps) {
+export function ErrorFallback({ retry }: ErrorFallbackProps) {
   const theme = useTheme();
 
   useEffect(() => {
-    Sentry.captureException(error);
     SplashScreen.hideAsync().catch(() => undefined);
-  }, [error]);
+  }, []);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>

@@ -16,7 +16,6 @@
   "dependencies": {
     "@eparadar/legal": "*",
     "@eparadar/theme": "*",
-    "@sentry/astro": "^11.6.0",
     "astro": "^7.3.2"
   },
   "allowScripts": {
