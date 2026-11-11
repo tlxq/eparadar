@@ -41,7 +41,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
             onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
             style={({ pressed }) => [styles.item, pressed && styles.pressed]}
           >
-            <View style={[styles.pill, focused && { backgroundColor: `${theme.brand}29` }]}>
+            <View style={styles.pill}>
               {options.tabBarIcon?.({ focused, color, size: 22 })}
               {badge !== undefined ? (
                 <View

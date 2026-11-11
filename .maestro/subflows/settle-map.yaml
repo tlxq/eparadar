@@ -1,8 +1,5 @@
 appId: com.tlxq.eparadar
 ---
-- tapOn:
-    text: Följ mig på kartan
-    optional: true
 - extendedWaitUntil:
     visible: Laddar aldrig
     timeout: 20000

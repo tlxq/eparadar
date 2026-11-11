@@ -19,11 +19,13 @@ Kör Maestro-flödena med bilder och jämför varje skärm med senaste bilderna 
 På master blir bilderna nya jämförelsebilder. På en gren skrivs en sida med före och efter:
   ~/.local/share/eparadar/pictures/<gren>/index.html
 --baseline sparar körningen som jämförelsebilder, till exempel när Tom har godkänt en ändring.
+--compare-only gör om sidan från senaste bilderna utan att köra flödena.
 EOF
 }
 
 e2e_args=()
 save_base=0
+compare_only=0
 while [ $# -gt 0 ]; do
   case "$1" in
     -h | --help)
@@ -31,16 +33,18 @@ while [ $# -gt 0 ]; do
       exit 0
       ;;
     --baseline) save_base=1 ;;
+    --compare-only) compare_only=1 ;;
     *) e2e_args+=("$1") ;;
   esac
   shift
 done
 
-bash apps/mobile/scripts/e2e.sh --pictures "$run" "${e2e_args[@]}"
-
-rm -rf "$here"
-mkdir -p "$here"
-find "$run" -path '*takeScreenshot*' -name '*.png' -exec cp {} "$here/" \;
+if [ "$compare_only" = 0 ]; then
+  bash apps/mobile/scripts/e2e.sh --pictures "$run" "${e2e_args[@]}"
+  rm -rf "$here"
+  mkdir -p "$here"
+  find "$run" -path '*takeScreenshot*' -name '*.png' -exec cp {} "$here/" \;
+fi
 count="$(find "$here" -maxdepth 1 -name '*.png' | wc -l)"
 [ "$count" -gt 0 ] || {
   echo "Flödena sparade inga bilder." >&2
@@ -67,12 +71,11 @@ for after in "$here"/*.png; do
   magick "$after" -resize 360x -quality 75 "$here/$name-after.jpg"
   after_img="data:image/jpeg;base64,$(base64 -w0 "$here/$name-after.jpg")"
   if [ -f "$before" ]; then
-    pixels="$(magick compare -metric AE -fuzz 6% "$before" "$after" null: 2>&1 | cut -d' ' -f1 || true)"
-    total="$(magick identify -format '%[fx:w*h]' "$after")"
-    percent="$(awk -v p="${pixels%.*}" -v t="$total" 'BEGIN { printf "%.1f", (p / t) * 100 }')"
+    fraction="$(magick "$before" "$after" -resize 270x -compose difference -composite -colorspace gray -threshold 3% -format '%[fx:mean]' info: 2>/dev/null || echo 1)"
+    percent="$(awk -v f="$fraction" 'BEGIN { printf "%.2f", f * 100 }')"
     magick "$before" -resize 360x -quality 75 "$here/$name-before.jpg"
     before_cell="<img src=\"data:image/jpeg;base64,$(base64 -w0 "$here/$name-before.jpg")\" alt=\"$name före\">"
-    if awk -v p="$percent" 'BEGIN { exit !(p >= 0.5) }'; then
+    if awk -v p="$percent" 'BEGIN { exit !(p >= 0.1) }'; then
       status="Ändrad $percent %"
       tone="changed"
       changed=$((changed + 1))
@@ -121,7 +124,7 @@ figcaption { font-size: 12px; color: var(--muted); }
 </style>
 <main>
 <h1>Bildkoll: $branch</h1>
-<p>$changed av $count skärmar skiljer sig från master. Ändrade först, samma längst ner.</p>
+<p>$changed av $count skärmar skiljer sig från master. Ändrade först, samma längst ner. Kartan ritas om varje gång och tiderna i chatten följer klockan, så de skiljer sig alltid lite: titta på dem själv.</p>
 $rows
 </main>
 </html>

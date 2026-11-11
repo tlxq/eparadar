@@ -87,6 +87,7 @@ export default function MapScreen() {
   }>();
   const hasCentered = useRef(!!focus || !!focusLat);
   const wantFollowRef = useRef(false);
+  const overviewRef = useRef<{ lat?: number; lng?: number } | null>({});
   const [meSheetOpen, setMeSheetOpen] = useState(false);
   const [holdPoint, setHoldPoint] = useState<LatLng | null>(null);
   const [movingMeetupId, setMovingMeetupId] = useState<string | null>(null);
@@ -103,37 +104,47 @@ export default function MapScreen() {
     webviewRef.current?.postMessage(JSON.stringify(message));
   }, []);
 
-  const centerOnMe = useCallback(async () => {
-    const { status } = await Location.getForegroundPermissionsAsync();
-    let granted = status === 'granted';
-    if (!granted) {
-      const result = await Location.requestForegroundPermissionsAsync();
-      granted = result.status === 'granted';
-      recheckLocation();
-    }
-    if (!granted) return;
+  const centerOnMe = useCallback(
+    async (overview = false) => {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      let granted = status === 'granted';
+      if (!granted) {
+        const result = await Location.requestForegroundPermissionsAsync();
+        granted = result.status === 'granted';
+        recheckLocation();
+      }
+      if (!granted) return;
 
-    wantFollowRef.current = true;
-    postToMap({ type: 'FOLLOW_ME' });
+      wantFollowRef.current = !overview;
+      if (!overview) postToMap({ type: 'FOLLOW_ME' });
 
-    const centerOn = (lat: number, lng: number) =>
-      postToMap({ type: 'CENTER_ON', lat, lng, zoom: 15.5, pitch: 45, keepFollow: true });
+      if (!overview) overviewRef.current = null;
+      const centerOn = (lat: number, lng: number) => {
+        if (overview) {
+          overviewRef.current = { lat, lng };
+          postToMap({ type: 'OVERVIEW', lat, lng });
+        } else {
+          postToMap({ type: 'CENTER_ON', lat, lng, zoom: 15.5, pitch: 45, keepFollow: true });
+        }
+      };
 
-    const lastKnown = await Location.getLastKnownPositionAsync().catch(() => null);
-    if (lastKnown) centerOn(lastKnown.coords.latitude, lastKnown.coords.longitude);
+      const lastKnown = await Location.getLastKnownPositionAsync().catch(() => null);
+      if (lastKnown) centerOn(lastKnown.coords.latitude, lastKnown.coords.longitude);
 
-    setLocating(true);
-    try {
-      const position = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-      centerOn(position.coords.latitude, position.coords.longitude);
-    } catch {
-      return;
-    } finally {
-      setLocating(false);
-    }
-  }, [postToMap, recheckLocation]);
+      setLocating(true);
+      try {
+        const position = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        centerOn(position.coords.latitude, position.coords.longitude);
+      } catch {
+        return;
+      } finally {
+        setLocating(false);
+      }
+    },
+    [postToMap, recheckLocation],
+  );
 
   const fixLocation = async () => {
     const granted = await fixLocationAccess(locationAccess);
@@ -144,7 +155,7 @@ export default function MapScreen() {
   useEffect(() => {
     if (hasCentered.current) return;
     hasCentered.current = true;
-    centerOnMe();
+    centerOnMe(true);
   }, [centerOnMe]);
 
   useEffect(() => {
@@ -342,6 +353,8 @@ export default function MapScreen() {
         setMapReady(true);
         sendAll();
         if (wantFollowRef.current) postToMap({ type: 'FOLLOW_ME' });
+        postToMap({ type: 'SET_INSETS', top: belowChips, bottom: tabBarInset });
+        if (overviewRef.current) postToMap({ type: 'OVERVIEW', ...overviewRef.current });
       } else if (msg.type === 'FOLLOW_CHANGED') {
         wantFollowRef.current = !!msg.following;
         setFollowing(!!msg.following);
@@ -453,7 +466,7 @@ export default function MapScreen() {
             onAddRagga={() => dropHere('ragg')}
             onAddWarning={() => dropHere('varning')}
             onAddMeet={startPlacing}
-            onLocate={centerOnMe}
+            onLocate={() => centerOnMe()}
             following={following}
             locating={locating}
           />

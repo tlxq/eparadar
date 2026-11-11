@@ -704,6 +704,32 @@ export const MAP_HTML = `<!DOCTYPE html>
       following = value;
       sendToNative({ type: 'FOLLOW_CHANGED', following: value });
     }
+    let overview = null;
+    let overviewUntil = 0;
+    function nearestFriends(lat, lng) {
+      return friends
+        .map(function (f) { return { f: f, d: Math.hypot(f.lat - lat, (f.lng - lng) * Math.cos(lat * Math.PI / 180)) }; })
+        .filter(function (x) { return x.d < 0.09; })
+        .sort(function (a, b) { return a.d - b.d; })
+        .slice(0, 5)
+        .map(function (x) { return x.f; });
+    }
+    function showOverview() {
+      if (!overview || Date.now() > overviewUntil) { overview = null; return; }
+      const anchor = overview.lat != null ? overview : me;
+      if (!anchor) return;
+      const near = nearestFriends(anchor.lat, anchor.lng);
+      if (near.length === 0) {
+        map.flyTo({ center: [anchor.lng, anchor.lat], zoom: 15, pitch: 30, speed: 1.4 });
+        return;
+      }
+      const bounds = new maplibregl.LngLatBounds([anchor.lng, anchor.lat], [anchor.lng, anchor.lat]);
+      near.forEach(function (f) { bounds.extend([f.lng, f.lat]); });
+      map.fitBounds(bounds, { padding: 72, maxZoom: 15.5, pitch: 30, duration: 1200 });
+      overview = null;
+    }
+    map.on('dragstart', function () { overview = null; });
+
     function followMe(first) {
       if (!following || !me) return;
       if (!first && map.isMoving()) return;
@@ -735,10 +761,11 @@ export const MAP_HTML = `<!DOCTYPE html>
       try { msg = JSON.parse(event.data); } catch (e) { return; }
       if (msg.type === 'SET_INSETS') {
         document.documentElement.style.setProperty('--inset-bottom', msg.bottom + 'px');
-        map.setPadding({ top: msg.top, bottom: msg.bottom, left: 0, right: 0 });
+        const pad = map.getPadding();
+        if (pad.top !== msg.top || pad.bottom !== msg.bottom) map.setPadding({ top: msg.top, bottom: msg.bottom, left: 0, right: 0 });
       }
-      if (msg.type === 'SET_FRIENDS') { friends = msg.friends; renderFriends(); }
-      if (msg.type === 'SET_ME') { me = msg.me; renderMe(); followMe(false); }
+      if (msg.type === 'SET_FRIENDS') { friends = msg.friends; renderFriends(); showOverview(); }
+      if (msg.type === 'SET_ME') { me = msg.me; renderMe(); followMe(false); showOverview(); }
       if (msg.type === 'FOLLOW_ME') { setFollowing(true); followMe(true); }
       if (msg.type === 'STOP_FOLLOW') setFollowing(false);
       if (msg.type === 'SET_MEETUPS') { meetups = msg.meetups; renderMeetups(); }
@@ -747,6 +774,13 @@ export const MAP_HTML = `<!DOCTYPE html>
       if (msg.type === 'SET_HEAT') { heatCells = msg.cells; renderHeat(); checkHeatInView(); }
       if (msg.type === 'SHOW_DRAFT_SPOT') showDraftSpot(msg.lat, msg.lng);
       if (msg.type === 'CLEAR_DRAFT_SPOT') clearDraftSpot();
+      if (msg.type === 'OVERVIEW') {
+        setFollowing(false);
+        overview = { lat: msg.lat, lng: msg.lng };
+        overviewUntil = Date.now() + 15000;
+        showOverview();
+      }
+      if (msg.type === 'FOLLOW_ME' || msg.type === 'CENTER_ON') overview = null;
       if (msg.type === 'CENTER_ON') {
         if (!msg.keepFollow) setFollowing(false);
         map.flyTo({ center: [msg.lng, msg.lat], zoom: msg.zoom || 15, pitch: msg.pitch == null ? map.getPitch() : msg.pitch, speed: 1.4 });
