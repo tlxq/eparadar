@@ -13,6 +13,7 @@ jest.mock('react-native-safe-area-context', () => ({
 
 async function renderBar(ghost: boolean, ghostBusy = false) {
   const onToggleGhost = jest.fn();
+  const onLocate = jest.fn();
   const view = await render(
     <MapActionBar
       bottom={0}
@@ -22,13 +23,13 @@ async function renderBar(ghost: boolean, ghostBusy = false) {
       onAddRagga={jest.fn()}
       onAddWarning={jest.fn()}
       onAddMeet={jest.fn()}
-      onLocate={jest.fn()}
+      onLocate={onLocate}
       following={false}
       locating={false}
     />,
   );
   const ghostSwitch = () => view.getByLabelText(/^Spökläge/);
-  return { ghostSwitch, onToggleGhost };
+  return { view, ghostSwitch, onToggleGhost, onLocate };
 }
 
 describe('MapActionBar ghost switch', () => {
@@ -51,5 +52,25 @@ describe('MapActionBar ghost switch', () => {
     const { ghostSwitch, onToggleGhost } = await renderBar(false, true);
     await fireEvent.press(ghostSwitch());
     expect(onToggleGhost).not.toHaveBeenCalled();
+  });
+});
+
+describe('MapActionBar buttons', () => {
+  it('has Placera as one button that opens the place menu', async () => {
+    const { view } = await renderBar(false);
+    const place = view.getByLabelText('Placera på kartan');
+    expect(place.props.accessibilityRole).toBe('button');
+    expect(view.getByText('Placera')).toBeTruthy();
+  });
+
+  it('follows me on the map with one tap', async () => {
+    const { view, onLocate } = await renderBar(false);
+    await fireEvent.press(view.getByLabelText('Följ mig på kartan'));
+    expect(onLocate).toHaveBeenCalledTimes(1);
+  });
+
+  it('says ghost mode is on in words, not only with an icon', async () => {
+    const { view } = await renderBar(true);
+    expect(view.getByText('Spökläge på')).toBeTruthy();
   });
 });

@@ -80,7 +80,7 @@ export function MapFilterChips({ top }: { top: number }) {
 }
 
 const styles = StyleSheet.create({
-  scroller: { position: 'absolute', left: -Spacing.three, right: -Spacing.three, flexGrow: 0 },
+  scroller: { position: 'absolute', left: 0, right: 0, flexGrow: 0 },
   row: { gap: Spacing.two, paddingHorizontal: Spacing.three },
   chip: {
     flexDirection: 'row',

@@ -1,4 +1,4 @@
-import type { ComponentProps, RefObject } from 'react';
+import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -21,48 +21,54 @@ type MapActionBarProps = {
   locating: boolean;
 };
 
-type BarButtonProps = {
+type RoundButtonProps = {
   icon: ComponentProps<typeof Ionicons>['name'];
-  label: string;
-  color: string;
   accessibilityLabel: string;
-  expanded?: boolean;
-  selected?: boolean;
+  label?: string;
+  active?: boolean;
   checked?: boolean;
+  selected?: boolean;
   disabled?: boolean;
-  anchorRef?: RefObject<View | null>;
   onPress: () => void;
 };
 
-function BarButton({
+function RoundButton({
   icon,
-  label,
-  color,
   accessibilityLabel,
-  expanded,
-  selected,
+  label,
+  active,
   checked,
+  selected,
   disabled,
-  anchorRef,
   onPress,
-}: BarButtonProps) {
+}: RoundButtonProps) {
+  const theme = useTheme();
+  const color = active ? theme.brandText : theme.text;
   return (
-    <View ref={anchorRef} collapsable={false} style={styles.slot}>
-      <Pressable
-        accessibilityRole={checked === undefined ? 'button' : 'switch'}
-        accessibilityLabel={accessibilityLabel}
-        accessibilityState={{ expanded, selected, checked, disabled }}
-        disabled={disabled}
-        onPress={onPress}
-        hitSlop={8}
-        style={({ pressed }) => [styles.button, pressed && styles.pressed]}
-      >
-        <Ionicons name={icon} size={24} color={color} />
-        <ThemedText type="caption" style={{ color }} numberOfLines={1}>
+    <Pressable
+      accessibilityRole={checked === undefined ? 'button' : 'switch'}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ checked, selected, disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      hitSlop={4}
+      style={({ pressed }) => [
+        styles.round,
+        label ? styles.withLabel : null,
+        {
+          backgroundColor: active ? theme.brand : theme.backgroundElement,
+          borderColor: active ? theme.brand : theme.border,
+        },
+        pressed && styles.pressed,
+      ]}
+    >
+      <Ionicons name={icon} size={22} color={color} />
+      {label ? (
+        <ThemedText type="smallBold" style={{ color }} numberOfLines={1}>
           {label}
         </ThemedText>
-      </Pressable>
-    </View>
+      ) : null}
+    </Pressable>
   );
 }
 
@@ -79,7 +85,7 @@ export function MapActionBar({
   locating,
 }: MapActionBarProps) {
   const theme = useTheme();
-  const add = useDropdown();
+  const { ref: addRef, anchor: addAnchor, open: openAdd, close: closeAdd } = useDropdown();
 
   const addItems: MenuItem[] = [
     {
@@ -99,16 +105,11 @@ export function MapActionBar({
 
   return (
     <>
-      <View
-        style={[
-          styles.bar,
-          { bottom, backgroundColor: theme.backgroundElement, borderColor: theme.border },
-        ]}
-      >
-        <BarButton
+      <View style={[styles.column, { bottom }]} pointerEvents="box-none">
+        <RoundButton
           icon={ghost ? 'eye-off' : 'eye-outline'}
-          label="Spökläge"
-          color={ghost ? theme.brandOnSurface : theme.text}
+          label={ghost ? 'Spökläge på' : undefined}
+          active={ghost}
           accessibilityLabel={
             ghost ? 'Spökläge är på. Kompisarna ser dig inte' : 'Spökläge, kompisarna slutar se dig'
           }
@@ -116,16 +117,7 @@ export function MapActionBar({
           disabled={ghostBusy}
           onPress={onToggleGhost}
         />
-        <BarButton
-          anchorRef={add.ref}
-          icon="add-circle"
-          label={Words.place}
-          color={theme.brandOnSurface}
-          accessibilityLabel={Words.placeOnMap}
-          expanded={!!add.anchor}
-          onPress={add.open}
-        />
-        <BarButton
+        <RoundButton
           icon={
             locating && !following
               ? 'ellipsis-horizontal'
@@ -133,18 +125,35 @@ export function MapActionBar({
                 ? 'navigate'
                 : 'locate-outline'
           }
-          label={following ? 'Följer dig' : 'Hitta mig'}
-          color={following ? theme.brandOnSurface : theme.text}
+          active={following}
           accessibilityLabel={following ? 'Följer dig' : 'Följ mig på kartan'}
           selected={following}
           onPress={onLocate}
         />
+        <View ref={addRef} collapsable={false}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={Words.placeOnMap}
+            accessibilityState={{ expanded: !!addAnchor }}
+            onPress={openAdd}
+            style={({ pressed }) => [
+              styles.place,
+              { backgroundColor: theme.brand, boxShadow: `0 10px 24px ${theme.brand}66` },
+              pressed && styles.pressed,
+            ]}
+          >
+            <Ionicons name="add" size={26} color={theme.brandText} />
+            <ThemedText type="smallBold" style={{ color: theme.brandText }}>
+              {Words.place}
+            </ThemedText>
+          </Pressable>
+        </View>
       </View>
       <DropdownMenu
-        anchor={add.anchor}
+        anchor={addAnchor}
         items={addItems}
-        onClose={add.close}
-        align="start"
+        onClose={closeAdd}
+        align="end"
         placement="auto"
         title={Words.placeOnMap}
       />
@@ -152,22 +161,35 @@ export function MapActionBar({
   );
 }
 
+const ROUND = 48;
+
 const styles = StyleSheet.create({
-  bar: {
+  column: {
     position: 'absolute',
-    left: Spacing.four,
-    right: Spacing.four,
-    flexDirection: 'row',
+    right: Spacing.three,
+    alignItems: 'flex-end',
+    gap: Spacing.two,
+  },
+  round: {
+    minWidth: ROUND,
+    height: ROUND,
     borderRadius: Radius.pill,
     borderWidth: StyleSheet.hairlineWidth,
-    paddingVertical: Spacing.two,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.one,
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
   },
-  slot: { flex: 1 },
-  button: { alignItems: 'center', justifyContent: 'center', gap: Spacing.half },
-  pressed: { opacity: 0.7 },
+  withLabel: { paddingHorizontal: Spacing.three },
+  place: {
+    height: 56,
+    borderRadius: Radius.pill,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
+    paddingLeft: Spacing.three,
+    paddingRight: Spacing.four,
+  },
+  pressed: { opacity: 0.85, transform: [{ scale: 0.96 }] },
 });

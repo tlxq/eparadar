@@ -30,6 +30,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     .maplibregl-ctrl-attrib { background: rgba(14,19,32,0.7) !important; }
     .maplibregl-ctrl-attrib a, .maplibregl-ctrl-attrib-inner { color: ${NIGHT.textSecondary} !important; font-size: 9px; }
     .maplibregl-ctrl-attrib-button { filter: invert(1); }
+    .maplibregl-ctrl-bottom-left { bottom: var(--inset-bottom, 0px); }
     .mk { display: flex; align-items: center; justify-content: center; pointer-events: auto; }
     .mk.spot, .mk.meet, .mk.drop { z-index: 1; }
     .photo-pin {
@@ -180,7 +181,7 @@ export const MAP_HTML = `<!DOCTYPE html>
       attributionControl: false,
       maxPitch: 60,
     });
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'top-left');
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left');
 
     const NIGHT_PAINT = {
       background: { 'background-color': '#0E1320' },
@@ -731,6 +732,10 @@ export const MAP_HTML = `<!DOCTYPE html>
     function handleMessage(event) {
       let msg;
       try { msg = JSON.parse(event.data); } catch (e) { return; }
+      if (msg.type === 'SET_INSETS') {
+        document.documentElement.style.setProperty('--inset-bottom', msg.bottom + 'px');
+        map.setPadding({ top: msg.top, bottom: msg.bottom, left: 0, right: 0 });
+      }
       if (msg.type === 'SET_FRIENDS') { friends = msg.friends; renderFriends(); }
       if (msg.type === 'SET_ME') { me = msg.me; renderMe(); followMe(false); }
       if (msg.type === 'FOLLOW_ME') { setFollowing(true); followMe(true); }

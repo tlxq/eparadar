@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as Location from 'expo-location';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { useQueryClient } from '@tanstack/react-query';
@@ -170,6 +170,11 @@ export default function MapScreen() {
   useEffect(() => {
     postToMap({ type: 'SET_POSTS', posts: layers.posts });
   }, [postToMap, layers.posts]);
+
+  useEffect(() => {
+    if (!mapReady) return;
+    postToMap({ type: 'SET_INSETS', top: belowChips, bottom: tabBarInset });
+  }, [mapReady, postToMap, belowChips, tabBarInset]);
 
   useEffect(() => {
     if (!focusLat || !focusLng || !mapReady) return;
@@ -386,7 +391,7 @@ export default function MapScreen() {
 
   return (
     <ScreenBackground style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.safeArea}>
         <WebView
           ref={webviewRef}
           originWhitelist={['*']}
@@ -395,7 +400,7 @@ export default function MapScreen() {
           onMessage={handleWebViewMessage}
         />
 
-        <MapFilterChips top={chipsTop} />
+        {placingStep === 'idle' ? <MapFilterChips top={chipsTop} /> : null}
 
         {locationOff ? (
           <MapBanner
@@ -537,13 +542,13 @@ export default function MapScreen() {
           onClose={() => setMeSheetOpen(false)}
           onStatus={() => setStatusOpen(true)}
         />
-      </SafeAreaView>
+      </View>
     </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  safeArea: { flex: 1, paddingHorizontal: Spacing.three },
+  safeArea: { flex: 1 },
   webview: { flex: 1 },
 });

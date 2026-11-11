@@ -69,8 +69,8 @@ export function WarningNearbyBanner({ warning, top, onClose }: WarningNearbyBann
 const styles = StyleSheet.create({
   banner: {
     position: 'absolute',
-    left: 0,
-    right: 0,
+    left: Spacing.three,
+    right: Spacing.three,
     gap: Spacing.two,
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.one,
