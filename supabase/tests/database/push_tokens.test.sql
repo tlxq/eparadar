@@ -2,17 +2,10 @@ begin;
 
 select plan(6);
 
-insert into auth.users (id) values
-  ('c3000000-0000-0000-0000-000000000001'),
-  ('d3000000-0000-0000-0000-000000000002');
+select tests.create_user('c3000000-0000-0000-0000-000000000001', 'test-push-alice', 'Alice');
+select tests.create_user('d3000000-0000-0000-0000-000000000002', 'test-push-bob', 'Bob');
 
-insert into public.profiles (id, username, display_name) values
-  ('c3000000-0000-0000-0000-000000000001', 'test-push-alice', 'Alice'),
-  ('d3000000-0000-0000-0000-000000000002', 'test-push-bob', 'Bob')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
-
-set local role authenticated;
-set local request.jwt.claim.sub = 'c3000000-0000-0000-0000-000000000001';
+select tests.login_as('c3000000-0000-0000-0000-000000000001');
 
 select lives_ok(
   $$insert into public.push_tokens (user_id, token, platform) values ('c3000000-0000-0000-0000-000000000001', 'expo-token-a', 'android')$$,
@@ -42,7 +35,7 @@ select lives_ok(
   're-registering the same token on a later login (upsert on conflict) does not violate RLS'
 );
 
-set local request.jwt.claim.sub = 'd3000000-0000-0000-0000-000000000002';
+select tests.login_as('d3000000-0000-0000-0000-000000000002');
 
 select is(
   (select count(*)::int from public.push_tokens),

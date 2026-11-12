@@ -2,18 +2,10 @@ begin;
 
 select plan(22);
 
-insert into auth.users (id) values
-  ('7e000001-0000-0000-0000-000000000001'),
-  ('7e000002-0000-0000-0000-000000000002'),
-  ('7e000003-0000-0000-0000-000000000003'),
-  ('7e000004-0000-0000-0000-000000000004');
-
-insert into public.profiles (id, username, display_name) values
-  ('7e000001-0000-0000-0000-000000000001', 'test-exp-alice', 'Alice'),
-  ('7e000002-0000-0000-0000-000000000002', 'test-exp-bob', 'Bob'),
-  ('7e000003-0000-0000-0000-000000000003', 'test-exp-carol', 'Carol'),
-  ('7e000004-0000-0000-0000-000000000004', 'test-exp-dan', 'Dan')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('7e000001-0000-0000-0000-000000000001', 'test-exp-alice', 'Alice');
+select tests.create_user('7e000002-0000-0000-0000-000000000002', 'test-exp-bob', 'Bob');
+select tests.create_user('7e000003-0000-0000-0000-000000000003', 'test-exp-carol', 'Carol');
+select tests.create_user('7e000004-0000-0000-0000-000000000004', 'test-exp-dan', 'Dan');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('7e000001-0000-0000-0000-000000000001', '7e000002-0000-0000-0000-000000000002', 'accepted'),
@@ -63,11 +55,26 @@ select is(
   'the cleanup runs on a schedule'
 );
 
-set local role anon;
+select tests.login_anon();
 
-select is((select count(*)::int from public.locations), 0, 'a logged-out caller reads no positions');
-select is((select count(*)::int from public.spots), 0, 'a logged-out caller reads no spots');
-select is((select count(*)::int from public.meetups), 0, 'a logged-out caller reads no meetups');
+select throws_ok(
+  $$select count(*) from public.locations$$,
+  '42501',
+  null,
+  'a logged-out caller reads no positions'
+);
+select throws_ok(
+  $$select count(*) from public.spots$$,
+  '42501',
+  null,
+  'a logged-out caller reads no spots'
+);
+select throws_ok(
+  $$select count(*) from public.meetups$$,
+  '42501',
+  null,
+  'a logged-out caller reads no meetups'
+);
 
 select throws_ok(
   'select public.take_storage_cleanup()',
@@ -76,8 +83,7 @@ select throws_ok(
   'a logged-out caller cannot take the storage cleanup queue'
 );
 
-set local role authenticated;
-set local request.jwt.claim.sub = '7e000003-0000-0000-0000-000000000003';
+select tests.login_as('7e000003-0000-0000-0000-000000000003');
 
 select is((select count(*)::int from public.locations), 0, 'a stranger reads no positions');
 select is((select count(*)::int from public.spots), 0, 'a stranger reads no spots');
@@ -91,7 +97,7 @@ select throws_ok(
   'a logged-in user cannot run the cleanup'
 );
 
-set local request.jwt.claim.sub = '7e000002-0000-0000-0000-000000000002';
+select tests.login_as('7e000002-0000-0000-0000-000000000002');
 
 select is(
   (select count(*)::int from public.locations where user_id = '7e000001-0000-0000-0000-000000000001'),
@@ -117,7 +123,7 @@ select is(
   'a friend sees the upcoming meetup but not last week''s'
 );
 
-set local request.jwt.claim.sub = '7e000004-0000-0000-0000-000000000004';
+select tests.login_as('7e000004-0000-0000-0000-000000000004');
 
 select is(
   (select count(*)::int from public.locations where user_id = '7e000004-0000-0000-0000-000000000004'),
@@ -125,7 +131,7 @@ select is(
   'the owner still sees their own row'
 );
 
-reset role;
+select tests.logout();
 
 select public.purge_expired_map_data();
 

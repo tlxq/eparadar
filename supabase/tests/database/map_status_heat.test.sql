@@ -2,18 +2,10 @@ begin;
 
 select plan(8);
 
-insert into auth.users (id) values
-  ('a4000000-0000-0000-0000-000000000041'),
-  ('b4000000-0000-0000-0000-000000000042'),
-  ('c4000000-0000-0000-0000-000000000043'),
-  ('e4000000-0000-0000-0000-000000000044');
-
-insert into public.profiles (id, username, display_name) values
-  ('a4000000-0000-0000-0000-000000000041', 'test-heat-alice', 'Alice'),
-  ('b4000000-0000-0000-0000-000000000042', 'test-heat-bob', 'Bob'),
-  ('c4000000-0000-0000-0000-000000000043', 'test-heat-carol', 'Carol'),
-  ('e4000000-0000-0000-0000-000000000044', 'test-heat-eve', 'Eve')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('a4000000-0000-0000-0000-000000000041', 'test-heat-alice', 'Alice');
+select tests.create_user('b4000000-0000-0000-0000-000000000042', 'test-heat-bob', 'Bob');
+select tests.create_user('c4000000-0000-0000-0000-000000000043', 'test-heat-carol', 'Carol');
+select tests.create_user('e4000000-0000-0000-0000-000000000044', 'test-heat-eve', 'Eve');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('e4000000-0000-0000-0000-000000000044', 'a4000000-0000-0000-0000-000000000041', 'accepted'),
@@ -46,8 +38,7 @@ insert into public.locations (user_id, lat, lng, sharing_enabled) values
   ('b4000000-0000-0000-0000-000000000042', 59.3001, 18.1001, true),
   ('c4000000-0000-0000-0000-000000000043', 59.3002, 18.1002, true);
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'e4000000-0000-0000-0000-000000000044';
+select tests.login_as('e4000000-0000-0000-0000-000000000044');
 
 select is(
   (select count(*)::int from public.evening_heat()),
@@ -67,11 +58,11 @@ select is(
   'Nobody can read raw heat points directly'
 );
 
-set local request.jwt.claim.sub = 'b4000000-0000-0000-0000-000000000042';
+select tests.login_as('b4000000-0000-0000-0000-000000000042');
 
 update public.locations set sharing_enabled = false where user_id = 'b4000000-0000-0000-0000-000000000042';
 
-set local request.jwt.claim.sub = 'e4000000-0000-0000-0000-000000000044';
+select tests.login_as('e4000000-0000-0000-0000-000000000044');
 
 select is(
   (select count(*)::int from public.evening_heat()),
@@ -79,7 +70,7 @@ select is(
   'Turning on ghost mode removes Bob''s heat, leaving too few friends to show a cell'
 );
 
-set local request.jwt.claim.sub = 'c4000000-0000-0000-0000-000000000043';
+select tests.login_as('c4000000-0000-0000-0000-000000000043');
 
 select is(
   (select count(*)::int from public.evening_heat()),

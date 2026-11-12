@@ -2,16 +2,9 @@ begin;
 
 select plan(17);
 
-insert into auth.users (id) values
-  ('6e000001-0000-0000-0000-000000000001'),
-  ('6e000002-0000-0000-0000-000000000002'),
-  ('6e000003-0000-0000-0000-000000000003');
-
-insert into public.profiles (id, username, display_name) values
-  ('6e000001-0000-0000-0000-000000000001', 'test-rt-alice', 'Alice'),
-  ('6e000002-0000-0000-0000-000000000002', 'test-rt-bob', 'Bob'),
-  ('6e000003-0000-0000-0000-000000000003', 'test-rt-carol', 'Carol')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('6e000001-0000-0000-0000-000000000001', 'test-rt-alice', 'Alice');
+select tests.create_user('6e000002-0000-0000-0000-000000000002', 'test-rt-bob', 'Bob');
+select tests.create_user('6e000003-0000-0000-0000-000000000003', 'test-rt-carol', 'Carol');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('6e000001-0000-0000-0000-000000000001', '6e000002-0000-0000-0000-000000000002', 'accepted');
@@ -37,7 +30,7 @@ insert into public.spot_photos (id, spot_id, author_id, path) values
   ('6e0000e1-0000-0000-0000-000000000001', '6e0000a1-0000-0000-0000-000000000001',
    '6e000001-0000-0000-0000-000000000001', '6e0000a1-0000-0000-0000-000000000001/alice.jpg');
 
-set local role anon;
+select tests.login_anon();
 
 select throws_ok(
   $$select public.report_content('status', '6e000001-0000-0000-0000-000000000001', 'hat')$$,
@@ -53,8 +46,7 @@ select throws_ok(
   'a logged-out caller cannot report a group'
 );
 
-set local role authenticated;
-set local request.jwt.claim.sub = '6e000003-0000-0000-0000-000000000003';
+select tests.login_as('6e000003-0000-0000-0000-000000000003');
 
 select throws_ok(
   $$select public.report_content('status', '6e000001-0000-0000-0000-000000000001', 'hat')$$,
@@ -79,7 +71,7 @@ select throws_ok(
 
 select is((select count(*)::int from public.reports), 0, 'the stranger filed nothing');
 
-set local request.jwt.claim.sub = '6e000002-0000-0000-0000-000000000002';
+select tests.login_as('6e000002-0000-0000-0000-000000000002');
 
 select throws_ok(
   $$select public.report_content('status', '6e000001-0000-0000-0000-000000000001', 'annat', '  ')$$,
@@ -126,11 +118,10 @@ select lives_ok(
   'a friend can report a spot photo'
 );
 
-reset role;
+select tests.logout();
 update public.locations set status_text = 'Ny elak status'
   where user_id = '6e000001-0000-0000-0000-000000000001';
-set local role authenticated;
-set local request.jwt.claim.sub = '6e000002-0000-0000-0000-000000000002';
+select tests.login_as('6e000002-0000-0000-0000-000000000002');
 
 do $$
 begin
@@ -145,7 +136,7 @@ select is(
   'a new status can be reported again, the same one only once'
 );
 
-set local request.jwt.claim.sub = '6e000001-0000-0000-0000-000000000001';
+select tests.login_as('6e000001-0000-0000-0000-000000000001');
 
 select throws_ok(
   $$select public.report_content('status', '6e000001-0000-0000-0000-000000000001', 'hat')$$,

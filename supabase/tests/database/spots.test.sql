@@ -2,18 +2,10 @@ begin;
 
 select plan(11);
 
-insert into auth.users (id) values
-  ('a3000000-0000-0000-0000-000000000031'),
-  ('b3000000-0000-0000-0000-000000000032'),
-  ('c3000000-0000-0000-0000-000000000033'),
-  ('d3000000-0000-0000-0000-000000000034');
-
-insert into public.profiles (id, username, display_name) values
-  ('a3000000-0000-0000-0000-000000000031', 'test-spot-alice', 'Alice'),
-  ('b3000000-0000-0000-0000-000000000032', 'test-spot-bob', 'Bob'),
-  ('c3000000-0000-0000-0000-000000000033', 'test-spot-carol', 'Carol'),
-  ('d3000000-0000-0000-0000-000000000034', 'test-spot-dan', 'Dan')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('a3000000-0000-0000-0000-000000000031', 'test-spot-alice', 'Alice');
+select tests.create_user('b3000000-0000-0000-0000-000000000032', 'test-spot-bob', 'Bob');
+select tests.create_user('c3000000-0000-0000-0000-000000000033', 'test-spot-carol', 'Carol');
+select tests.create_user('d3000000-0000-0000-0000-000000000034', 'test-spot-dan', 'Dan');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('a3000000-0000-0000-0000-000000000031', 'b3000000-0000-0000-0000-000000000032', 'accepted');
@@ -38,8 +30,7 @@ select is(
   'A warning expires two hours after it is created'
 );
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'a3000000-0000-0000-0000-000000000031';
+select tests.login_as('a3000000-0000-0000-0000-000000000031');
 
 select is(
   (select count(*)::int from public.spots),
@@ -47,7 +38,7 @@ select is(
   'Alice sees her own live spots but not the expired warning'
 );
 
-set local request.jwt.claim.sub = 'b3000000-0000-0000-0000-000000000032';
+select tests.login_as('b3000000-0000-0000-0000-000000000032');
 
 select is(
   (select count(*)::int from public.spots where id = 'a3000000-0000-0000-0000-0000000000a1'),
@@ -55,7 +46,7 @@ select is(
   'Bob (a friend) sees a friends-only Raggställe'
 );
 
-set local request.jwt.claim.sub = 'c3000000-0000-0000-0000-000000000033';
+select tests.login_as('c3000000-0000-0000-0000-000000000033');
 
 select is(
   (select count(*)::int from public.spots where id = 'a3000000-0000-0000-0000-0000000000a1'),
@@ -69,7 +60,7 @@ select is(
   'a Raggställe asked to be shared with everyone is still friends-only'
 );
 
-set local request.jwt.claim.sub = 'd3000000-0000-0000-0000-000000000034';
+select tests.login_as('d3000000-0000-0000-0000-000000000034');
 
 select is(
   (select count(*)::int from public.spots where id = 'a3000000-0000-0000-0000-0000000000a2'),
@@ -77,7 +68,7 @@ select is(
   'Dan (blocked by Alice) never sees her spots, even public ones'
 );
 
-set local request.jwt.claim.sub = 'c3000000-0000-0000-0000-000000000033';
+select tests.login_as('c3000000-0000-0000-0000-000000000033');
 
 select throws_ok(
   $$insert into public.spots (creator_id, kind, name, lat, lng)
@@ -101,11 +92,11 @@ select lives_ok(
   'Carol can drop her own warning'
 );
 
-set local request.jwt.claim.sub = 'b3000000-0000-0000-0000-000000000032';
+select tests.login_as('b3000000-0000-0000-0000-000000000032');
 
 delete from public.spots where id = 'a3000000-0000-0000-0000-0000000000a1';
 
-set local request.jwt.claim.sub = 'a3000000-0000-0000-0000-000000000031';
+select tests.login_as('a3000000-0000-0000-0000-000000000031');
 
 select is(
   (select count(*)::int from public.spots where id = 'a3000000-0000-0000-0000-0000000000a1'),

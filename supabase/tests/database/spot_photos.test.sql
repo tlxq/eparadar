@@ -2,16 +2,9 @@ begin;
 
 select plan(7);
 
-insert into auth.users (id) values
-  ('a5000000-0000-0000-0000-000000000051'),
-  ('b5000000-0000-0000-0000-000000000052'),
-  ('c5000000-0000-0000-0000-000000000053');
-
-insert into public.profiles (id, username, display_name) values
-  ('a5000000-0000-0000-0000-000000000051', 'test-photo-alice', 'Alice'),
-  ('b5000000-0000-0000-0000-000000000052', 'test-photo-bob', 'Bob'),
-  ('c5000000-0000-0000-0000-000000000053', 'test-photo-carol', 'Carol')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('a5000000-0000-0000-0000-000000000051', 'test-photo-alice', 'Alice');
+select tests.create_user('b5000000-0000-0000-0000-000000000052', 'test-photo-bob', 'Bob');
+select tests.create_user('c5000000-0000-0000-0000-000000000053', 'test-photo-carol', 'Carol');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('a5000000-0000-0000-0000-000000000051', 'b5000000-0000-0000-0000-000000000052', 'accepted');
@@ -22,8 +15,7 @@ insert into public.spots (id, creator_id, kind, name, lat, lng) values
 insert into public.spots (id, creator_id, kind, warning_type, lat, lng) values
   ('a5000000-0000-0000-0000-0000000000a2', 'a5000000-0000-0000-0000-000000000051', 'varning', 'halka', 59.3, 18.1);
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'b5000000-0000-0000-0000-000000000052';
+select tests.login_as('b5000000-0000-0000-0000-000000000052');
 
 select lives_ok(
   $$insert into public.spot_photos (spot_id, author_id, path)
@@ -47,7 +39,7 @@ select throws_ok(
   'Photos only go on Raggställen, not warnings'
 );
 
-set local request.jwt.claim.sub = 'c5000000-0000-0000-0000-000000000053';
+select tests.login_as('c5000000-0000-0000-0000-000000000053');
 
 select is(
   (select count(*)::int from public.spot_photos),
@@ -64,7 +56,7 @@ select throws_ok(
   'Carol cannot add photos to a spot she cannot see'
 );
 
-set local request.jwt.claim.sub = 'a5000000-0000-0000-0000-000000000051';
+select tests.login_as('a5000000-0000-0000-0000-000000000051');
 
 select is(
   (select count(*)::int from public.spot_photos),

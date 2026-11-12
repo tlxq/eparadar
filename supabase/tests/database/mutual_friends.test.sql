@@ -2,20 +2,11 @@ begin;
 
 select plan(10);
 
-insert into auth.users (id) values
-  ('69000001-0000-0000-0000-000000000001'),
-  ('69000002-0000-0000-0000-000000000001'),
-  ('69000003-0000-0000-0000-000000000001'),
-  ('69000004-0000-0000-0000-000000000001'),
-  ('69000005-0000-0000-0000-000000000001');
-
-insert into public.profiles (id, username, display_name) values
-  ('69000001-0000-0000-0000-000000000001', 'test-mf-me', 'MfMe'),
-  ('69000002-0000-0000-0000-000000000001', 'test-mf-target', 'MfTarget'),
-  ('69000003-0000-0000-0000-000000000001', 'test-mf-mutual', 'MfMutual'),
-  ('69000004-0000-0000-0000-000000000001', 'test-mf-stranger', 'MfStranger'),
-  ('69000005-0000-0000-0000-000000000001', 'test-mf-theirs', 'MfTheirs')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('69000001-0000-0000-0000-000000000001', 'test-mf-me', 'MfMe');
+select tests.create_user('69000002-0000-0000-0000-000000000001', 'test-mf-target', 'MfTarget');
+select tests.create_user('69000003-0000-0000-0000-000000000001', 'test-mf-mutual', 'MfMutual');
+select tests.create_user('69000004-0000-0000-0000-000000000001', 'test-mf-stranger', 'MfStranger');
+select tests.create_user('69000005-0000-0000-0000-000000000001', 'test-mf-theirs', 'MfTheirs');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('69000001-0000-0000-0000-000000000001', '69000002-0000-0000-0000-000000000001', 'accepted'),
@@ -30,7 +21,7 @@ insert into public.cars (owner_id, make, model) values
 insert into public.posts (author_id, body) values
   ('69000002-0000-0000-0000-000000000001', 'mf target post');
 
-set local role anon;
+select tests.login_anon();
 
 select throws_ok(
   $$ select * from public.mutual_friends('69000002-0000-0000-0000-000000000001') $$,
@@ -49,7 +40,7 @@ select throws_ok(
   'a caller without a user id is refused'
 );
 
-set local request.jwt.claim.sub = '69000004-0000-0000-0000-000000000001';
+select tests.login_as('69000004-0000-0000-0000-000000000001');
 
 select is(
   (select count(*) from public.mutual_friends('69000002-0000-0000-0000-000000000001')),
@@ -69,7 +60,7 @@ select is(
   'a stranger cannot see the posts on a profile'
 );
 
-set local request.jwt.claim.sub = '69000001-0000-0000-0000-000000000001';
+select tests.login_as('69000001-0000-0000-0000-000000000001');
 
 select results_eq(
   $$ select id from public.mutual_friends('69000002-0000-0000-0000-000000000001') $$,
@@ -89,7 +80,7 @@ select is(
   'asking for yourself returns nothing'
 );
 
-set local request.jwt.claim.sub = '69000002-0000-0000-0000-000000000001';
+select tests.login_as('69000002-0000-0000-0000-000000000001');
 
 select is(
   (select count(*) from public.mutual_friends('69000002-0000-0000-0000-000000000001')),

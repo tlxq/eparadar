@@ -19,16 +19,9 @@ select ok(
   'public policies use the wrapped form'
 );
 
-insert into auth.users (id) values
-  ('ff000001-0000-0000-0000-000000000001'),
-  ('ff000002-0000-0000-0000-000000000001'),
-  ('ff000003-0000-0000-0000-000000000001');
-
-insert into public.profiles (id, username, display_name) values
-  ('ff000001-0000-0000-0000-000000000001', 'test-ip-me', 'IpMe'),
-  ('ff000002-0000-0000-0000-000000000001', 'test-ip-friend', 'IpFriend'),
-  ('ff000003-0000-0000-0000-000000000001', 'test-ip-stranger', 'IpStranger')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('ff000001-0000-0000-0000-000000000001', 'test-ip-me', 'IpMe');
+select tests.create_user('ff000002-0000-0000-0000-000000000001', 'test-ip-friend', 'IpFriend');
+select tests.create_user('ff000003-0000-0000-0000-000000000001', 'test-ip-stranger', 'IpStranger');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('ff000001-0000-0000-0000-000000000001', 'ff000002-0000-0000-0000-000000000001', 'accepted');
@@ -38,8 +31,7 @@ insert into public.posts (author_id, body) values
   ('ff000002-0000-0000-0000-000000000001', 'ip friend post'),
   ('ff000003-0000-0000-0000-000000000001', 'ip stranger post');
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'ff000001-0000-0000-0000-000000000001';
+select tests.login_as('ff000001-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.posts where body like 'ip %'),
@@ -61,11 +53,12 @@ select throws_ok(
   'cannot post as someone else'
 );
 
-set local role anon;
+select tests.login_anon();
 
-select is(
-  (select count(*)::int from public.posts),
-  0,
+select throws_ok(
+  $$select count(*) from public.posts$$,
+  '42501',
+  null,
   'logged-out user sees no posts'
 );
 

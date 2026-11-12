@@ -2,12 +2,7 @@ begin;
 
 select plan(5);
 
-insert into auth.users (id) values
-  ('a2000000-0000-0000-0000-000000000021');
-
-insert into public.profiles (id, username, display_name) values
-  ('a2000000-0000-0000-0000-000000000021', 'test-night-alice', 'Alice')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('a2000000-0000-0000-0000-000000000021', 'test-night-alice', 'Alice');
 
 insert into public.locations (user_id, lat, lng, sharing_enabled, heading, moving) values
   ('a2000000-0000-0000-0000-000000000021', 59.3, 18.1, true, 90, true);

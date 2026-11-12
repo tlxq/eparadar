@@ -2,22 +2,14 @@ begin;
 
 select plan(10);
 
-insert into auth.users (id) values
-  ('6c000001-0000-0000-0000-000000000000'),
-  ('6c000002-0000-0000-0000-000000000000'),
-  ('6c000003-0000-0000-0000-000000000000');
-
-insert into public.profiles (id, username, display_name) values
-  ('6c000001-0000-0000-0000-000000000000', 'test-notif-owner', 'Owner'),
-  ('6c000002-0000-0000-0000-000000000000', 'test-notif-friend', 'Friend'),
-  ('6c000003-0000-0000-0000-000000000000', 'test-notif-stranger', 'Stranger')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('6c000001-0000-0000-0000-000000000000', 'test-notif-owner', 'Owner');
+select tests.create_user('6c000002-0000-0000-0000-000000000000', 'test-notif-friend', 'Friend');
+select tests.create_user('6c000003-0000-0000-0000-000000000000', 'test-notif-stranger', 'Stranger');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('6c000001-0000-0000-0000-000000000000', '6c000002-0000-0000-0000-000000000000', 'accepted');
 
-set local role authenticated;
-set local request.jwt.claim.sub = '6c000001-0000-0000-0000-000000000000';
+select tests.login_as('6c000001-0000-0000-0000-000000000000');
 
 select lives_ok(
   $$insert into public.notification_settings (user_id, messages) values ('6c000001-0000-0000-0000-000000000000', false)$$,
@@ -49,7 +41,7 @@ select throws_ok(
   'settings cannot be deleted from the app'
 );
 
-set local request.jwt.claim.sub = '6c000002-0000-0000-0000-000000000000';
+select tests.login_as('6c000002-0000-0000-0000-000000000000');
 
 select is(
   (select count(*)::int from public.notification_settings),
@@ -59,7 +51,7 @@ select is(
 
 update public.notification_settings set messages = true where user_id = '6c000001-0000-0000-0000-000000000000';
 
-set local request.jwt.claim.sub = '6c000003-0000-0000-0000-000000000000';
+select tests.login_as('6c000003-0000-0000-0000-000000000000');
 
 select is(
   (select count(*)::int from public.notification_settings),
@@ -67,7 +59,7 @@ select is(
   'a stranger sees no settings'
 );
 
-reset role;
+select tests.logout();
 
 select is(
   (select messages from public.notification_settings where user_id = '6c000001-0000-0000-0000-000000000000'),
@@ -75,7 +67,7 @@ select is(
   'a friend cannot change the owner''s settings'
 );
 
-set local role anon;
+select tests.login_anon();
 
 select throws_ok(
   $$select count(*) from public.notification_settings$$,

@@ -2,26 +2,14 @@ begin;
 
 select plan(11);
 
-insert into auth.users (id) values
-  ('d8000001-0000-0000-0000-000000000001'),
-  ('d8000002-0000-0000-0000-000000000001'),
-  ('d8000003-0000-0000-0000-000000000001'),
-  ('d8000004-0000-0000-0000-000000000001'),
-  ('d8000005-0000-0000-0000-000000000001'),
-  ('d8000006-0000-0000-0000-000000000001'),
-  ('d8000007-0000-0000-0000-000000000001'),
-  ('d8000008-0000-0000-0000-000000000001');
-
-insert into public.profiles (id, username, display_name) values
-  ('d8000001-0000-0000-0000-000000000001', 'test-near-me', 'NearMe'),
-  ('d8000002-0000-0000-0000-000000000001', 'test-near-close', 'NearClose'),
-  ('d8000003-0000-0000-0000-000000000001', 'test-near-far', 'NearFar'),
-  ('d8000004-0000-0000-0000-000000000001', 'test-near-blocked', 'NearBlocked'),
-  ('d8000005-0000-0000-0000-000000000001', 'test-near-friend', 'NearFriend'),
-  ('d8000006-0000-0000-0000-000000000001', 'test-near-stale', 'NearStale'),
-  ('d8000007-0000-0000-0000-000000000001', 'test-near-sent', 'NearSent'),
-  ('d8000008-0000-0000-0000-000000000001', 'test-near-received', 'NearReceived')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('d8000001-0000-0000-0000-000000000001', 'test-near-me', 'NearMe');
+select tests.create_user('d8000002-0000-0000-0000-000000000001', 'test-near-close', 'NearClose');
+select tests.create_user('d8000003-0000-0000-0000-000000000001', 'test-near-far', 'NearFar');
+select tests.create_user('d8000004-0000-0000-0000-000000000001', 'test-near-blocked', 'NearBlocked');
+select tests.create_user('d8000005-0000-0000-0000-000000000001', 'test-near-friend', 'NearFriend');
+select tests.create_user('d8000006-0000-0000-0000-000000000001', 'test-near-stale', 'NearStale');
+select tests.create_user('d8000007-0000-0000-0000-000000000001', 'test-near-sent', 'NearSent');
+select tests.create_user('d8000008-0000-0000-0000-000000000001', 'test-near-received', 'NearReceived');
 
 insert into public.friendships (requester_id, addressee_id, status, blocked_by) values
   ('d8000004-0000-0000-0000-000000000001', 'd8000001-0000-0000-0000-000000000001', 'blocked', 'd8000004-0000-0000-0000-000000000001');
@@ -40,8 +28,7 @@ insert into public.nearby_presence (user_id, lat, lng, seen_at) values
   ('d8000007-0000-0000-0000-000000000001', 59.38668, 16.93855, now()),
   ('d8000008-0000-0000-0000-000000000001', 59.38662, 16.93845, now());
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'd8000001-0000-0000-0000-000000000001';
+select tests.login_as('d8000001-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.nearby_presence),
@@ -91,7 +78,7 @@ select is(
   'a pending request to you shows as received'
 );
 
-set local request.jwt.claim.sub = 'd8000004-0000-0000-0000-000000000001';
+select tests.login_as('d8000004-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.scan_nearby(59.38670, 16.93860) where username = 'test-near-me'),
@@ -99,7 +86,7 @@ select is(
   'the blocker does not see the person they blocked either'
 );
 
-set local request.jwt.claim.sub = 'd8000002-0000-0000-0000-000000000001';
+select tests.login_as('d8000002-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.scan_nearby(59.38700, 16.93850) where username = 'test-near-me'),
@@ -107,10 +94,10 @@ select is(
   'scanning makes you visible to others nearby'
 );
 
-set local request.jwt.claim.sub = 'd8000001-0000-0000-0000-000000000001';
+select tests.login_as('d8000001-0000-0000-0000-000000000001');
 select public.leave_nearby();
 
-set local request.jwt.claim.sub = 'd8000002-0000-0000-0000-000000000001';
+select tests.login_as('d8000002-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.scan_nearby(59.38700, 16.93850) where username = 'test-near-me'),

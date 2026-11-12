@@ -1,7 +1,7 @@
 import '@supabase/functions-js/edge-runtime.d.ts';
 import { withSupabase } from '@supabase/server';
 
-const MODERATION_ADDRESS = 'contact@eparadar.se';
+const MODERATION_ADDRESS = Deno.env.get('MODERATION_ADDRESS') ?? 'contact@eparadar.se';
 
 const REASONS: Record<string, string> = {
   hat: 'Hat eller kränkningar',

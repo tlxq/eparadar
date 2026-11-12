@@ -2,16 +2,9 @@ begin;
 
 select plan(13);
 
-insert into auth.users (id) values
-  ('68f10001-0000-0000-0000-000000000001'),
-  ('68f10002-0000-0000-0000-000000000001'),
-  ('68f10003-0000-0000-0000-000000000001');
-
-insert into public.profiles (id, username, display_name) values
-  ('68f10001-0000-0000-0000-000000000001', 'test-drop-alice', 'DropAlice'),
-  ('68f10002-0000-0000-0000-000000000001', 'test-drop-bob', 'DropBob'),
-  ('68f10003-0000-0000-0000-000000000001', 'test-drop-carol', 'DropCarol')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('68f10001-0000-0000-0000-000000000001', 'test-drop-alice', 'DropAlice');
+select tests.create_user('68f10002-0000-0000-0000-000000000001', 'test-drop-bob', 'DropBob');
+select tests.create_user('68f10003-0000-0000-0000-000000000001', 'test-drop-carol', 'DropCarol');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('68f10001-0000-0000-0000-000000000001', '68f10002-0000-0000-0000-000000000001', 'accepted');
@@ -21,8 +14,7 @@ insert into public.posts (id, author_id, body, created_at) values
   ('68f100a2-0000-0000-0000-000000000001', '68f10001-0000-0000-0000-000000000001', 'Gammal', now() - interval '3 hours'),
   ('68f100a3-0000-0000-0000-000000000001', '68f10001-0000-0000-0000-000000000001', 'Igår', now());
 
-set local role authenticated;
-set local request.jwt.claim.sub = '68f10001-0000-0000-0000-000000000001';
+select tests.login_as('68f10001-0000-0000-0000-000000000001');
 
 select lives_ok(
   $$insert into public.post_places (post_id, author_id, lat, lng, expires_at)
@@ -44,7 +36,7 @@ select throws_ok(
   'Old posts cannot be dropped on the map afterwards'
 );
 
-reset role;
+select tests.logout();
 insert into public.post_places (post_id, author_id, lat, lng)
 values ('68f100a3-0000-0000-0000-000000000001', '68f10001-0000-0000-0000-000000000001', 59.4, 18.2);
 update public.post_places set expires_at = now() - interval '1 minute'
@@ -57,7 +49,7 @@ select is(
   'The author does not see her expired place'
 );
 
-set local request.jwt.claim.sub = '68f10002-0000-0000-0000-000000000001';
+select tests.login_as('68f10002-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.post_places),
@@ -81,7 +73,7 @@ select is(
   'A friend cannot remove the author''s place'
 );
 
-set local request.jwt.claim.sub = '68f10003-0000-0000-0000-000000000001';
+select tests.login_as('68f10003-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.post_places),
@@ -89,16 +81,17 @@ select is(
   'A stranger sees no places'
 );
 
-reset role;
-set local role anon;
+select tests.logout();
+select tests.login_anon();
 
-select is(
-  (select count(*)::int from public.post_places),
-  0,
+select throws_ok(
+  $$select count(*) from public.post_places$$,
+  '42501',
+  null,
   'Logged-out users see no places'
 );
 
-reset role;
+select tests.logout();
 
 select public.purge_expired_post_places();
 

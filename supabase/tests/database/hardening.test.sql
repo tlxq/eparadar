@@ -2,16 +2,9 @@ begin;
 
 select plan(9);
 
-insert into auth.users (id) values
-  ('6d000001-0000-0000-0000-000000000001'),
-  ('6d000002-0000-0000-0000-000000000002'),
-  ('6d000003-0000-0000-0000-000000000003');
-
-insert into public.profiles (id, username, display_name) values
-  ('6d000001-0000-0000-0000-000000000001', 'test-hard-alice', 'Alice'),
-  ('6d000002-0000-0000-0000-000000000002', 'test-hard-bob', 'Bob'),
-  ('6d000003-0000-0000-0000-000000000003', 'test-hard-carol', 'Carol')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('6d000001-0000-0000-0000-000000000001', 'test-hard-alice', 'Alice');
+select tests.create_user('6d000002-0000-0000-0000-000000000002', 'test-hard-bob', 'Bob');
+select tests.create_user('6d000003-0000-0000-0000-000000000003', 'test-hard-carol', 'Carol');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('6d000001-0000-0000-0000-000000000001', '6d000002-0000-0000-0000-000000000002', 'accepted');
@@ -25,7 +18,7 @@ insert into public.meetup_interests (meetup_id, user_id) values
 
 set local role postgres;
 create function public.hardening_probe() returns int language sql as 'select 1';
-reset role;
+select tests.logout();
 
 select is(
   has_function_privilege('anon', 'public.hardening_probe()', 'execute'),
@@ -42,7 +35,7 @@ select is(
   'trigger functions have a fixed search_path'
 );
 
-set local role anon;
+select tests.login_anon();
 
 select throws_ok(
   $$select public.meetup_interest_count('6d0000c1-0000-0000-0000-000000000001')$$,
@@ -51,8 +44,7 @@ select throws_ok(
   'a logged-out caller cannot read meetup counts'
 );
 
-set local role authenticated;
-set local request.jwt.claim.sub = '6d000003-0000-0000-0000-000000000003';
+select tests.login_as('6d000003-0000-0000-0000-000000000003');
 
 select is(
   public.meetup_interest_count('6d0000c1-0000-0000-0000-000000000001')::int,
@@ -67,7 +59,7 @@ select throws_ok(
   'a stranger cannot check in at a meetup they cannot see'
 );
 
-set local request.jwt.claim.sub = '6d000002-0000-0000-0000-000000000002';
+select tests.login_as('6d000002-0000-0000-0000-000000000002');
 
 select is(
   public.meetup_interest_count('6d0000c1-0000-0000-0000-000000000001')::int,
@@ -87,7 +79,7 @@ select is(
   'a friend at the place during the meetup checks in'
 );
 
-set local request.jwt.claim.sub = '6d000001-0000-0000-0000-000000000001';
+select tests.login_as('6d000001-0000-0000-0000-000000000001');
 
 select is(
   public.meetup_here_now_count('6d0000c1-0000-0000-0000-000000000001')::int,

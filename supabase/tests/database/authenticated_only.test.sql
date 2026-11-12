@@ -2,18 +2,10 @@ begin;
 
 select plan(20);
 
-insert into auth.users (id) values
-  ('ab000001-0000-0000-0000-000000000001'),
-  ('ab000002-0000-0000-0000-000000000002'),
-  ('ab000003-0000-0000-0000-000000000003'),
-  ('ab000004-0000-0000-0000-000000000004');
-
-insert into public.profiles (id, username, display_name) values
-  ('ab000001-0000-0000-0000-000000000001', 'test-auth-alice', 'Alice'),
-  ('ab000002-0000-0000-0000-000000000002', 'test-auth-bob', 'Bob'),
-  ('ab000003-0000-0000-0000-000000000003', 'test-auth-carol', 'Carol'),
-  ('ab000004-0000-0000-0000-000000000004', 'test-auth-dave', 'Dave')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('ab000001-0000-0000-0000-000000000001', 'test-auth-alice', 'Alice');
+select tests.create_user('ab000002-0000-0000-0000-000000000002', 'test-auth-bob', 'Bob');
+select tests.create_user('ab000003-0000-0000-0000-000000000003', 'test-auth-carol', 'Carol');
+select tests.create_user('ab000004-0000-0000-0000-000000000004', 'test-auth-dave', 'Dave');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('ab000001-0000-0000-0000-000000000001', 'ab000002-0000-0000-0000-000000000002', 'accepted');
@@ -45,41 +37,47 @@ select is(
   'every policy in public is scoped to authenticated, except the analytics insert'
 );
 
-set local role anon;
+select tests.login_anon();
 
-select is(
-  (select count(*)::int from public.profiles),
-  0,
+select throws_ok(
+  $$select count(*) from public.profiles$$,
+  '42501',
+  null,
   'a logged-out caller reads no profiles'
 );
 
-select is(
-  (select count(*)::int from public.cars),
-  0,
+select throws_ok(
+  $$select count(*) from public.cars$$,
+  '42501',
+  null,
   'a logged-out caller reads no cars'
 );
 
-select is(
-  (select count(*)::int from public.meetups),
-  0,
+select throws_ok(
+  $$select count(*) from public.meetups$$,
+  '42501',
+  null,
   'a logged-out caller reads no meetups'
 );
 
-select is(
-  (select count(*)::int from public.meetup_interests),
-  0,
+select throws_ok(
+  $$select count(*) from public.meetup_interests$$,
+  '42501',
+  null,
   'a logged-out caller reads no meetup interest'
 );
 
-select is(
-  (select count(*)::int from public.meetup_checkins),
-  0,
+select throws_ok(
+  $$select count(*) from public.meetup_checkins$$,
+  '42501',
+  null,
   'a logged-out caller reads no check-ins'
 );
 
-select is(
-  (select count(*)::int from public.post_reactions),
-  0,
+select throws_ok(
+  $$select count(*) from public.post_reactions$$,
+  '42501',
+  null,
   'a logged-out caller reads no reactions'
 );
 
@@ -97,9 +95,8 @@ select throws_ok(
   'a logged-out caller cannot ask how many are at a meetup'
 );
 
-reset role;
-set local role authenticated;
-set local request.jwt.claim.sub = 'ab000004-0000-0000-0000-000000000004';
+select tests.logout();
+select tests.login_as('ab000004-0000-0000-0000-000000000004');
 
 select is(
   (select count(*)::int from public.profiles where username like 'test-auth-%'),
@@ -142,7 +139,7 @@ select is(
   'a stranger does not see reactions on a post they cannot read'
 );
 
-set local request.jwt.claim.sub = 'ab000003-0000-0000-0000-000000000003';
+select tests.login_as('ab000003-0000-0000-0000-000000000003');
 
 select is(
   (select count(*)::int from public.meetup_interests
@@ -158,7 +155,7 @@ select is(
   'the meetup creator does not see check-ins from people who are not friends'
 );
 
-set local request.jwt.claim.sub = 'ab000002-0000-0000-0000-000000000002';
+select tests.login_as('ab000002-0000-0000-0000-000000000002');
 
 select is(
   (select count(*)::int from public.meetup_checkins
@@ -174,7 +171,7 @@ select is(
   'a friend sees reactions on a post they can read'
 );
 
-set local request.jwt.claim.sub = 'ab000001-0000-0000-0000-000000000001';
+select tests.login_as('ab000001-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.meetup_checkins

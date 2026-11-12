@@ -2,16 +2,9 @@ begin;
 
 select plan(12);
 
-insert into auth.users (id) values
-  ('d9000000-0000-0000-0000-000000000021'),
-  ('e9000000-0000-0000-0000-000000000022'),
-  ('c9000000-0000-0000-0000-000000000023');
-
-insert into public.profiles (id, username, display_name) values
-  ('d9000000-0000-0000-0000-000000000021', 'test-meetup-alice', 'Alice'),
-  ('e9000000-0000-0000-0000-000000000022', 'test-meetup-bob', 'Bob'),
-  ('c9000000-0000-0000-0000-000000000023', 'test-meetup-carol', 'Carol')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('d9000000-0000-0000-0000-000000000021', 'test-meetup-alice', 'Alice');
+select tests.create_user('e9000000-0000-0000-0000-000000000022', 'test-meetup-bob', 'Bob');
+select tests.create_user('c9000000-0000-0000-0000-000000000023', 'test-meetup-carol', 'Carol');
 
 insert into public.meetups (id, creator_id, title, vibe, lat, lng, starts_at) values
   ('f2000000-0000-0000-0000-000000000001', 'd9000000-0000-0000-0000-000000000021', 'Cruising', 'cruising', 59.3000, 18.1000, now()),
@@ -20,8 +13,7 @@ insert into public.meetups (id, creator_id, title, vibe, lat, lng, starts_at) va
 insert into public.friendships (requester_id, addressee_id, status) values
   ('d9000000-0000-0000-0000-000000000021', 'c9000000-0000-0000-0000-000000000023', 'accepted');
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'e9000000-0000-0000-0000-000000000022';
+select tests.login_as('e9000000-0000-0000-0000-000000000022');
 
 select is(
   (select count(*)::int from public.meetups where id = 'f2000000-0000-0000-0000-000000000001'),
@@ -64,7 +56,7 @@ select throws_ok(
   'a user cannot mark interest on someone else''s behalf'
 );
 
-set local request.jwt.claim.sub = 'c9000000-0000-0000-0000-000000000023';
+select tests.login_as('c9000000-0000-0000-0000-000000000023');
 
 select is(
   (select count(*)::int from public.meetup_interests where meetup_id = 'f2000000-0000-0000-0000-000000000001'),

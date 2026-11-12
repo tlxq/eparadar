@@ -2,18 +2,10 @@ begin;
 
 select plan(9);
 
-insert into auth.users (id) values
-  ('e9000001-0000-0000-0000-000000000001'),
-  ('e9000002-0000-0000-0000-000000000001'),
-  ('e9000003-0000-0000-0000-000000000001'),
-  ('e9000004-0000-0000-0000-000000000001');
-
-insert into public.profiles (id, username, display_name) values
-  ('e9000001-0000-0000-0000-000000000001', 'test-read-a', 'ReadA'),
-  ('e9000002-0000-0000-0000-000000000001', 'test-read-b', 'ReadB'),
-  ('e9000003-0000-0000-0000-000000000001', 'test-read-c', 'ReadC'),
-  ('e9000004-0000-0000-0000-000000000001', 'test-read-outsider', 'ReadOutsider')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('e9000001-0000-0000-0000-000000000001', 'test-read-a', 'ReadA');
+select tests.create_user('e9000002-0000-0000-0000-000000000001', 'test-read-b', 'ReadB');
+select tests.create_user('e9000003-0000-0000-0000-000000000001', 'test-read-c', 'ReadC');
+select tests.create_user('e9000004-0000-0000-0000-000000000001', 'test-read-outsider', 'ReadOutsider');
 
 insert into public.conversations (id, is_group, name) values
   ('e9000000-1111-0000-0000-000000000001', true, 'Lästest');
@@ -27,8 +19,7 @@ insert into public.messages (id, conversation_id, sender_id, body, created_at) v
   ('e9000000-2222-0000-0000-000000000001', 'e9000000-1111-0000-0000-000000000001', 'e9000001-0000-0000-0000-000000000001', 'oläst', now() - interval '10 minutes'),
   ('e9000000-2222-0000-0000-000000000002', 'e9000000-1111-0000-0000-000000000001', 'e9000001-0000-0000-0000-000000000001', 'läst', now() - interval '30 minutes');
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'e9000001-0000-0000-0000-000000000001';
+select tests.login_as('e9000001-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.conversation_members
@@ -59,12 +50,11 @@ select is(
   'an unsent message is gone'
 );
 
-reset role;
+select tests.logout();
 update public.conversation_members set last_read_at = now() - interval '20 minutes'
 where user_id = 'e9000002-0000-0000-0000-000000000001';
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'e9000001-0000-0000-0000-000000000001';
+select tests.login_as('e9000001-0000-0000-0000-000000000001');
 
 select throws_ok(
   $$ select public.unsend_message('e9000000-2222-0000-0000-000000000002') $$,
@@ -72,7 +62,7 @@ select throws_ok(
   'a message one member has read can no longer be unsent'
 );
 
-set local request.jwt.claim.sub = 'e9000002-0000-0000-0000-000000000001';
+select tests.login_as('e9000002-0000-0000-0000-000000000001');
 
 select throws_ok(
   $$ select public.unsend_message('e9000000-2222-0000-0000-000000000002') $$,
@@ -85,7 +75,7 @@ select ok(
   'marking a chat as read moves your read time to now'
 );
 
-set local request.jwt.claim.sub = 'e9000004-0000-0000-0000-000000000001';
+select tests.login_as('e9000004-0000-0000-0000-000000000001');
 
 select throws_ok(
   $$ select public.mark_conversation_read('e9000000-1111-0000-0000-000000000001') $$,

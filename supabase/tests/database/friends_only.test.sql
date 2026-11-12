@@ -2,18 +2,10 @@ begin;
 
 select plan(10);
 
-insert into auth.users (id) values
-  ('fe000001-0000-0000-0000-000000000001'),
-  ('fe000002-0000-0000-0000-000000000001'),
-  ('fe000003-0000-0000-0000-000000000001'),
-  ('fe000004-0000-0000-0000-000000000001');
-
-insert into public.profiles (id, username, display_name) values
-  ('fe000001-0000-0000-0000-000000000001', 'test-fo-me', 'FoMe'),
-  ('fe000002-0000-0000-0000-000000000001', 'test-fo-friend', 'FoFriend'),
-  ('fe000003-0000-0000-0000-000000000001', 'test-fo-stranger', 'FoStranger'),
-  ('fe000004-0000-0000-0000-000000000001', 'test-fo-blocked', 'FoBlocked')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('fe000001-0000-0000-0000-000000000001', 'test-fo-me', 'FoMe');
+select tests.create_user('fe000002-0000-0000-0000-000000000001', 'test-fo-friend', 'FoFriend');
+select tests.create_user('fe000003-0000-0000-0000-000000000001', 'test-fo-stranger', 'FoStranger');
+select tests.create_user('fe000004-0000-0000-0000-000000000001', 'test-fo-blocked', 'FoBlocked');
 
 insert into public.friendships (requester_id, addressee_id, status, blocked_by) values
   ('fe000001-0000-0000-0000-000000000001', 'fe000002-0000-0000-0000-000000000001', 'accepted', null),
@@ -31,8 +23,7 @@ insert into public.posts (author_id, body) values
   ('fe000002-0000-0000-0000-000000000001', 'fo friend post'),
   ('fe000003-0000-0000-0000-000000000001', 'fo stranger post');
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'fe000001-0000-0000-0000-000000000001';
+select tests.login_as('fe000001-0000-0000-0000-000000000001');
 
 select lives_ok(
   $$ select public.create_conversation(array['fe000002-0000-0000-0000-000000000001']::uuid[]) $$,
@@ -89,7 +80,7 @@ select is(
   'does not see a stranger''s post'
 );
 
-set local request.jwt.claim.sub = 'fe000004-0000-0000-0000-000000000001';
+select tests.login_as('fe000004-0000-0000-0000-000000000001');
 
 select throws_ok(
   $$ insert into public.messages (conversation_id, sender_id, body)
@@ -99,7 +90,7 @@ select throws_ok(
   'blocked user cannot send in the direct chat'
 );
 
-set local request.jwt.claim.sub = 'fe000003-0000-0000-0000-000000000001';
+select tests.login_as('fe000003-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.posts where body = 'fo own post'),

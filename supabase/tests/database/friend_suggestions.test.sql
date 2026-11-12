@@ -2,28 +2,15 @@ begin;
 
 select plan(9);
 
-insert into auth.users (id) values
-  ('30000001-0000-0000-0000-000000000001'),
-  ('30000002-0000-0000-0000-000000000001'),
-  ('30000003-0000-0000-0000-000000000001'),
-  ('30000004-0000-0000-0000-000000000001'),
-  ('30000005-0000-0000-0000-000000000001'),
-  ('40000001-0000-0000-0000-000000000001'),
-  ('40000002-0000-0000-0000-000000000001'),
-  ('40000003-0000-0000-0000-000000000001'),
-  ('40000004-0000-0000-0000-000000000001');
-
-insert into public.profiles (id, username, display_name) values
-  ('30000001-0000-0000-0000-000000000001', 'test-meetup-a', 'MeetupA'),
-  ('30000002-0000-0000-0000-000000000001', 'test-meetup-b', 'MeetupB'),
-  ('30000003-0000-0000-0000-000000000001', 'test-meetup-c', 'MeetupC'),
-  ('30000004-0000-0000-0000-000000000001', 'test-meetup-d', 'MeetupD'),
-  ('30000005-0000-0000-0000-000000000001', 'test-meetup-e', 'MeetupE'),
-  ('40000001-0000-0000-0000-000000000001', 'test-mutual-a', 'MutualA'),
-  ('40000002-0000-0000-0000-000000000001', 'test-mutual-b', 'MutualB'),
-  ('40000003-0000-0000-0000-000000000001', 'test-mutual-c', 'MutualC'),
-  ('40000004-0000-0000-0000-000000000001', 'test-mutual-d', 'MutualD')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('30000001-0000-0000-0000-000000000001', 'test-meetup-a', 'MeetupA');
+select tests.create_user('30000002-0000-0000-0000-000000000001', 'test-meetup-b', 'MeetupB');
+select tests.create_user('30000003-0000-0000-0000-000000000001', 'test-meetup-c', 'MeetupC');
+select tests.create_user('30000004-0000-0000-0000-000000000001', 'test-meetup-d', 'MeetupD');
+select tests.create_user('30000005-0000-0000-0000-000000000001', 'test-meetup-e', 'MeetupE');
+select tests.create_user('40000001-0000-0000-0000-000000000001', 'test-mutual-a', 'MutualA');
+select tests.create_user('40000002-0000-0000-0000-000000000001', 'test-mutual-b', 'MutualB');
+select tests.create_user('40000003-0000-0000-0000-000000000001', 'test-mutual-c', 'MutualC');
+select tests.create_user('40000004-0000-0000-0000-000000000001', 'test-mutual-d', 'MutualD');
 
 insert into public.meetups (id, creator_id, title, lat, lng, starts_at) values
   ('30000001-1111-0000-0000-000000000001', '30000001-0000-0000-0000-000000000001', 'Delad träff', 57.7, 11.9, now()),
@@ -50,8 +37,7 @@ insert into public.friendships (requester_id, addressee_id, status) values
 insert into public.friendships (requester_id, addressee_id, status, blocked_by) values
   ('40000001-0000-0000-0000-000000000001', '40000004-0000-0000-0000-000000000001', 'blocked', '40000001-0000-0000-0000-000000000001');
 
-set local role authenticated;
-set local request.jwt.claim.sub = '30000001-0000-0000-0000-000000000001';
+select tests.login_as('30000001-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.suggested_friends_from_meetups() where user_id = '30000002-0000-0000-0000-000000000001'),
@@ -83,7 +69,7 @@ select is(
   'a user who only attended a different meetup is not suggested'
 );
 
-set local request.jwt.claim.sub = '40000001-0000-0000-0000-000000000001';
+select tests.login_as('40000001-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.suggested_friends_mutual() where user_id = '40000003-0000-0000-0000-000000000001'),

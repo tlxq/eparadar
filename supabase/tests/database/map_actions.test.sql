@@ -2,22 +2,12 @@ begin;
 
 select plan(29);
 
-insert into auth.users (id) values
-  ('67000001-0000-0000-0000-000000000001'),
-  ('67000002-0000-0000-0000-000000000002'),
-  ('67000003-0000-0000-0000-000000000003'),
-  ('67000004-0000-0000-0000-000000000004'),
-  ('67000005-0000-0000-0000-000000000005'),
-  ('67000006-0000-0000-0000-000000000006');
-
-insert into public.profiles (id, username, display_name) values
-  ('67000001-0000-0000-0000-000000000001', 'test-6g-alice', 'Alice'),
-  ('67000002-0000-0000-0000-000000000002', 'test-6g-bob', 'Bob'),
-  ('67000003-0000-0000-0000-000000000003', 'test-6g-carol', 'Carol'),
-  ('67000004-0000-0000-0000-000000000004', 'test-6g-dan', 'Dan'),
-  ('67000005-0000-0000-0000-000000000005', 'test-6g-eve', 'Eve'),
-  ('67000006-0000-0000-0000-000000000006', 'test-6g-finn', 'Finn')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('67000001-0000-0000-0000-000000000001', 'test-6g-alice', 'Alice');
+select tests.create_user('67000002-0000-0000-0000-000000000002', 'test-6g-bob', 'Bob');
+select tests.create_user('67000003-0000-0000-0000-000000000003', 'test-6g-carol', 'Carol');
+select tests.create_user('67000004-0000-0000-0000-000000000004', 'test-6g-dan', 'Dan');
+select tests.create_user('67000005-0000-0000-0000-000000000005', 'test-6g-eve', 'Eve');
+select tests.create_user('67000006-0000-0000-0000-000000000006', 'test-6g-finn', 'Finn');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('67000001-0000-0000-0000-000000000001', '67000002-0000-0000-0000-000000000002', 'accepted'),
@@ -44,7 +34,7 @@ insert into public.conversation_members (conversation_id, user_id) values
   ('67000000-0000-0000-0000-0000000000c2', '67000003-0000-0000-0000-000000000003'),
   ('67000000-0000-0000-0000-0000000000c2', '67000002-0000-0000-0000-000000000002');
 
-set local role anon;
+select tests.login_anon();
 
 select throws_ok(
   $$select * from public.vote_on_warning('67000000-0000-0000-0000-0000000000a1', true)$$,
@@ -60,14 +50,14 @@ select throws_ok(
   'A logged-out caller cannot read warning votes'
 );
 
-select is(
-  (select count(*)::int from public.spot_votes),
-  0,
+select throws_ok(
+  $$select count(*) from public.spot_votes$$,
+  '42501',
+  null,
   'A logged-out caller sees no votes'
 );
 
-set local role authenticated;
-set local request.jwt.claim.sub = '67000003-0000-0000-0000-000000000003';
+select tests.login_as('67000003-0000-0000-0000-000000000003');
 
 select throws_ok(
   $$select * from public.vote_on_warning('67000000-0000-0000-0000-0000000000a1', true)$$,
@@ -82,7 +72,7 @@ select is(
   'A stranger gets no vote counts'
 );
 
-set local request.jwt.claim.sub = '67000002-0000-0000-0000-000000000002';
+select tests.login_as('67000002-0000-0000-0000-000000000002');
 
 select is(
   (select gone from public.vote_on_warning('67000000-0000-0000-0000-0000000000a1', true)),
@@ -123,7 +113,7 @@ select throws_ok(
   'Votes cannot be written to the table directly'
 );
 
-set local request.jwt.claim.sub = '67000001-0000-0000-0000-000000000001';
+select tests.login_as('67000001-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.spot_votes),
@@ -143,11 +133,11 @@ select is(
   'The owner can vote too'
 );
 
-set local request.jwt.claim.sub = '67000002-0000-0000-0000-000000000002';
+select tests.login_as('67000002-0000-0000-0000-000000000002');
 select * from public.vote_on_warning('67000000-0000-0000-0000-0000000000a1', true);
-set local request.jwt.claim.sub = '67000004-0000-0000-0000-000000000004';
+select tests.login_as('67000004-0000-0000-0000-000000000004');
 select * from public.vote_on_warning('67000000-0000-0000-0000-0000000000a1', true);
-set local request.jwt.claim.sub = '67000005-0000-0000-0000-000000000005';
+select tests.login_as('67000005-0000-0000-0000-000000000005');
 
 select is(
   (select cleared from public.vote_on_warning('67000000-0000-0000-0000-0000000000a1', true)),
@@ -155,7 +145,7 @@ select is(
   'Four gone votes keep the warning'
 );
 
-set local request.jwt.claim.sub = '67000006-0000-0000-0000-000000000006';
+select tests.login_as('67000006-0000-0000-0000-000000000006');
 
 select is(
   (select cleared from public.vote_on_warning('67000000-0000-0000-0000-0000000000a1', true)),
@@ -176,11 +166,11 @@ select throws_ok(
   'A cleared warning cannot be voted on'
 );
 
-set local request.jwt.claim.sub = '67000003-0000-0000-0000-000000000003';
+select tests.login_as('67000003-0000-0000-0000-000000000003');
 
 update public.meetups set title = 'Kapad' where id = '67000000-0000-0000-0000-0000000000b1';
 
-set local request.jwt.claim.sub = '67000002-0000-0000-0000-000000000002';
+select tests.login_as('67000002-0000-0000-0000-000000000002');
 
 update public.meetups set title = 'Kapad' where id = '67000000-0000-0000-0000-0000000000b1';
 
@@ -190,7 +180,7 @@ select is(
   'Neither a stranger nor a friend can edit someone else''s meetup'
 );
 
-set local request.jwt.claim.sub = '67000001-0000-0000-0000-000000000001';
+select tests.login_as('67000001-0000-0000-0000-000000000001');
 
 update public.meetups
   set title = 'Cruising vid torget', description = 'Vi kör runt torget.', creator_id = '67000002-0000-0000-0000-000000000002'
@@ -222,7 +212,7 @@ select is(
   'The description shows in meetups_with_stats'
 );
 
-set local request.jwt.claim.sub = '67000002-0000-0000-0000-000000000002';
+select tests.login_as('67000002-0000-0000-0000-000000000002');
 
 select lives_ok(
   $$insert into public.messages (conversation_id, sender_id, body, meetup_id)
@@ -243,7 +233,7 @@ select ok(
   'The data export keeps every section'
 );
 
-set local request.jwt.claim.sub = '67000003-0000-0000-0000-000000000003';
+select tests.login_as('67000003-0000-0000-0000-000000000003');
 
 select throws_ok(
   $$insert into public.messages (conversation_id, sender_id, body, meetup_id)
@@ -253,7 +243,7 @@ select throws_ok(
   'A stranger cannot share a meetup they cannot see'
 );
 
-set local role anon;
+select tests.login_anon();
 
 select throws_ok(
   $$insert into public.messages (conversation_id, sender_id, body, meetup_id)
@@ -263,7 +253,7 @@ select throws_ok(
   'A logged-out caller cannot share a meetup'
 );
 
-reset role;
+select tests.logout();
 
 delete from public.meetups where id = '67000000-0000-0000-0000-0000000000b1';
 

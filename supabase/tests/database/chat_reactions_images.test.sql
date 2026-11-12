@@ -2,16 +2,9 @@ begin;
 
 select plan(13);
 
-insert into auth.users (id) values
-  ('a7000001-0000-0000-0000-000000000001'),
-  ('a7000002-0000-0000-0000-000000000001'),
-  ('a7000003-0000-0000-0000-000000000001');
-
-insert into public.profiles (id, username, display_name) values
-  ('a7000001-0000-0000-0000-000000000001', 'test-react-a', 'ReactA'),
-  ('a7000002-0000-0000-0000-000000000001', 'test-react-b', 'ReactB'),
-  ('a7000003-0000-0000-0000-000000000001', 'test-react-outsider', 'ReactOutsider')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('a7000001-0000-0000-0000-000000000001', 'test-react-a', 'ReactA');
+select tests.create_user('a7000002-0000-0000-0000-000000000001', 'test-react-b', 'ReactB');
+select tests.create_user('a7000003-0000-0000-0000-000000000001', 'test-react-outsider', 'ReactOutsider');
 
 insert into public.conversations (id, is_group) values
   ('a7000000-1111-0000-0000-000000000001', false),
@@ -27,8 +20,7 @@ insert into public.messages (id, conversation_id, sender_id, body) values
 insert into storage.objects (bucket_id, name, owner_id) values
   ('chat-images', 'a7000000-1111-0000-0000-000000000001/bild.jpg', 'a7000001-0000-0000-0000-000000000001');
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'a7000001-0000-0000-0000-000000000001';
+select tests.login_as('a7000001-0000-0000-0000-000000000001');
 
 select is(
   public.toggle_reaction('a7000000-2222-0000-0000-000000000001', '❤️'),
@@ -89,7 +81,7 @@ select is(
   'a member can see their conversation''s chat images'
 );
 
-set local request.jwt.claim.sub = 'a7000002-0000-0000-0000-000000000001';
+select tests.login_as('a7000002-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.message_reactions
@@ -98,7 +90,7 @@ select is(
   'the other member sees the reaction'
 );
 
-set local request.jwt.claim.sub = 'a7000003-0000-0000-0000-000000000001';
+select tests.login_as('a7000003-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.message_reactions),

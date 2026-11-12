@@ -2,18 +2,10 @@ begin;
 
 select plan(13);
 
-insert into auth.users (id) values
-  ('f6000001-0000-0000-0000-000000000001'),
-  ('f6000002-0000-0000-0000-000000000001'),
-  ('f6000003-0000-0000-0000-000000000001'),
-  ('f6000004-0000-0000-0000-000000000001');
-
-insert into public.profiles (id, username, display_name) values
-  ('f6000001-0000-0000-0000-000000000001', 'test-group-admin', 'GroupAdmin'),
-  ('f6000002-0000-0000-0000-000000000001', 'test-group-b', 'GroupB'),
-  ('f6000003-0000-0000-0000-000000000001', 'test-group-c', 'GroupC'),
-  ('f6000004-0000-0000-0000-000000000001', 'test-group-outsider', 'GroupOutsider')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('f6000001-0000-0000-0000-000000000001', 'test-group-admin', 'GroupAdmin');
+select tests.create_user('f6000002-0000-0000-0000-000000000001', 'test-group-b', 'GroupB');
+select tests.create_user('f6000003-0000-0000-0000-000000000001', 'test-group-c', 'GroupC');
+select tests.create_user('f6000004-0000-0000-0000-000000000001', 'test-group-outsider', 'GroupOutsider');
 
 insert into public.conversations (id, is_group, name) values
   ('f6000000-1111-0000-0000-000000000001', true, 'Gänget'),
@@ -30,8 +22,7 @@ insert into public.friendships (requester_id, addressee_id, status) values
   ('f6000001-0000-0000-0000-000000000001', 'f6000002-0000-0000-0000-000000000001', 'accepted'),
   ('f6000001-0000-0000-0000-000000000001', 'f6000003-0000-0000-0000-000000000001', 'accepted');
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'f6000001-0000-0000-0000-000000000001';
+select tests.login_as('f6000001-0000-0000-0000-000000000001');
 
 select public.create_conversation(
   array['f6000002-0000-0000-0000-000000000001', 'f6000003-0000-0000-0000-000000000001']::uuid[],
@@ -46,7 +37,7 @@ select is(
   'whoever creates a group becomes its admin'
 );
 
-set local request.jwt.claim.sub = 'f6000002-0000-0000-0000-000000000001';
+select tests.login_as('f6000002-0000-0000-0000-000000000001');
 
 select lives_ok(
   $$ select public.rename_conversation('f6000000-1111-0000-0000-000000000001', '  Traktorgänget  ') $$,
@@ -71,7 +62,7 @@ select throws_ok(
   'a regular member cannot remove others'
 );
 
-set local request.jwt.claim.sub = 'f6000004-0000-0000-0000-000000000001';
+select tests.login_as('f6000004-0000-0000-0000-000000000001');
 
 select throws_ok(
   $$ select public.rename_conversation('f6000000-1111-0000-0000-000000000001', 'Kapad') $$,
@@ -79,7 +70,7 @@ select throws_ok(
   'an outsider cannot rename the group'
 );
 
-set local request.jwt.claim.sub = 'f6000001-0000-0000-0000-000000000001';
+select tests.login_as('f6000001-0000-0000-0000-000000000001');
 
 select throws_ok(
   $$ select public.remove_member('f6000000-1111-0000-0000-000000000001', 'f6000001-0000-0000-0000-000000000001') $$,
@@ -92,7 +83,7 @@ select lives_ok(
   'the admin can remove a member'
 );
 
-set local request.jwt.claim.sub = 'f6000003-0000-0000-0000-000000000001';
+select tests.login_as('f6000003-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from public.conversations where id = 'f6000000-1111-0000-0000-000000000001'),
@@ -100,7 +91,7 @@ select is(
   'a removed member can no longer see the group'
 );
 
-set local request.jwt.claim.sub = 'f6000001-0000-0000-0000-000000000001';
+select tests.login_as('f6000001-0000-0000-0000-000000000001');
 
 select throws_ok(
   $$ select public.leave_conversation('f6000000-1111-0000-0000-000000000002') $$,
@@ -113,7 +104,7 @@ select lives_ok(
   'the admin can leave'
 );
 
-set local request.jwt.claim.sub = 'f6000002-0000-0000-0000-000000000001';
+select tests.login_as('f6000002-0000-0000-0000-000000000001');
 
 select is(
   (select role from public.conversation_members
@@ -125,7 +116,7 @@ select is(
 
 select public.leave_conversation('f6000000-1111-0000-0000-000000000001');
 
-reset role;
+select tests.logout();
 
 select is(
   (select count(*)::int from public.conversations where id = 'f6000000-1111-0000-0000-000000000001'),

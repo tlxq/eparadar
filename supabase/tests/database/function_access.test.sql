@@ -2,16 +2,9 @@ begin;
 
 select plan(16);
 
-insert into auth.users (id) values
-  ('ac000001-0000-0000-0000-000000000001'),
-  ('ac000002-0000-0000-0000-000000000002'),
-  ('ac000003-0000-0000-0000-000000000003');
-
-insert into public.profiles (id, username, display_name) values
-  ('ac000001-0000-0000-0000-000000000001', 'test-fn-alice', 'Alice'),
-  ('ac000002-0000-0000-0000-000000000002', 'test-fn-bob', 'Bob'),
-  ('ac000003-0000-0000-0000-000000000003', 'test-fn-carol', 'Carol')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('ac000001-0000-0000-0000-000000000001', 'test-fn-alice', 'Alice');
+select tests.create_user('ac000002-0000-0000-0000-000000000002', 'test-fn-bob', 'Bob');
+select tests.create_user('ac000003-0000-0000-0000-000000000003', 'test-fn-carol', 'Carol');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('ac000001-0000-0000-0000-000000000001', 'ac000002-0000-0000-0000-000000000002', 'accepted');
@@ -42,7 +35,7 @@ select is(
   'security definer trigger functions cannot be called directly'
 );
 
-set local role anon;
+select tests.login_anon();
 
 select throws_ok(
   $$ select public.is_friend('ac000001-0000-0000-0000-000000000001', 'ac000002-0000-0000-0000-000000000002') $$,
@@ -58,9 +51,8 @@ select throws_ok(
   'a logged-out caller cannot ask who is in a conversation'
 );
 
-reset role;
-set local role authenticated;
-set local request.jwt.claim.sub = 'ac000003-0000-0000-0000-000000000003';
+select tests.logout();
+select tests.login_as('ac000003-0000-0000-0000-000000000003');
 
 select is(
   public.is_friend('ac000001-0000-0000-0000-000000000001', 'ac000002-0000-0000-0000-000000000002'),
@@ -98,7 +90,7 @@ select is(
   'a stranger cannot ask about someone else''s blocked chats'
 );
 
-set local request.jwt.claim.sub = 'ac000001-0000-0000-0000-000000000001';
+select tests.login_as('ac000001-0000-0000-0000-000000000001');
 
 select is(
   public.is_friend('ac000001-0000-0000-0000-000000000001', 'ac000002-0000-0000-0000-000000000002'),
@@ -131,7 +123,7 @@ select lives_ok(
   'a user can still share their location'
 );
 
-reset role;
+select tests.logout();
 
 select is(
   (select count(*)::int from public.heat_points

@@ -2,16 +2,9 @@ begin;
 
 select plan(12);
 
-insert into auth.users (id) values
-  ('4e000001-0000-0000-0000-000000000001'),
-  ('4e000002-0000-0000-0000-000000000002'),
-  ('4e000003-0000-0000-0000-000000000003');
-
-insert into public.profiles (id, username, display_name) values
-  ('4e000001-0000-0000-0000-000000000001', 'test-rep-alice', 'Alice'),
-  ('4e000002-0000-0000-0000-000000000002', 'test-rep-bob', 'Bob'),
-  ('4e000003-0000-0000-0000-000000000003', 'test-rep-carol', 'Carol')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('4e000001-0000-0000-0000-000000000001', 'test-rep-alice', 'Alice');
+select tests.create_user('4e000002-0000-0000-0000-000000000002', 'test-rep-bob', 'Bob');
+select tests.create_user('4e000003-0000-0000-0000-000000000003', 'test-rep-carol', 'Carol');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('4e000001-0000-0000-0000-000000000001', '4e000002-0000-0000-0000-000000000002', 'accepted');
@@ -19,7 +12,7 @@ insert into public.friendships (requester_id, addressee_id, status) values
 insert into public.posts (id, author_id, body) values
   ('4e0000b1-0000-0000-0000-000000000001', '4e000001-0000-0000-0000-000000000001', 'Elakt inlägg');
 
-set local role anon;
+select tests.login_anon();
 
 select throws_ok(
   $$select public.report_content('post', '4e0000b1-0000-0000-0000-000000000001', 'hat')$$,
@@ -28,10 +21,14 @@ select throws_ok(
   'a logged-out caller cannot report'
 );
 
-select is((select count(*)::int from public.reports), 0, 'a logged-out caller reads no reports');
+select throws_ok(
+  $$select count(*) from public.reports$$,
+  '42501',
+  null,
+  'a logged-out caller reads no reports'
+);
 
-set local role authenticated;
-set local request.jwt.claim.sub = '4e000003-0000-0000-0000-000000000003';
+select tests.login_as('4e000003-0000-0000-0000-000000000003');
 
 select throws_ok(
   $$select public.report_content('post', '4e0000b1-0000-0000-0000-000000000001', 'hat')$$,
@@ -53,7 +50,7 @@ select throws_ok(
   'nobody can file a report in someone else''s name'
 );
 
-set local request.jwt.claim.sub = '4e000002-0000-0000-0000-000000000002';
+select tests.login_as('4e000002-0000-0000-0000-000000000002');
 
 select lives_ok(
   $$select public.report_content('post', '4e0000b1-0000-0000-0000-000000000001', 'hat', 'Inte okej')$$,
@@ -84,7 +81,7 @@ select throws_ok(
   'a reporter cannot change a report'
 );
 
-set local request.jwt.claim.sub = '4e000001-0000-0000-0000-000000000001';
+select tests.login_as('4e000001-0000-0000-0000-000000000001');
 
 select throws_ok(
   $$select public.report_content('post', '4e0000b1-0000-0000-0000-000000000001', 'hat')$$,

@@ -2,11 +2,7 @@ begin;
 
 select plan(3);
 
-insert into auth.users (id) values ('a6000000-0000-0000-0000-000000000061');
-
-insert into public.profiles (id, username, display_name) values
-  ('a6000000-0000-0000-0000-000000000061', 'test-vibe-alice', 'Alice')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('a6000000-0000-0000-0000-000000000061', 'test-vibe-alice', 'Alice');
 
 insert into public.meetups (id, creator_id, title, lat, lng, starts_at) values
   ('a6000000-0000-0000-0000-0000000000b1', 'a6000000-0000-0000-0000-000000000061', 'Runda', 59.3, 18.1, now() + interval '1 hour');

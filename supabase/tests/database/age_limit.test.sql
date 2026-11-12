@@ -37,12 +37,16 @@ select throws_ok(
   'sign-up from the app without a birth year is refused'
 );
 
-set local role anon;
+select tests.login_anon();
 
-select is((select count(*)::int from public.user_ages), 0, 'a logged-out caller reads no birth years');
+select throws_ok(
+  $$select count(*) from public.user_ages$$,
+  '42501',
+  null,
+  'a logged-out caller reads no birth years'
+);
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'a9000003-0000-0000-0000-000000000003';
+select tests.login_as('a9000003-0000-0000-0000-000000000003');
 
 select is((select count(*)::int from public.user_ages), 0, 'a stranger reads no birth years');
 
@@ -53,7 +57,7 @@ select throws_ok(
   'nobody can set someone else''s birth year'
 );
 
-set local request.jwt.claim.sub = 'a9000002-0000-0000-0000-000000000002';
+select tests.login_as('a9000002-0000-0000-0000-000000000002');
 
 select is((select count(*)::int from public.user_ages), 0, 'a friend cannot read a birth year');
 
@@ -62,7 +66,7 @@ select lives_ok(
   'an existing user without a birth year can add one'
 );
 
-set local request.jwt.claim.sub = 'a9000001-0000-0000-0000-000000000001';
+select tests.login_as('a9000001-0000-0000-0000-000000000001');
 
 select is((select birth_year::int from public.user_ages), 2008, 'the owner reads their own birth year');
 

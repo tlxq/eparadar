@@ -2,18 +2,10 @@ begin;
 
 select plan(37);
 
-insert into auth.users (id) values
-  ('ad000001-0000-0000-0000-000000000001'),
-  ('ad000002-0000-0000-0000-000000000002'),
-  ('ad000003-0000-0000-0000-000000000003'),
-  ('ad000004-0000-0000-0000-000000000004');
-
-insert into public.profiles (id, username, display_name) values
-  ('ad000001-0000-0000-0000-000000000001', 'test-adm-owner', 'Owner'),
-  ('ad000002-0000-0000-0000-000000000002', 'test-adm-friend', 'Friend'),
-  ('ad000003-0000-0000-0000-000000000003', 'test-adm-stranger', 'Stranger'),
-  ('ad000004-0000-0000-0000-000000000004', 'test-adm-admin', 'Admin')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('ad000001-0000-0000-0000-000000000001', 'test-adm-owner', 'Owner');
+select tests.create_user('ad000002-0000-0000-0000-000000000002', 'test-adm-friend', 'Friend');
+select tests.create_user('ad000003-0000-0000-0000-000000000003', 'test-adm-stranger', 'Stranger');
+select tests.create_user('ad000004-0000-0000-0000-000000000004', 'test-adm-admin', 'Admin');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('ad000001-0000-0000-0000-000000000001', 'ad000002-0000-0000-0000-000000000002', 'accepted');
@@ -38,7 +30,7 @@ insert into public.reports (id, reporter_id, reported_user_id, target_type, targ
   ('ad0000f3-0000-0000-0000-000000000003', 'ad000002-0000-0000-0000-000000000002',
    'ad000001-0000-0000-0000-000000000001', 'spot', 'ad0000a1-0000-0000-0000-000000000001', 'spam', 'Max');
 
-set local role anon;
+select tests.login_anon();
 
 select throws_ok($$select count(*) from public.admins$$, '42501', null, 'a logged-out caller cannot read admins');
 select throws_ok($$select public.is_admin()$$, '42501', null, 'a logged-out caller cannot call is_admin');
@@ -48,8 +40,7 @@ select throws_ok(
   '42501', null, 'a logged-out caller cannot remove content'
 );
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'ad000003-0000-0000-0000-000000000003';
+select tests.login_as('ad000003-0000-0000-0000-000000000003');
 
 select is(public.is_admin(), false, 'a stranger is not admin');
 select is((select count(*)::int from public.reports), 0, 'a stranger sees no reports');
@@ -73,7 +64,7 @@ select throws_ok(
   '42501', null, 'a stranger cannot mark a report handled'
 );
 
-set local request.jwt.claim.sub = 'ad000002-0000-0000-0000-000000000002';
+select tests.login_as('ad000002-0000-0000-0000-000000000002');
 
 select is((select count(*)::int from public.reports), 3, 'the reporter sees only their own reports');
 select throws_ok($$select * from public.admin_open_reports()$$, '42501', null, 'a friend cannot list reports');
@@ -91,7 +82,7 @@ select throws_ok(
   '42501', null, 'a friend cannot mark a report handled'
 );
 
-set local request.jwt.claim.sub = 'ad000001-0000-0000-0000-000000000001';
+select tests.login_as('ad000001-0000-0000-0000-000000000001');
 
 select is((select count(*)::int from public.reports), 0, 'the reported owner sees no reports');
 select throws_ok($$select * from public.admin_open_reports()$$, '42501', null, 'the owner cannot list reports');
@@ -104,7 +95,7 @@ select throws_ok(
   '42501', null, 'the owner cannot make themselves admin'
 );
 
-reset role;
+select tests.logout();
 
 select is(
   (select count(*)::int from public.reports where reporter_id = 'ad000002-0000-0000-0000-000000000002' and status = 'open'),
@@ -112,8 +103,7 @@ select is(
   'nobody but an admin changed a report status'
 );
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'ad000004-0000-0000-0000-000000000004';
+select tests.login_as('ad000004-0000-0000-0000-000000000004');
 
 select is(public.is_admin(), true, 'the admin is admin');
 select is((select count(*)::int from public.admin_open_reports()), 3, 'the admin lists all open reports');
@@ -142,7 +132,7 @@ select is(public.admin_remove_reported_content('ad0000f2-0000-0000-0000-00000000
   'the admin removes a reported status');
 select is((select count(*)::int from public.admin_open_reports()), 0, 'no open reports are left');
 
-reset role;
+select tests.logout();
 
 select is((select count(*)::int from public.posts where id = 'ad0000b1-0000-0000-0000-000000000001'), 0, 'the post is gone');
 select is(

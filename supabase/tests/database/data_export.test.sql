@@ -2,16 +2,9 @@ begin;
 
 select plan(6);
 
-insert into auth.users (id) values
-  ('3c000001-0000-0000-0000-000000000001'),
-  ('3c000002-0000-0000-0000-000000000002'),
-  ('3c000003-0000-0000-0000-000000000003');
-
-insert into public.profiles (id, username, display_name) values
-  ('3c000001-0000-0000-0000-000000000001', 'test-exp-data-alice', 'Alice'),
-  ('3c000002-0000-0000-0000-000000000002', 'test-exp-data-bob', 'Bob'),
-  ('3c000003-0000-0000-0000-000000000003', 'test-exp-data-carol', 'Carol')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('3c000001-0000-0000-0000-000000000001', 'test-exp-data-alice', 'Alice');
+select tests.create_user('3c000002-0000-0000-0000-000000000002', 'test-exp-data-bob', 'Bob');
+select tests.create_user('3c000003-0000-0000-0000-000000000003', 'test-exp-data-carol', 'Carol');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('3c000001-0000-0000-0000-000000000001', '3c000002-0000-0000-0000-000000000002', 'accepted');
@@ -20,12 +13,11 @@ insert into public.posts (author_id, body) values
   ('3c000001-0000-0000-0000-000000000001', 'Alices inlägg'),
   ('3c000002-0000-0000-0000-000000000002', 'Bobs inlägg');
 
-set local role anon;
+select tests.login_anon();
 
 select throws_ok('select public.export_my_data()', '42501', null, 'a logged-out caller cannot export');
 
-set local role authenticated;
-set local request.jwt.claim.sub = '3c000003-0000-0000-0000-000000000003';
+select tests.login_as('3c000003-0000-0000-0000-000000000003');
 
 select is(
   jsonb_array_length(public.export_my_data() -> 'posts'),
@@ -33,7 +25,7 @@ select is(
   'a stranger''s export holds none of Alice''s posts'
 );
 
-set local request.jwt.claim.sub = '3c000002-0000-0000-0000-000000000002';
+select tests.login_as('3c000002-0000-0000-0000-000000000002');
 
 select is(
   (public.export_my_data() -> 'posts' -> 0 ->> 'body'),
@@ -41,7 +33,7 @@ select is(
   'a friend''s export holds only their own post'
 );
 
-set local request.jwt.claim.sub = '3c000001-0000-0000-0000-000000000001';
+select tests.login_as('3c000001-0000-0000-0000-000000000001');
 
 select is(
   (public.export_my_data() -> 'profile' ->> 'username'),

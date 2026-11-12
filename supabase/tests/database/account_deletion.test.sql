@@ -2,16 +2,9 @@ begin;
 
 select plan(10);
 
-insert into auth.users (id) values
-  ('a9000001-0000-0000-0000-000000000001'),
-  ('a9000002-0000-0000-0000-000000000001'),
-  ('a9000003-0000-0000-0000-000000000001');
-
-insert into public.profiles (id, username, display_name) values
-  ('a9000001-0000-0000-0000-000000000001', 'test-delacc-x', 'DelAccX'),
-  ('a9000002-0000-0000-0000-000000000001', 'test-delacc-y', 'DelAccY'),
-  ('a9000003-0000-0000-0000-000000000001', 'test-delacc-z', 'DelAccZ')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('a9000001-0000-0000-0000-000000000001', 'test-delacc-x', 'DelAccX');
+select tests.create_user('a9000002-0000-0000-0000-000000000001', 'test-delacc-y', 'DelAccY');
+select tests.create_user('a9000003-0000-0000-0000-000000000001', 'test-delacc-z', 'DelAccZ');
 
 insert into public.conversations (id, is_group, name) values
   ('a9000000-1111-0000-0000-000000000001', false, null),
@@ -96,8 +89,7 @@ select is(
   'other users are untouched'
 );
 
-set local role authenticated;
-set local request.jwt.claim.sub = 'a9000002-0000-0000-0000-000000000001';
+select tests.login_as('a9000002-0000-0000-0000-000000000001');
 
 select throws_ok(
   $$ select * from public.prepare_account_deletion('a9000002-0000-0000-0000-000000000001') $$,
@@ -106,7 +98,7 @@ select throws_ok(
   'signed-in users cannot call it directly'
 );
 
-set local role anon;
+select tests.login_anon();
 
 select throws_ok(
   $$ select * from public.prepare_account_deletion('a9000002-0000-0000-0000-000000000001') $$,

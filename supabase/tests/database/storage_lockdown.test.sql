@@ -2,16 +2,9 @@ begin;
 
 select plan(13);
 
-insert into auth.users (id) values
-  ('5b000001-0000-0000-0000-000000000001'),
-  ('5b000002-0000-0000-0000-000000000002'),
-  ('5b000003-0000-0000-0000-000000000003');
-
-insert into public.profiles (id, username, display_name) values
-  ('5b000001-0000-0000-0000-000000000001', 'test-store-alice', 'Alice'),
-  ('5b000002-0000-0000-0000-000000000002', 'test-store-bob', 'Bob'),
-  ('5b000003-0000-0000-0000-000000000003', 'test-store-carol', 'Carol')
-on conflict (id) do update set username = excluded.username, display_name = excluded.display_name;
+select tests.create_user('5b000001-0000-0000-0000-000000000001', 'test-store-alice', 'Alice');
+select tests.create_user('5b000002-0000-0000-0000-000000000002', 'test-store-bob', 'Bob');
+select tests.create_user('5b000003-0000-0000-0000-000000000003', 'test-store-carol', 'Carol');
 
 insert into public.friendships (requester_id, addressee_id, status) values
   ('5b000001-0000-0000-0000-000000000001', '5b000002-0000-0000-0000-000000000002', 'accepted');
@@ -46,12 +39,11 @@ select is(
   'every storage policy is for logged-in users only'
 );
 
-set local role anon;
+select tests.login_anon();
 
 select is((select count(*)::int from storage.objects), 0, 'a logged-out caller cannot list any files');
 
-set local role authenticated;
-set local request.jwt.claim.sub = '5b000003-0000-0000-0000-000000000003';
+select tests.login_as('5b000003-0000-0000-0000-000000000003');
 
 select is(
   (select count(*)::int from storage.objects where bucket_id = 'post-images'),
@@ -81,7 +73,7 @@ select throws_ok(
   'a stranger cannot upload to a spot they cannot see'
 );
 
-set local request.jwt.claim.sub = '5b000002-0000-0000-0000-000000000002';
+select tests.login_as('5b000002-0000-0000-0000-000000000002');
 
 select is(
   (select count(*)::int from storage.objects where bucket_id = 'post-images'),
@@ -103,7 +95,7 @@ select lives_ok(
   'a friend can upload a spot photo under their own name'
 );
 
-set local request.jwt.claim.sub = '5b000001-0000-0000-0000-000000000001';
+select tests.login_as('5b000001-0000-0000-0000-000000000001');
 
 select is(
   (select count(*)::int from storage.objects where bucket_id = 'post-images'),
