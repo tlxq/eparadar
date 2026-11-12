@@ -52,10 +52,14 @@ jest.mock('@/lib/location-task', () => ({
 jest.mock('expo-location', () => ({
   getLastKnownPositionAsync: jest.fn(),
   getBackgroundPermissionsAsync: jest.fn(),
+  getForegroundPermissionsAsync: jest.fn(),
+  getCurrentPositionAsync: jest.fn(),
+  Accuracy: { Balanced: 3 },
 }));
 
 import * as Location from 'expo-location';
 import SettingsScreen from '@/app/settings';
+import { useToastStore } from '@/store/toast';
 
 async function renderSettings() {
   const client = new QueryClient({
@@ -77,6 +81,11 @@ beforeEach(() => {
   jest.mocked(Location.getBackgroundPermissionsAsync).mockResolvedValue({
     status: 'granted',
   } as never);
+  jest.mocked(Location.getForegroundPermissionsAsync).mockResolvedValue({
+    status: 'granted',
+  } as never);
+  jest.mocked(Location.getCurrentPositionAsync).mockRejectedValue(new Error('none') as never);
+  useToastStore.setState({ toast: null });
   mockFetchNotificationSettings.mockResolvedValue({
     messages: true,
     friend_requests: true,
@@ -88,7 +97,7 @@ beforeEach(() => {
 describe('SettingsScreen sharing toggle', () => {
   it('requests permission and upserts a shared location when enabled', async () => {
     mockFetchMyLocation.mockResolvedValue(null as never);
-    mockRequestLocationPermissions.mockResolvedValue({ granted: true } as never);
+    mockRequestLocationPermissions.mockResolvedValue({ granted: true, background: true } as never);
     jest.mocked(Location.getLastKnownPositionAsync).mockResolvedValue({
       coords: { latitude: 59.3, longitude: 18.1 },
     } as never);
@@ -119,18 +128,22 @@ describe('SettingsScreen sharing toggle', () => {
 
   it('shows an error and does not enable sharing when no cached location exists', async () => {
     mockFetchMyLocation.mockResolvedValue(null as never);
-    mockRequestLocationPermissions.mockResolvedValue({ granted: true } as never);
+    mockRequestLocationPermissions.mockResolvedValue({ granted: true, background: true } as never);
     jest.mocked(Location.getLastKnownPositionAsync).mockResolvedValue(null);
 
     const { client, screen } = await renderSettings();
-    const { findByTestId, findByText, unmount } = screen;
+    const { findByTestId, unmount } = screen;
     const toggle = await findByTestId('sharing-toggle');
 
     await act(async () => {
       fireEvent(toggle, 'valueChange', true);
     });
 
-    await findByText('epaRadar kunde inte hitta en aktuell plats. Öppna kartan och försök igen.');
+    await waitFor(() =>
+      expect(useToastStore.getState().toast?.message).toBe(
+        'epaRadar kunde inte hitta en aktuell plats. Öppna kartan och försök igen.',
+      ),
+    );
     expect(mockUpsertLocation).not.toHaveBeenCalled();
     expect(mockStartLocationSharing).not.toHaveBeenCalled();
     await unmount();
@@ -141,18 +154,25 @@ describe('SettingsScreen sharing toggle', () => {
     mockFetchMyLocation.mockResolvedValue(null as never);
     mockRequestLocationPermissions.mockResolvedValue({
       granted: false,
-      reason: 'epaRadar behöver åtkomst till din plats för att kunna visa dig på kartan.',
+      reason: 'Du behöver tillåta plats för att synas. Spökläget är kvar på.',
+      blocked: false,
+      cancelled: false,
     } as never);
 
     const { client, screen } = await renderSettings();
-    const { findByTestId, findByText, unmount } = screen;
+    const { findByTestId, unmount } = screen;
     const toggle = await findByTestId('sharing-toggle');
 
     await act(async () => {
       fireEvent(toggle, 'valueChange', true);
     });
 
-    await findByText('epaRadar behöver åtkomst till din plats för att kunna visa dig på kartan.');
+    await waitFor(() =>
+      expect(useToastStore.getState().toast?.message).toBe(
+        'Du behöver tillåta plats för att synas. Spökläget är kvar på.',
+      ),
+    );
+    expect(useToastStore.getState().toast?.action).toBeUndefined();
     expect(mockUpsertLocation).not.toHaveBeenCalled();
     expect(mockStartLocationSharing).not.toHaveBeenCalled();
     await unmount();

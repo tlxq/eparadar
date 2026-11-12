@@ -12,6 +12,7 @@ import {
 } from '@/features/map/markers';
 import { fetchSpotPhotoCounts, fetchSpots } from '@/features/map/spots';
 import { fetchEveningHeat, type HeatCell } from '@/features/map/status';
+import { useForegroundLocationSync } from '@/features/map/use-foreground-location-sync';
 import { useDevicePosition } from '@/features/map/use-device-position';
 import { useMeetups } from '@/features/meetups/hooks';
 import { useMyCars, useProfile } from '@/features/profile/hooks';
@@ -30,6 +31,12 @@ export function useMapLayers() {
   const { data: meetups } = useMeetups();
   const { data: myLocation } = useMyLocation();
   const { data: myProfile } = useProfile();
+  useForegroundLocationSync({
+    userId,
+    enabled: !!myLocation?.sharing_enabled,
+    position: device.position,
+    motion: device.motion,
+  });
   const { data: myCars } = useMyCars();
   const { data: heatCells } = useQuery({
     queryKey: queryKeys.eveningHeat(userId),

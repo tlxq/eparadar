@@ -11,5 +11,6 @@ name: Placera en varning
     text: Placera
     index: -1
 - extendedWaitUntil:
-    visible: '.*Tack!'
+    notVisible: Halka
     timeout: 15000
+- assertNotVisible: '.*gick inte.*'

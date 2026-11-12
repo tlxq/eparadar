@@ -1,9 +1,11 @@
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 
+import { Common } from '@/constants/strings';
 import { Colors } from '@/constants/theme';
 import { motionFromCoords } from '@/features/map/motion';
 import { upsertLocation } from '@/lib/api';
+import { confirm } from '@/lib/confirm';
 import { supabase } from '@/lib/supabase';
 
 const LOCATION_TASK_NAME = 'eparadar-background-location';
@@ -33,28 +35,69 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
   }
 });
 
-type PermissionResult = { granted: true } | { granted: false; reason: string };
+type LocationPermission =
+  | { granted: true; background: boolean }
+  | { granted: false; reason: string; blocked: boolean; cancelled: boolean };
 
-export async function requestLocationPermissions(): Promise<PermissionResult> {
-  const foreground = await Location.requestForegroundPermissionsAsync();
+const EXPLAINER = {
+  title: 'Dela din plats?',
+  message:
+    'Dina kompisar ser var du är på kartan medan du kör. Ingen annan ser dig. Du stänger av det när du vill med spökläge.',
+  confirmLabel: 'Fortsätt',
+  cancelLabel: Common.cancel,
+  icon: 'location-outline',
+} as const;
+
+const BACKGROUND_EXPLAINER = {
+  title: 'Dela även när appen är stängd?',
+  message:
+    'Då ser dina kompisar var du är även när epaRadar ligger i bakgrunden. Välj "Tillåt alltid" på nästa skärm. Spökläge stänger av det.',
+  confirmLabel: 'Fortsätt',
+  cancelLabel: 'Inte nu',
+  icon: 'navigate-outline',
+} as const;
+
+function denied(blocked: boolean): LocationPermission {
+  return {
+    granted: false,
+    blocked,
+    cancelled: false,
+    reason: blocked
+      ? 'Platsen är blockerad för epaRadar. Tillåt den i telefonens inställningar så kan du synas. Spökläget är kvar på.'
+      : 'Du behöver tillåta plats för att synas. Spökläget är kvar på.',
+  };
+}
+
+export async function requestLocationPermissions(): Promise<LocationPermission> {
+  let foreground = await Location.getForegroundPermissionsAsync();
+  let fresh = false;
   if (foreground.status !== 'granted') {
-    return {
-      granted: false,
-      reason: 'epaRadar behöver åtkomst till din plats för att kunna visa dig på kartan.',
-    };
+    if (!foreground.canAskAgain) return denied(true);
+    const understood = await confirm(EXPLAINER);
+    if (!understood) {
+      return {
+        granted: false,
+        blocked: false,
+        cancelled: true,
+        reason: 'Okej, spökläget är kvar på.',
+      };
+    }
+    foreground = await Location.requestForegroundPermissionsAsync();
+    if (foreground.status !== 'granted') return denied(!foreground.canAskAgain);
+    fresh = true;
   }
-  const background = await Location.requestBackgroundPermissionsAsync();
-  if (background.status !== 'granted') {
-    return {
-      granted: false,
-      reason:
-        'epaRadar behöver bakgrundsåtkomst till din plats för att dela den med dina kompisar även när appen är stängd. Öppna telefonens inställningar och välj "Tillåt alltid" för epaRadar.',
-    };
+  let background = await Location.getBackgroundPermissionsAsync();
+  if (background.status !== 'granted' && fresh && background.canAskAgain) {
+    if (await confirm(BACKGROUND_EXPLAINER)) {
+      background = await Location.requestBackgroundPermissionsAsync();
+    }
   }
-  return { granted: true };
+  return { granted: true, background: background.status === 'granted' };
 }
 
 export async function startLocationSharing(): Promise<void> {
+  const background = await Location.getBackgroundPermissionsAsync();
+  if (background.status !== 'granted') return;
   const alreadyStarted = await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME);
   if (alreadyStarted) return;
   await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {

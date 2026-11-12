@@ -19,7 +19,7 @@ import { stopLocationSharing, stopLocationSharingQuietly } from '@/lib/location-
 import { queryKeys } from '@/lib/query-keys';
 import { useMyLocation } from '@/features/map/hooks';
 import { BlockedSection } from '@/features/friends/components/blocked-section';
-import { useSharingToggle } from '@/features/map/use-sharing-toggle';
+import { showSharingFailure, useSharingToggle } from '@/features/map/use-sharing-toggle';
 import { useUserId } from '@/hooks/use-user-id';
 import { shareMyData } from '@/features/profile/export';
 import { NotificationSection } from '@/features/profile/components/notification-section';
@@ -60,20 +60,24 @@ export default function SettingsScreen() {
   useFocusEffect(
     useCallback(() => {
       if (!userId || !sharingEnabled) return;
-      Location.getBackgroundPermissionsAsync().then(async (permission) => {
+      Location.getForegroundPermissionsAsync().then(async (permission) => {
         if (permission.status !== 'granted') {
           await stopLocationSharing();
           await setLocationSharing(userId, false);
           setError('Platsen är avstängd i telefonens inställningar, så delningen är av nu.');
           refetch();
+          return;
         }
+        const background = await Location.getBackgroundPermissionsAsync();
+        if (background.status !== 'granted') await stopLocationSharingQuietly();
       });
     }, [userId, sharingEnabled, refetch]),
   );
 
   async function handleToggle(value: boolean) {
     setError(null);
-    setError(await setSharing(value));
+    const failure = await setSharing(value);
+    if (failure) showSharingFailure(failure);
   }
 
   async function handleApproximateToggle(value: boolean) {

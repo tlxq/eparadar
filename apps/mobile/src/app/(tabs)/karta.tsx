@@ -4,7 +4,8 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { useQueryClient } from '@tanstack/react-query';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useIsFocused, useLocalSearchParams } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 
 import { ActionSheet } from '@/components/action-sheet';
 import { EmptyState } from '@/components/empty-state';
@@ -29,7 +30,7 @@ import { useHeatHint } from '@/features/map/use-heat-hint';
 import { useMapFilters, visibleLayers } from '@/features/map/use-map-filters';
 import { useMapLayers } from '@/features/map/use-map-layers';
 import { useNearbyWarning } from '@/features/map/use-nearby-warning';
-import { useSharingToggle } from '@/features/map/use-sharing-toggle';
+import { showSharingFailure, useSharingToggle } from '@/features/map/use-sharing-toggle';
 import { updateMeetup } from '@/features/meetups/api';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useUserId } from '@/hooks/use-user-id';
@@ -45,6 +46,7 @@ type LatLng = { lat: number; lng: number };
 const TOP_GAP = Spacing.two;
 
 export default function MapScreen() {
+  const focused = useIsFocused();
   const tabBarInset = useTabBarInset();
   const userId = useUserId();
   const webviewRef = useRef<WebView>(null);
@@ -290,15 +292,15 @@ export default function MapScreen() {
   };
 
   const toggleGhost = async () => {
-    const error = await setSharing(ghost);
-    showToast(
-      error
-        ? { tone: 'error', message: error }
-        : {
-            tone: 'success',
-            message: ghost ? 'Du syns igen för dina kompisar!' : 'Spökläge på! Ingen ser dig nu.',
-          },
-    );
+    const failure = await setSharing(ghost);
+    if (failure) {
+      showSharingFailure(failure);
+      return;
+    }
+    showToast({
+      tone: 'success',
+      message: ghost ? 'Du syns igen för dina kompisar!' : 'Spökläge på! Ingen ser dig nu.',
+    });
   };
 
   const startPlacing = () => {
@@ -405,6 +407,7 @@ export default function MapScreen() {
 
   return (
     <ScreenBackground style={styles.container}>
+      {focused ? <StatusBar style="light" /> : null}
       <View style={styles.safeArea}>
         <WebView
           ref={webviewRef}

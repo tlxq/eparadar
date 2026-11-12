@@ -7,7 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import type { Profile } from '@/lib/api';
 import type { DbRow } from '@/lib/db-types';
-import { useSharingToggle } from '@/features/map/use-sharing-toggle';
+import { showSharingFailure, useSharingToggle } from '@/features/map/use-sharing-toggle';
 import { showToast } from '@/store/toast';
 
 type MeSheetProps = {
@@ -23,15 +23,15 @@ export function MeSheet({ visible, profile, location, onClose, onStatus }: MeShe
   const ghost = !location?.sharing_enabled;
 
   async function toggleGhost() {
-    const error = await setSharing(ghost);
-    showToast(
-      error
-        ? { tone: 'error', message: error }
-        : {
-            tone: 'success',
-            message: ghost ? 'Du syns igen för dina kompisar!' : 'Spökläge på! Ingen ser dig nu.',
-          },
-    );
+    const failure = await setSharing(ghost);
+    if (failure) {
+      showSharingFailure(failure);
+      return;
+    }
+    showToast({
+      tone: 'success',
+      message: ghost ? 'Du syns igen för dina kompisar!' : 'Spökläge på! Ingen ser dig nu.',
+    });
   }
 
   const sharingText = !location?.sharing_enabled
