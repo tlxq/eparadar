@@ -5,6 +5,14 @@ only, and plan meetups.
 
 [eparadar.se](https://eparadar.se)
 
+<p align="center">
+  <img src="docs/assets/screenshots/karta.png" alt="Kartan med kompisar och spots" width="30%">
+  <img src="docs/assets/screenshots/flode.png" alt="Flödet med kompisar ute just nu" width="30%">
+  <img src="docs/assets/screenshots/kompisar.png" alt="Kompislistan" width="30%">
+</p>
+
+Pictures from the demo data, made by `mise run pictures`.
+
 ## Why it exists
 
 Young drivers of EPA and A-traktor cars meet up in parking lots and drive together. They plan it in
@@ -23,8 +31,8 @@ taken apart, so the rules live in the database instead.
 - Everything that shows where someone is or was runs out on the server: a position after 12 hours,
   a status after 1 hour, spots and check-ins after their time. A `pg_cron` job clears them every
   10 minutes.
-- 458 pgTAP tests cover every table and function, each with a case for someone logged out and for
-  someone who isn't a friend. They run on every pull request that changes the database.
+- 465 pgTAP tests cover every table and function, each with a case for someone logged out and for
+  someone who isn't a friend. They run before every merge that changes the database.
 - Other people's posts, photos and messages can be reported, and anyone can be blocked.
 
 ## How it fits together
