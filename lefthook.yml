@@ -1,4 +1,4 @@
-# Repo kit (~/.1dot/kit, applied by `dot kit`). Everything runs here; GitHub Actions is off.
+# Repo kit (~/.1dot/kit, applied by `dot kit`). Everything runs locally.
 pre-commit:
   parallel: true
   jobs:

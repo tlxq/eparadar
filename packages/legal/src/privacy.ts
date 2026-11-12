@@ -30,7 +30,7 @@ export const privacyPolicy: LegalDocument = {
           'Karta: din position, riktning och om du rör dig när platsdelning är på, din status, spots du placerar (Häng och Varning) med bilder, om du svarar att en varning finns kvar eller är borta, poster du släpper på kartan, träffar du skapar (namn, tid, plats och beskrivning), intresse och incheckningar.',
           'Radarn: din position i ungefär 20 sekunder medan du själv letar.',
           'Rapporter: när du rapporterar något sparar vi en kopia av innehållet, din anledning och det du skriver till oss. Rapporterna läses av epaRadars admin i appen, som kan ta bort innehåll som bryter mot reglerna. Den du rapporterar får aldrig veta vem som rapporterade.',
-          'Teknik: en token för aviseringar, vilka sorters aviseringar du har stängt av, när du öppnar appen, och felrapporter om appen kraschar.',
+          'Teknik: en token för aviseringar, vilka sorters aviseringar du har stängt av, när du öppnar appen.',
         ],
         'På webbplatsens väntelista sparar vi din e-postadress om du själv fyller i den.',
       ],
@@ -38,13 +38,13 @@ export const privacyPolicy: LegalDocument = {
     {
       heading: 'Varför vi behandlar uppgifterna',
       blocks: [
-        'För att driva ditt konto, visa ditt och dina kompisars innehåll, leverera chatt, karta och träffar, skicka aviseringar, hålla appen säker, hantera rapporter och hitta fel.',
+        'För att driva ditt konto, visa ditt och dina kompisars innehåll, leverera chatt, karta och träffar, skicka aviseringar, hålla appen säker, hantera rapporter.',
       ],
     },
     {
       heading: 'Rättslig grund',
       blocks: [
-        'Det som behövs för att appen ska fungera grundar sig på avtalet med dig (våra användarvillkor). Platsdelning bygger på ditt samtycke, som du kan ta tillbaka när som helst. Åldersgräns, rapporter, blockering och felrapporter grundar sig på vårt berättigade intresse av att hålla appen trygg.',
+        'Det som behövs för att appen ska fungera grundar sig på avtalet med dig (våra användarvillkor). Platsdelning bygger på ditt samtycke, som du kan ta tillbaka när som helst. Åldersgräns, rapporter och blockering grundar sig på vårt berättigade intresse av att hålla appen trygg.',
       ],
     },
     {

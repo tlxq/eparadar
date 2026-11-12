@@ -18,7 +18,7 @@ Användning: mise run pictures [-- --no-reset] [-- --baseline]
 Kör Maestro-flödena med bilder och jämför varje skärm med senaste bilderna från master.
 På master blir bilderna nya jämförelsebilder. På en gren skrivs en sida med före och efter:
   ~/.local/share/eparadar/pictures/<gren>/index.html
---baseline sparar körningen som jämförelsebilder, till exempel när Tom har godkänt en ändring.
+--baseline sparar körningen som jämförelsebilder, till exempel när en ändring är godkänd.
 --compare-only gör om sidan från senaste bilderna utan att köra flödena.
 EOF
 }

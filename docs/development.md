@@ -50,7 +50,7 @@ Metro and opens the app. Code changes then show up on the phone right away.
 | Need              | Command                                               |
 | ----------------- | ----------------------------------------------------- |
 | Force a rebuild   | `npm run phone -- --build`                            |
-| Pick a phone      | `npm run phone -- --device S928`                      |
+| Pick a phone      | `npm run phone -- --device <name>`                    |
 | Not on home Wi-Fi | `PHONE_HOST=<tailscale name> npm run phone -- <port>` |
 | Website           | `npm run web`                                         |
 | Local database    | `supabase start`                                      |
@@ -60,12 +60,12 @@ Run every command through `mise exec --` so the pinned Node, Java and Android ve
 ## Before a pull request
 
 ```sh
-mise exec -- npm run check
+mise exec -- mise run check
 mise exec -- supabase test db --local
 ```
 
 Work on a branch (`feat/…`, `fix/…`, `chore/…`), open a PR, and merge once both checks
-above pass on your machine (the pre-push hook runs the first; GitHub Actions is off, everything runs locally). Commit with
+above pass on your machine (the pre-push hook runs the first). All checks run locally; there is no GitHub CI. Commit with
 `npm run commit` for a guided Conventional Commit message.
 
 ## Store builds

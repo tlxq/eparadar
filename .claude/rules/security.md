@@ -31,7 +31,7 @@ Supabase client code or the web API.
 - `security definer` functions set `search_path = public`, read the caller from
   `auth.uid()` and raise when it is null. Never take the acting user id as a parameter.
 - New functions in `public` are no longer executable by `anon` by default
-  (`20261012160000_hardening.sql`), but still state the grants explicitly:
+  (`20261110120000_baseline.sql`), but still state the grants explicitly:
 
   ```sql
   revoke execute on function public.my_fn(uuid) from public, anon;

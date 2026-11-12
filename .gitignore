@@ -1,54 +1,34 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
 node_modules/
 
-# Expo
 .expo/
 dist/
 web-build/
 expo-env.d.ts
+apps/mobile/ios
+apps/mobile/android
 
-# Native
 .kotlin/
 *.orig.*
 *.jks
 *.p8
 *.p12
 *.key
+*.pem
 *.mobileprovision
 
-# Metro
 .metro-health-check*
-
-# debug
 npm-debug.*
 yarn-debug.*
 yarn-error.*
-
-# macOS
-.DS_Store
-*.pem
-
-# IDE
-.idea/
-
-# local env files
-.env*.local
-
-# typescript
 *.tsbuildinfo
 
-# generated native folders
-apps/mobile/ios
-apps/mobile/android
+.DS_Store
+.idea/
 
-# env
 .env
+.env*.local
 
-# supabase local
 supabase/.branches
 supabase/.temp
 
-# Vercel (apps/web project link — can appear at repo root too)
 .vercel

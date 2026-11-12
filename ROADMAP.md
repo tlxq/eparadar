@@ -16,7 +16,6 @@ What works today, what comes next. Details of finished work live in the git hist
 
 ## Next
 
-- [ ] Clean start of the database and screenshots with demo data
 - [ ] Custom email sender with Swedish templates
 - [ ] Invite friends to a meetup, meetup list on the map
 - [ ] Comments and a live feed

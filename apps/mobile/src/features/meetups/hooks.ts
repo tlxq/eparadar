@@ -109,7 +109,6 @@ export function useDeleteMeetup() {
   });
 }
 
-/** One-time foreground GPS check on mount — never touches background-location permissions. */
 export function useAutoCheckIn(meetupId: string | undefined) {
   const queryClient = useQueryClient();
 
@@ -140,9 +139,7 @@ export function useAutoCheckIn(meetupId: string | undefined) {
           queryClient.invalidateQueries({ queryKey: queryKeys.meetupDetail(meetupId) });
           queryClient.invalidateQueries({ queryKey: queryKeys.meetups() });
         }
-      } catch {
-        // best-effort — GPS timeout/unavailable shouldn't block viewing the meetup
-      }
+      } catch {}
     })();
 
     return () => {

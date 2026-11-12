@@ -39,9 +39,6 @@ export async function fetchMeetups(): Promise<Meetup[]> {
 export async function fetchMeetupDetail(meetupId: string, myUserId: string): Promise<MeetupDetail> {
   const hereCutoff = new Date(Date.now() - HERE_NOW_WINDOW_MINUTES * 60 * 1000).toISOString();
 
-  // Fetched separately from meetups_with_stats rather than embedded (`creator:profiles(...)`)
-  // — PostgREST doesn't reliably resolve embedded relationships through a view the way it
-  // does through a base table, and a failed embed here would leave the screen spinning forever.
   const [meetupRes, creatorRes, interestedRes, hereNowRes, myInterestRes] = await Promise.all([
     supabase.from('meetups_with_stats').select('*').eq('id', meetupId).single(),
     supabase

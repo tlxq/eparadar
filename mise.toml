@@ -7,7 +7,7 @@ java = "temurin-17.0.20+8"
 maestro = "cli-2.12.1"
 
 [tasks.check]
-description = "Everything CI and pre-push run: mobile lint + typecheck + tests, web typecheck + build, unused code (knip)"
+description = "Everything the pre-push hook runs: mobile lint + typecheck + tests, web typecheck + build, unused code (knip)"
 run = ["[ -d node_modules ] || npm ci", "npm run check", "npm run build --workspace apps/web"]
 
 [tasks.format]
