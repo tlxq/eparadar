@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/button';
 import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ScreenBackground } from '@/components/screen-background';
+import { ScreenHeader } from '@/components/screen-header';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
@@ -55,13 +56,13 @@ export default function DeleteAccountScreen() {
 
   return (
     <ScreenBackground style={styles.container}>
-      <SafeAreaView style={styles.container} edges={['bottom']}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <ScreenHeader title="Radera konto" />
         <KeyboardAvoider style={styles.container}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
             <View style={[styles.icon, { backgroundColor: `${theme.danger}1F` }]}>
               <Ionicons name="warning-outline" size={32} color={theme.danger} />
             </View>
-            <ThemedText type="subtitle">Radera ditt konto</ThemedText>
             <ThemedText themeColor="textSecondary">
               Allt det här tas bort direkt och kan inte återställas:
             </ThemedText>

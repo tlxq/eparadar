@@ -22,8 +22,6 @@ import { useAuthLinks } from '@/features/auth/use-auth-links';
 import { ReportSheetHost } from '@/features/moderation/report-sheet';
 import { PersonSheetHost } from '@/features/people/person-sheet';
 import { ShareSheetHost } from '@/features/feed/components/share-sheet';
-import { Words } from '@/constants/strings';
-import { Colors, Typography } from '@/constants/theme';
 import { trackEvent } from '@/lib/analytics';
 import { queryClient } from '@/lib/queryClient';
 import {
@@ -38,7 +36,6 @@ SplashScreen.preventAutoHideAsync();
 
 function RootLayout() {
   const colorScheme = useColorScheme();
-  const palette = Colors[colorScheme === 'dark' ? 'dark' : 'light'];
   const session = useAuthStore((state) => state.session);
   const initializing = useAuthStore((state) => state.initializing);
   const [fontsLoaded] = useFonts({
@@ -91,15 +88,6 @@ function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
-            headerStyle: { backgroundColor: palette.gradientTop },
-            headerShadowVisible: false,
-            headerTintColor: palette.brandOnSurface,
-            headerTitleStyle: {
-              fontFamily: Typography.headline.fontFamily,
-              fontSize: Typography.headline.fontSize,
-              color: palette.text,
-            },
-            headerBackButtonDisplayMode: 'minimal',
           }}
         >
           <Stack.Protected guard={!session}>
@@ -112,75 +100,36 @@ function RootLayout() {
               name="onboarding"
               options={{ gestureEnabled: false, animation: 'fade' }}
             />
-            <Stack.Screen
-              name="post/new"
-              options={{ presentation: 'modal', headerShown: true, title: Words.newPost }}
-            />
-            <Stack.Screen
-              name="cars/new"
-              options={{ presentation: 'modal', headerShown: true, title: Words.addVehicle }}
-            />
+            <Stack.Screen name="post/new" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="cars/new" options={{ presentation: 'modal' }} />
             <Stack.Screen name="cars/[id]/index" />
-            <Stack.Screen
-              name="cars/[id]/edit"
-              options={{ presentation: 'modal', headerShown: true, title: 'Redigera EPA' }}
-            />
+            <Stack.Screen name="cars/[id]/edit" options={{ presentation: 'modal' }} />
             <Stack.Screen name="person/[id]" />
-            <Stack.Screen
-              name="chat/new"
-              options={{ presentation: 'modal', headerShown: true, title: 'Ny chatt' }}
-            />
-            <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="friends/add"
-              options={{ presentation: 'modal', headerShown: true, title: Words.addFriend }}
-            />
+            <Stack.Screen name="chat/new" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="chat/[id]" />
+            <Stack.Screen name="friends/add" options={{ presentation: 'modal' }} />
             <Stack.Screen name="friends/code" options={{ presentation: 'modal' }} />
             <Stack.Screen name="friends/nearby" options={{ presentation: 'modal' }} />
             <Stack.Screen name="friends/scan" options={{ presentation: 'fullScreenModal' }} />
-            <Stack.Screen
-              name="friends/enter-code"
-              options={{ presentation: 'modal', headerShown: true, title: 'Skriv kod' }}
-            />
+            <Stack.Screen name="friends/enter-code" options={{ presentation: 'modal' }} />
             <Stack.Screen name="add/[code]" options={{ presentation: 'modal' }} />
             <Stack.Screen name="group/[id]" />
-            <Stack.Screen name="post/[id]" options={{ headerShown: true, title: 'Post' }} />
-            <Stack.Screen
-              name="group/add-members"
-              options={{ presentation: 'modal', headerShown: true, title: 'Lägg till medlemmar' }}
-            />
-            <Stack.Screen name="settings" options={{ headerShown: true, title: 'Inställningar' }} />
-            <Stack.Screen name="admin" options={{ headerShown: true, title: 'Admin' }} />
-            <Stack.Screen
-              name="delete-account"
-              options={{ headerShown: true, title: 'Radera konto' }}
-            />
-            <Stack.Screen
-              name="meetups/create"
-              options={{ presentation: 'modal', headerShown: false }}
-            />
-            <Stack.Screen
-              name="meetups/[id]"
-              options={{ presentation: 'modal', headerShown: false }}
-            />
-            <Stack.Screen
-              name="meetups/edit"
-              options={{ presentation: 'modal', headerShown: false }}
-            />
+            <Stack.Screen name="post/[id]" />
+            <Stack.Screen name="group/add-members" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="settings" />
+            <Stack.Screen name="admin" />
+            <Stack.Screen name="delete-account" />
+            <Stack.Screen name="meetups/create" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="meetups/[id]" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="meetups/edit" options={{ presentation: 'modal' }} />
           </Stack.Protected>
           <Stack.Screen
             name="reset-password"
             options={{ gestureEnabled: false, animation: 'fade' }}
           />
-          <Stack.Screen
-            name="privacy"
-            options={{ headerShown: true, title: 'Integritetspolicy' }}
-          />
-          <Stack.Screen name="terms" options={{ headerShown: true, title: 'Användarvillkor' }} />
-          <Stack.Screen
-            name="community"
-            options={{ headerShown: true, title: 'Communityregler' }}
-          />
+          <Stack.Screen name="privacy" />
+          <Stack.Screen name="terms" />
+          <Stack.Screen name="community" />
         </Stack>
         {session ? <PersonSheetHost /> : null}
         {session ? <ReportSheetHost /> : null}

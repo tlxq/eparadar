@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { ModalHeader } from '@/components/modal-header';
 import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
 import { CandidateRow } from '@/features/friends/components/candidate-row';
@@ -10,6 +11,7 @@ import { AddTiles } from '@/features/friends/components/add-tiles';
 import { SuggestionSection } from '@/features/friends/components/suggestion-section';
 import { formatRelativeSwedish } from '@/features/friends/api';
 import { useMeetupSuggestions, useMutualSuggestions } from '@/features/friends/hooks';
+import { Words } from '@/constants/strings';
 import { Spacing } from '@/constants/theme';
 import { getErrorMessage } from '@/lib/errors';
 import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
@@ -47,7 +49,8 @@ export default function AddFriendScreen() {
 
   return (
     <ScreenBackground style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        <ModalHeader title={Words.addFriend} />
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.intro}>
             <AddTiles />
@@ -111,7 +114,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   content: {
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: Spacing.three,
     paddingTop: Spacing.three,
     gap: Spacing.five,
   },

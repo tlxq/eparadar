@@ -10,7 +10,7 @@ import { Button } from '@/components/button';
 import { DropdownButton, type MenuItem } from '@/components/dropdown-menu';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
-import { ModalHeader } from '@/components/modal-header';
+import { ScreenHeader } from '@/components/screen-header';
 import { ScreenBackground } from '@/components/screen-background';
 import { SectionLabel } from '@/components/section-label';
 import { Skeleton } from '@/components/skeleton';
@@ -24,6 +24,7 @@ import { useModerationItems } from '@/features/moderation/use-moderation-items';
 import { carName } from '@/features/profile/components/profile-parts';
 import { useCar, useCarPosts, useIsFriend, usePersonProfile } from '@/features/profile/hooks';
 import { useCarPhotoUrl } from '@/hooks/use-car-photo-url';
+import { useHeaderReveal } from '@/hooks/use-header-reveal';
 import { usePullRefresh } from '@/hooks/use-pull-refresh';
 import { useTheme } from '@/hooks/use-theme';
 import { useUserId } from '@/hooks/use-user-id';
@@ -34,9 +35,12 @@ import { queryKeys } from '@/lib/query-keys';
 import { openProfile } from '@/store/person-sheet';
 import { showToast } from '@/store/toast';
 
+const TITLE_REVEAL_Y = 300;
+
 export default function CarScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useTheme();
+  const reveal = useHeaderReveal(TITLE_REVEAL_Y);
   const userId = useUserId();
   const queryClient = useQueryClient();
   const moderationItems = useModerationItems();
@@ -107,9 +111,9 @@ export default function CarScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top']}>
-        <ModalHeader
+        <ScreenHeader
           title={name || Words.vehicle}
-          variant="back"
+          titleVisible={reveal.revealed}
           actions={
             menu.length > 0 ? (
               <DropdownButton items={menu} accessibilityLabel={`Fler val för ${name}`} />
@@ -132,6 +136,8 @@ export default function CarScreen() {
           />
         ) : (
           <ScrollView
+            onScroll={reveal.onScroll}
+            scrollEventThrottle={reveal.scrollEventThrottle}
             contentContainerStyle={styles.scroll}
             refreshControl={
               <RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} />
@@ -159,9 +165,6 @@ export default function CarScreen() {
               </View>
               <View style={styles.titleBlock}>
                 <ThemedText type="title">{name}</ThemedText>
-                {car.nickname ? (
-                  <ThemedText themeColor="textSecondary">{`${car.make} ${car.model}`}</ThemedText>
-                ) : null}
               </View>
               <View style={[styles.details, { backgroundColor: theme.backgroundElement }]}>
                 <Detail label="Märke" value={car.make} />

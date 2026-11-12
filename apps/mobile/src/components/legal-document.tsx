@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenBackground } from '@/components/screen-background';
+import { ScreenHeader } from '@/components/screen-header';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 
@@ -25,7 +26,8 @@ function Block({ block }: { block: LegalBlock }) {
 export function LegalDocumentView({ doc }: { doc: LegalDocument }) {
   return (
     <ScreenBackground style={styles.container}>
-      <SafeAreaView style={styles.container} edges={['bottom']}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <ScreenHeader title={doc.title} />
         <ScrollView contentContainerStyle={styles.content}>
           <ThemedText type="small" themeColor="textSecondary">
             Senast uppdaterad: {doc.updated}

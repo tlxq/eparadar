@@ -78,6 +78,7 @@ export default function NewChatScreen() {
 
   return (
     <FormScreen
+      title="Ny chatt"
       footer={
         <>
           {error ? <ThemedText type="error">{error}</ThemedText> : null}

@@ -6,7 +6,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 
 import { Button } from '@/components/button';
 import { ErrorState } from '@/components/error-state';
-import { IconButton } from '@/components/icon-button';
+import { ModalHeader } from '@/components/modal-header';
 import { ScreenBackground } from '@/components/screen-background';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
@@ -38,8 +38,13 @@ export default function EditMeetupScreen() {
 
   if (isError) {
     return (
-      <ScreenBackground style={styles.center}>
-        <ErrorState message={loadError('Träffen')} onRetry={refetch} />
+      <ScreenBackground style={styles.container}>
+        <SafeAreaView style={styles.container}>
+          <ModalHeader title="" leading="close" />
+          <View style={styles.center}>
+            <ErrorState message={loadError('Träffen')} onRetry={refetch} />
+          </View>
+        </SafeAreaView>
       </ScreenBackground>
     );
   }
@@ -48,13 +53,7 @@ export default function EditMeetupScreen() {
     return (
       <ScreenBackground style={styles.container}>
         <SafeAreaView style={styles.container}>
-          <View style={styles.header}>
-            <IconButton
-              icon="close"
-              accessibilityLabel={Common.close}
-              onPress={() => router.back()}
-            />
-          </View>
+          <ModalHeader title="" leading="close" />
           <View style={styles.skeletons}>
             <Skeleton height={64} radius={Radius.lg} />
             <Skeleton height={48} radius={Radius.md} />
@@ -113,13 +112,7 @@ export default function EditMeetupScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: Spacing.three,
-    paddingTop: Spacing.two,
-  },
+  center: { flex: 1, justifyContent: 'center' },
   skeletons: { padding: Spacing.three, gap: Spacing.three },
   place: { gap: Spacing.two },
 });

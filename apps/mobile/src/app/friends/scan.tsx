@@ -7,11 +7,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/button';
 import { EmptyState } from '@/components/empty-state';
 import { IconButton } from '@/components/icon-button';
+import { ModalHeader } from '@/components/modal-header';
 import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { parseScannedFriendCode } from '@/features/friends/friend-code';
-import { Common } from '@/constants/strings';
 import { useTheme } from '@/hooks/use-theme';
 
 const FRAME_SIZE = 240;
@@ -64,13 +64,7 @@ export default function ScanFriendCodeScreen() {
     return (
       <ScreenBackground style={styles.container}>
         <SafeAreaView style={styles.container}>
-          <View style={styles.permissionNav}>
-            <IconButton
-              icon="close"
-              accessibilityLabel={Common.close}
-              onPress={() => router.back()}
-            />
-          </View>
+          <ModalHeader title="Skanna kod" leading="close" />
           <View style={styles.permissionBody}>
             <EmptyState
               icon="camera-outline"
@@ -101,65 +95,58 @@ export default function ScanFriendCodeScreen() {
   }
 
   return (
-    <View style={[styles.camera, { backgroundColor: theme.scrim }]}>
-      <CameraView
-        style={StyleSheet.absoluteFill}
-        facing="back"
-        enableTorch={torch}
-        barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-        onBarcodeScanned={handleScan}
-      />
-      <SafeAreaView style={styles.overlay} edges={['top', 'bottom']}>
-        <View style={styles.cameraNav}>
-          <IconButton
-            icon="close"
-            accessibilityLabel={Common.close}
-            onPress={() => router.back()}
+    <ScreenBackground style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <ModalHeader
+          title="Skanna kod"
+          leading="close"
+          trailing={
+            <IconButton
+              icon={torch ? 'flash' : 'flash-outline'}
+              accessibilityLabel={torch ? 'Stäng av lampan' : 'Tänd lampan'}
+              onPress={() => setTorch((on) => !on)}
+            />
+          }
+        />
+        <View style={[styles.camera, { backgroundColor: theme.scrim }]}>
+          <CameraView
+            style={StyleSheet.absoluteFill}
+            facing="back"
+            enableTorch={torch}
+            barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+            onBarcodeScanned={handleScan}
           />
-          <ThemedText type="headline" style={{ color: theme.onScrim }} accessibilityRole="header">
-            Skanna kod
-          </ThemedText>
-          <IconButton
-            icon={torch ? 'flash' : 'flash-outline'}
-            accessibilityLabel={torch ? 'Stäng av lampan' : 'Tänd lampan'}
-            onPress={() => setTorch((on) => !on)}
-          />
-        </View>
-        <View
-          style={[styles.hintPill, { backgroundColor: theme.scrimSurface }]}
-          accessibilityLiveRegion="polite"
-        >
-          <ThemedText type="smallBold" style={{ color: theme.onScrim }}>
-            {hint}
-          </ThemedText>
-        </View>
-        <View style={styles.frameArea}>
-          <Viewfinder />
-        </View>
-        <View style={styles.cameraFooter}>
-          <Button
-            label="Skriv kod i stället"
-            icon="keypad-outline"
-            variant="secondary"
-            onPress={() => router.replace('/friends/enter-code')}
-          />
+          <SafeAreaView style={styles.overlay} edges={['bottom']}>
+            <View
+              style={[styles.hintPill, { backgroundColor: theme.scrimSurface }]}
+              accessibilityLiveRegion="polite"
+            >
+              <ThemedText type="smallBold" style={{ color: theme.onScrim }}>
+                {hint}
+              </ThemedText>
+            </View>
+            <View style={styles.frameArea}>
+              <Viewfinder />
+            </View>
+            <View style={styles.cameraFooter}>
+              <Button
+                label="Skriv kod i stället"
+                icon="keypad-outline"
+                variant="secondary"
+                onPress={() => router.replace('/friends/enter-code')}
+              />
+            </View>
+          </SafeAreaView>
         </View>
       </SafeAreaView>
-    </View>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
   camera: { flex: 1 },
-  overlay: { flex: 1 },
-  cameraNav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-  },
+  overlay: { flex: 1, paddingTop: Spacing.three },
   hintPill: {
     alignSelf: 'center',
     borderRadius: Radius.pill,
@@ -198,7 +185,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: Radius.xl,
   },
   cameraFooter: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
-  permissionNav: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two },
   permissionBody: { flex: 1, justifyContent: 'center' },
   permissionFooter: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
 });

@@ -3,15 +3,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SvgXml } from 'react-native-svg';
-import { router } from 'expo-router';
 
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
+import { ModalHeader } from '@/components/modal-header';
 import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
-import { Common, Days, sentenceStart } from '@/constants/strings';
+import { Days, sentenceStart } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { MEETUP_VIBES, type MeetupVibe } from '@/features/map/map-icons';
 import { TimePickerSheet } from '@/features/meetups/time-picker-sheet';
@@ -105,11 +105,7 @@ export function MeetupForm({
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container}>
         <KeyboardAvoider style={styles.container}>
-          <View style={styles.header}>
-            <Button label={Common.cancel} variant="ghost" size="sm" onPress={() => router.back()} />
-            <ThemedText type="headline">{heading}</ThemedText>
-            <View style={styles.headerSpacer} />
-          </View>
+          <ModalHeader title={heading} />
 
           <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
             <View style={styles.section}>
@@ -229,14 +225,6 @@ export function MeetupForm({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-  },
-  headerSpacer: { width: 72 },
   body: { padding: Spacing.three, gap: Spacing.four },
   section: { gap: Spacing.two },
   vibeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },

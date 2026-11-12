@@ -116,7 +116,7 @@ export default function MyFriendCodeScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <ModalHeader title="Min kod" />
+        <ModalHeader title="Min kod" leading="close" />
 
         <View style={styles.body}>
           <View style={[styles.card, { backgroundColor: theme.brand }]}>

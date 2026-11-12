@@ -374,7 +374,7 @@ export default function MapScreen() {
         wantFollowRef.current = !!msg.following;
         setFollowing(!!msg.following);
       } else if (msg.type === 'FRIEND_TAP') {
-        openPerson(msg.id);
+        openPerson(msg.id, { fromMap: true });
       } else if (msg.type === 'ME_TAP') {
         setMeSheetOpen(true);
       } else if (msg.type === 'POST_TAP') {

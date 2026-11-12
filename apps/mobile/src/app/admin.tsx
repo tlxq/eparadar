@@ -5,6 +5,7 @@ import { Button } from '@/components/button';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
 import { ScreenBackground } from '@/components/screen-background';
+import { ScreenHeader } from '@/components/screen-header';
 import { SkeletonList } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { Common, loadError } from '@/constants/strings';
@@ -128,7 +129,8 @@ export default function AdminScreen() {
 
   return (
     <ScreenBackground style={styles.container}>
-      <SafeAreaView style={styles.container} edges={['bottom']}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <ScreenHeader title="Admin" />
         {isPending ? (
           <SkeletonList rows={4} style={styles.content} />
         ) : isError && !data ? (

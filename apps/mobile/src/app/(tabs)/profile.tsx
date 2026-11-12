@@ -180,17 +180,18 @@ export default function ProfileScreen() {
             <RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} />
           }
         >
+          <ScreenHeader
+            root
+            title="Profil"
+            actions={
+              <IconButton
+                icon="settings-outline"
+                accessibilityLabel="Inställningar"
+                onPress={() => router.push('/settings')}
+              />
+            }
+          />
           <View style={styles.padded}>
-            <ScreenHeader
-              title="Profil"
-              actions={
-                <IconButton
-                  icon="settings-outline"
-                  accessibilityLabel="Inställningar"
-                  onPress={() => router.push('/settings')}
-                />
-              }
-            />
             <View style={styles.hero}>
               <Pressable
                 accessibilityRole="button"

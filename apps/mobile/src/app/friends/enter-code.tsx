@@ -23,7 +23,10 @@ export default function EnterFriendCodeScreen() {
   }
 
   return (
-    <FormScreen footer={<Button label="Lägg till" disabled={!complete} onPress={submit} />}>
+    <FormScreen
+      title="Skriv kod"
+      footer={<Button label="Lägg till" disabled={!complete} onPress={submit} />}
+    >
       <ThemedText themeColor="textSecondary" style={styles.center}>
         Koden står under kompisens QR, till exempel K7P-2QX.
       </ThemedText>

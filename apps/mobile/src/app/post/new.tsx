@@ -131,6 +131,7 @@ export default function NewPostScreen() {
 
   return (
     <FormScreen
+      title={Words.newPost}
       footer={
         <>
           {error ? <ThemedText type="error">{error}</ThemedText> : null}

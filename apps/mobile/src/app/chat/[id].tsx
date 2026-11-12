@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Clipboard from 'expo-clipboard';
-import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useIsFocused } from 'expo-router/react-navigation';
 import { FlatList, Image, Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
@@ -33,6 +32,7 @@ import { uploadChatImage } from '@/lib/image-upload';
 import { readersOf } from '@/lib/chat-state';
 import { queryKeys } from '@/lib/query-keys';
 import { sendStoppedTyping, sendTyping } from '@/lib/typing';
+import { ScreenHeader } from '@/components/screen-header';
 import { openPerson } from '@/store/person-sheet';
 import { pressHaptic, tapHaptic } from '@/lib/haptics';
 import { randomId } from '@/lib/random-id';
@@ -399,47 +399,24 @@ export default function ConversationScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <View style={[styles.nav, { borderBottomColor: theme.separator }]}>
-          <IconButton
-            icon="chevron-back"
-            variant="plain"
-            accessibilityLabel={Common.back}
-            onPress={() => router.back()}
-          />
-          <Pressable
-            disabled={!isGroup && !otherMemberId}
-            accessibilityRole="button"
-            accessibilityHint={isGroup ? 'Öppnar gruppinfo' : 'Visar profilen'}
-            onPress={() =>
-              isGroup ? router.push(`/group/${id}`) : otherMemberId && openPerson(otherMemberId)
-            }
-            style={({ pressed }) => [styles.navTitle, pressed && styles.bubblePressed]}
-          >
-            {conversation && userId ? (
+        <ScreenHeader
+          title={title}
+          subtitle={isGroup ? `${memberCount} medlemmar` : undefined}
+          titleHint={isGroup ? 'Öppnar gruppinfo' : 'Visar profilen'}
+          onTitlePress={
+            isGroup || otherMemberId
+              ? () =>
+                  isGroup ? router.push(`/group/${id}`) : otherMemberId && openPerson(otherMemberId)
+              : undefined
+          }
+          titleLeading={
+            conversation && userId ? (
               <ConversationAvatar conversation={conversation} myUserId={userId} size={36} />
             ) : (
               <Avatar name={title} size={36} />
-            )}
-            <View style={styles.navText}>
-              <View style={styles.navName}>
-                <ThemedText
-                  type="headline"
-                  numberOfLines={1}
-                  accessibilityRole="header"
-                  style={styles.navNameText}
-                >
-                  {title}
-                </ThemedText>
-                <Ionicons name="chevron-forward" size={16} color={theme.textSecondary} />
-              </View>
-              {isGroup ? (
-                <ThemedText type="caption" themeColor="textSecondary">
-                  {memberCount} medlemmar
-                </ThemedText>
-              ) : null}
-            </View>
-          </Pressable>
-        </View>
+            )
+          }
+        />
         {conversationError ? (
           <ThemedText themeColor="textSecondary" style={styles.goneNotice}>
             Du är inte längre med i den här chatten.
@@ -640,18 +617,6 @@ export default function ConversationScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  nav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.two,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  navText: { flex: 1 },
-  navName: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
-  navNameText: { flexShrink: 1 },
-  navTitle: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   goneNotice: { textAlign: 'center', padding: Spacing.three },
   list: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, gap: 2, flexGrow: 1 },
   reactionBar: {

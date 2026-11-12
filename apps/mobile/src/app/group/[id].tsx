@@ -36,8 +36,11 @@ import { openReport } from '@/store/report-sheet';
 import { confirmLeaveGroup } from '@/features/chat/actions';
 import { useUserId } from '@/hooks/use-user-id';
 import { pickImage } from '@/lib/pick-image';
-import { ModalHeader } from '@/components/modal-header';
+import { ScreenHeader } from '@/components/screen-header';
+import { useHeaderReveal } from '@/hooks/use-header-reveal';
 import { Common } from '@/constants/strings';
+
+const TITLE_REVEAL_Y = 120;
 
 function byRoleThenName(a: ConversationMember, b: ConversationMember) {
   if (a.role !== b.role) return a.role === 'admin' ? -1 : 1;
@@ -46,6 +49,7 @@ function byRoleThenName(a: ConversationMember, b: ConversationMember) {
 
 export default function GroupInfoScreen() {
   const theme = useTheme();
+  const reveal = useHeaderReveal(TITLE_REVEAL_Y);
   const { id } = useLocalSearchParams<{ id: string }>();
   const userId = useUserId();
   const queryClient = useQueryClient();
@@ -167,10 +171,15 @@ export default function GroupInfoScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <ModalHeader title="Gruppinfo" variant="back" />
+        <ScreenHeader title={title || 'Gruppinfo'} titleVisible={reveal.revealed} />
 
         <KeyboardAvoider style={styles.container}>
-          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <ScrollView
+            onScroll={reveal.onScroll}
+            scrollEventThrottle={reveal.scrollEventThrottle}
+            contentContainerStyle={styles.content}
+            keyboardShouldPersistTaps="handled"
+          >
             {isError ? (
               <ThemedText themeColor="textSecondary" style={styles.center}>
                 Du är inte längre med i den här gruppen.
@@ -246,10 +255,7 @@ export default function GroupInfoScreen() {
                 ) : (
                   <View style={[styles.field, { backgroundColor: theme.backgroundElement }]}>
                     <View style={styles.flex}>
-                      <ThemedText type="caption" themeColor="textSecondary">
-                        Gruppnamn
-                      </ThemedText>
-                      <ThemedText type="headline">{title}</ThemedText>
+                      <ThemedText type="headline">Gruppnamn</ThemedText>
                     </View>
                     <Button
                       label="Ändra"

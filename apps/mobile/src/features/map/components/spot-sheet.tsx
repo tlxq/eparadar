@@ -72,7 +72,6 @@ export function SpotSheet({ spot, hereNow, onClose }: SpotSheetProps) {
         label: uploading ? 'Laddar upp bild …' : 'Ta bild',
         icon: 'camera-outline',
         disabled: uploading,
-        hint: 'Syns i 24 timmar',
         onPress: () => handleAddPhoto(spot.id, 'camera'),
       },
       {

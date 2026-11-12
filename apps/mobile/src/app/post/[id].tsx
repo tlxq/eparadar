@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
 import { ScreenBackground } from '@/components/screen-background';
+import { ScreenHeader } from '@/components/screen-header';
 import { Skeleton } from '@/components/skeleton';
 import { Radius, Spacing } from '@/constants/theme';
 import { PostActionsSheet } from '@/features/feed/components/post-actions-sheet';
@@ -33,7 +34,8 @@ export default function PostScreen() {
 
   return (
     <ScreenBackground style={styles.container}>
-      <SafeAreaView style={styles.container} edges={['bottom']}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <ScreenHeader title="Post" />
         {isLoading ? (
           <View style={styles.skeleton}>
             <Skeleton width="50%" />

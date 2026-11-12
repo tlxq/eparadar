@@ -108,6 +108,7 @@ export function CarForm({ car }: { car?: Car }) {
 
   return (
     <FormScreen
+      title={car ? 'Redigera EPA' : Words.addVehicle}
       footer={
         <>
           {error ? <ThemedText type="error">{error}</ThemedText> : null}

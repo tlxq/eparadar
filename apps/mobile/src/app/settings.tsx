@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { ScreenBackground } from '@/components/screen-background';
+import { ScreenHeader } from '@/components/screen-header';
 import { ThemedText } from '@/components/themed-text';
 import { SectionLabel } from '@/components/section-label';
 import { Spacing } from '@/constants/theme';
@@ -125,7 +126,8 @@ export default function SettingsScreen() {
 
   return (
     <ScreenBackground style={styles.container}>
-      <SafeAreaView style={styles.container} edges={['bottom']}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <ScreenHeader title="Inställningar" />
         <ScrollView contentContainerStyle={styles.content}>
           <SectionLabel style={styles.sectionLabel}>Plats</SectionLabel>
           <SettingsGroup>

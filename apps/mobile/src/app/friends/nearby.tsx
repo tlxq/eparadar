@@ -213,7 +213,7 @@ export default function NearbyRadarScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <ModalHeader title={Words.radar} />
+        <ModalHeader title={Words.radar} leading="close" />
 
         {needsPermission ? (
           <PermissionPrompt blocked={permission === 'blocked'} onAllow={requestPermission} />

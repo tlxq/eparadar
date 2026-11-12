@@ -5,20 +5,22 @@ import { useAuthStore } from '@/store/auth';
 
 type PersonSheetState = {
   userId: string | null;
+  fromMap: boolean;
   close: () => void;
 };
 
 export const usePersonSheetStore = create<PersonSheetState>((set) => ({
   userId: null,
-  close: () => set({ userId: null }),
+  fromMap: false,
+  close: () => set({ userId: null, fromMap: false }),
 }));
 
-export function openPerson(userId: string) {
+export function openPerson(userId: string, options?: { fromMap?: boolean }) {
   if (userId === useAuthStore.getState().session?.user.id) {
     router.navigate('/profile');
     return;
   }
-  usePersonSheetStore.setState({ userId });
+  usePersonSheetStore.setState({ userId, fromMap: !!options?.fromMap });
 }
 
 export function openProfile(userId: string) {

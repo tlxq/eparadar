@@ -34,12 +34,21 @@ import { successHaptic } from '@/lib/haptics';
 
 export function PersonSheetHost() {
   const userId = usePersonSheetStore((state) => state.userId);
+  const fromMap = usePersonSheetStore((state) => state.fromMap);
   const close = usePersonSheetStore((state) => state.close);
   if (!userId) return null;
-  return <PersonSheet key={userId} personId={userId} onClose={close} />;
+  return <PersonSheet key={userId} personId={userId} onClose={close} hideShowOnMap={fromMap} />;
 }
 
-function PersonSheet({ personId, onClose }: { personId: string; onClose: () => void }) {
+function PersonSheet({
+  personId,
+  onClose,
+  hideShowOnMap,
+}: {
+  personId: string;
+  onClose: () => void;
+  hideShowOnMap?: boolean;
+}) {
   const theme = useTheme();
   const myUserId = useUserId();
   const queryClient = useQueryClient();
@@ -116,13 +125,17 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
           disabled: busy,
           onPress: startChat,
         },
-        {
-          label: 'Visa på kartan',
-          icon: 'map-outline',
-          disabled: !location,
-          hint: location ? undefined : 'Delar inte sin plats just nu',
-          onPress: () => router.navigate({ pathname: '/karta', params: { focus: personId } }),
-        },
+        ...(hideShowOnMap
+          ? []
+          : [
+              {
+                label: 'Visa på kartan',
+                icon: 'map-outline' as const,
+                disabled: !location,
+                hint: location ? undefined : 'Delar inte sin plats just nu',
+                onPress: () => router.navigate({ pathname: '/karta', params: { focus: personId } }),
+              },
+            ]),
       ]
     : [
         {

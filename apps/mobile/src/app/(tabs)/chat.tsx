@@ -251,23 +251,25 @@ export default function ChatListScreen() {
             <RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} />
           }
           ListHeaderComponent={
-            <View style={styles.headerBlock}>
-              <ScreenHeader title="Chatt" />
-              {hasAny ? (
-                <View style={[styles.search, { backgroundColor: theme.backgroundElement }]}>
-                  <Ionicons name="search" size={18} color={theme.textSecondary} />
-                  <TextInput
-                    value={query}
-                    onChangeText={setQuery}
-                    placeholder="Sök i chattar"
-                    placeholderTextColor={theme.textSecondary}
-                    accessibilityLabel="Sök i chattar"
-                    returnKeyType="search"
-                    style={[styles.searchInput, { color: theme.text }]}
-                  />
-                </View>
-              ) : null}
-            </View>
+            <>
+              <ScreenHeader root title="Chatt" />
+              <View style={styles.headerBlock}>
+                {hasAny ? (
+                  <View style={[styles.search, { backgroundColor: theme.backgroundElement }]}>
+                    <Ionicons name="search" size={18} color={theme.textSecondary} />
+                    <TextInput
+                      value={query}
+                      onChangeText={setQuery}
+                      placeholder="Sök i chattar"
+                      placeholderTextColor={theme.textSecondary}
+                      accessibilityLabel="Sök i chattar"
+                      returnKeyType="search"
+                      style={[styles.searchInput, { color: theme.text }]}
+                    />
+                  </View>
+                ) : null}
+              </View>
+            </>
           }
           ListEmptyComponent={
             isLoading ? (
@@ -309,7 +311,10 @@ export default function ChatListScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
-  headerBlock: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
+  headerBlock: {
+    paddingHorizontal: Spacing.three,
+    paddingBottom: Spacing.two,
+  },
   search: {
     flexDirection: 'row',
     alignItems: 'center',

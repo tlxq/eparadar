@@ -342,7 +342,7 @@ export function MessageBubble({
           {message.meetup_id ? (
             <MeetupCard meetupId={message.meetup_id} onLongPress={() => onLongPress(message)} />
           ) : null}
-          {message.body.trim() ? (
+          {message.body.trim() && !message.meetup_id ? (
             <Pressable
               accessibilityRole="button"
               onPress={

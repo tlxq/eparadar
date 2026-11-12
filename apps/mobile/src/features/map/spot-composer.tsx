@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
-import { Button } from '@/components/button';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Words } from '@/constants/strings';
@@ -71,7 +70,12 @@ export function SpotComposer({
   ];
 
   return (
-    <FormSheet title="Placera spot" onClose={onClose} gap="four">
+    <FormSheet
+      title="Placera spot"
+      onClose={onClose}
+      gap="four"
+      action={{ label: Words.place, onPress: handleSubmit, loading: saving }}
+    >
       <View style={styles.kinds}>
         <Pressable
           accessibilityRole="radio"
@@ -139,8 +143,6 @@ export function SpotComposer({
       <ThemedText type="caption" themeColor="textSecondary">
         Bara dina kompisar ser den. Du kan ta bort den när du vill.
       </ThemedText>
-
-      <Button label={Words.place} onPress={handleSubmit} loading={saving} />
     </FormSheet>
   );
 }

@@ -94,11 +94,13 @@ export default function FeedScreen() {
             <RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} />
           }
           ListHeaderComponent={
-            <View style={styles.headerBlock}>
-              <ScreenHeader title="Flöde" />
-              {onMap.length > 0 ? <OnMapRow friends={onMap} /> : null}
-              {hasFriends ? <EveningCard friendsOut={onMap} /> : null}
-            </View>
+            <>
+              <ScreenHeader root title="Flöde" />
+              <View style={styles.headerBlock}>
+                {onMap.length > 0 ? <OnMapRow friends={onMap} /> : null}
+                {hasFriends ? <EveningCard friendsOut={onMap} /> : null}
+              </View>
+            </>
           }
           ListEmptyComponent={
             isLoading || friendsLoading ? (

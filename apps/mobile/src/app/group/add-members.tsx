@@ -91,6 +91,7 @@ export default function AddMembersScreen() {
 
   return (
     <FormScreen
+      title="Lägg till medlemmar"
       footer={
         <>
           {error ? <ThemedText type="error">{error}</ThemedText> : null}

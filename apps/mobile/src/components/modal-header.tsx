@@ -1,46 +1,60 @@
 import type { ReactNode } from 'react';
 import { router } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
 
+import { Button } from '@/components/button';
+import { HeaderBar } from '@/components/header-bar';
 import { IconButton } from '@/components/icon-button';
-import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
 import { Common } from '@/constants/strings';
+
+type ModalHeaderAction = {
+  label: string;
+  onPress: () => void;
+  loading?: boolean;
+  disabled?: boolean;
+};
 
 type ModalHeaderProps = {
   title: string;
-  variant?: 'close' | 'back';
-  actions?: ReactNode;
+  leading?: 'cancel' | 'close';
+  onClose?: () => void;
+  action?: ModalHeaderAction;
+  trailing?: ReactNode;
+  titleVisible?: boolean;
 };
 
-export function ModalHeader({ title, variant = 'close', actions }: ModalHeaderProps) {
+export function ModalHeader({
+  title,
+  leading = 'cancel',
+  onClose,
+  action,
+  trailing,
+  titleVisible,
+}: ModalHeaderProps) {
+  const close = onClose ?? (() => router.back());
   return (
-    <View style={styles.nav}>
-      {variant === 'back' ? (
-        <IconButton
-          icon="chevron-back"
-          variant="plain"
-          accessibilityLabel={Common.back}
-          onPress={() => router.back()}
-        />
-      ) : (
-        <IconButton icon="close" accessibilityLabel={Common.close} onPress={() => router.back()} />
-      )}
-      <ThemedText type="headline" accessibilityRole="header" numberOfLines={1}>
-        {title}
-      </ThemedText>
-      <View style={styles.spacer}>{actions}</View>
-    </View>
+    <HeaderBar
+      title={title}
+      titleVisible={titleVisible}
+      left={
+        leading === 'close' ? (
+          <IconButton icon="close" accessibilityLabel={Common.close} onPress={close} />
+        ) : (
+          <Button label={Common.cancel} variant="ghost" size="sm" onPress={close} />
+        )
+      }
+      right={
+        action ? (
+          <Button
+            label={action.label}
+            size="sm"
+            loading={action.loading}
+            disabled={action.disabled}
+            onPress={action.onPress}
+          />
+        ) : (
+          trailing
+        )
+      }
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  nav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-  },
-  spacer: { width: 40, alignItems: 'flex-end' },
-});

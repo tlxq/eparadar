@@ -52,18 +52,17 @@ export default function FriendsScreen() {
           }
           ListHeaderComponent={
             <>
-              <View style={styles.headerBlock}>
-                <ScreenHeader
-                  title={Words.friends}
-                  actions={
-                    <IconButton
-                      icon="person-add-outline"
-                      accessibilityLabel={Words.addFriend}
-                      onPress={() => router.push('/friends/add')}
-                    />
-                  }
-                />
-              </View>
+              <ScreenHeader
+                root
+                title={Words.friends}
+                actions={
+                  <IconButton
+                    icon="person-add-outline"
+                    accessibilityLabel={Words.addFriend}
+                    onPress={() => router.push('/friends/add')}
+                  />
+                }
+              />
               {requests && requests.length > 0 ? (
                 <View style={styles.section}>
                   <SectionLabel
@@ -114,7 +113,6 @@ export default function FriendsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
-  headerBlock: { paddingHorizontal: Spacing.three },
   section: { marginBottom: Spacing.three },
   label: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two },
 });

@@ -8,7 +8,8 @@ import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { DropdownButton, type MenuItem } from '@/components/dropdown-menu';
 import { ErrorState } from '@/components/error-state';
-import { IconButton } from '@/components/icon-button';
+import { ModalHeader } from '@/components/modal-header';
+import { useHeaderReveal } from '@/hooks/use-header-reveal';
 import { reportItem } from '@/features/moderation/use-moderation-items';
 import { ScreenBackground } from '@/components/screen-background';
 import { Skeleton } from '@/components/skeleton';
@@ -31,8 +32,11 @@ import { showToast } from '@/store/toast';
 import { useUserId } from '@/hooks/use-user-id';
 import { Common, Words } from '@/constants/strings';
 
+const TITLE_REVEAL_Y = 80;
+
 export default function MeetupDetailScreen() {
   const theme = useTheme();
+  const reveal = useHeaderReveal(TITLE_REVEAL_Y);
   const { id } = useLocalSearchParams<{ id: string }>();
   const userId = useUserId();
 
@@ -63,18 +67,16 @@ export default function MeetupDetailScreen() {
 
   if (isError) {
     return (
-      <ScreenBackground style={styles.center}>
-        <View style={styles.errorClose}>
-          <IconButton
-            icon="close"
-            accessibilityLabel={Common.close}
-            onPress={() => router.back()}
-          />
-        </View>
-        <ErrorState
-          message="Träffen gick inte att hämta. Den kan ha tagits bort, eller så strular nätet."
-          onRetry={refetch}
-        />
+      <ScreenBackground style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+          <ModalHeader title="" leading="close" />
+          <View style={styles.center}>
+            <ErrorState
+              message="Träffen gick inte att hämta. Den kan ha tagits bort, eller så strular nätet."
+              onRetry={refetch}
+            />
+          </View>
+        </SafeAreaView>
       </ScreenBackground>
     );
   }
@@ -83,13 +85,7 @@ export default function MeetupDetailScreen() {
     return (
       <ScreenBackground style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
-          <View style={styles.header}>
-            <IconButton
-              icon="close"
-              accessibilityLabel={Common.close}
-              onPress={() => router.back()}
-            />
-          </View>
+          <ModalHeader title="" leading="close" />
           <View style={styles.content}>
             <Skeleton width="70%" height={32} />
             <Skeleton width="45%" />
@@ -133,16 +129,18 @@ export default function MeetupDetailScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <DropdownButton items={menuItems} accessibilityLabel="Fler val för träffen" />
-          <IconButton
-            icon="close"
-            accessibilityLabel={Common.close}
-            onPress={() => router.back()}
-          />
-        </View>
+        <ModalHeader
+          title={meetup.title}
+          leading="close"
+          titleVisible={reveal.revealed}
+          trailing={<DropdownButton items={menuItems} accessibilityLabel="Fler val för träffen" />}
+        />
 
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView
+          onScroll={reveal.onScroll}
+          scrollEventThrottle={reveal.scrollEventThrottle}
+          contentContainerStyle={styles.content}
+        >
           {meetup.here_now_count > 0 && (
             <View style={[styles.liveBanner, { backgroundColor: `${theme.success}24` }]}>
               <View style={[styles.liveDot, { backgroundColor: theme.success }]} />
@@ -263,7 +261,7 @@ export default function MeetupDetailScreen() {
 
           <View style={styles.interestedButton}>
             <Button
-              label={`${meetup.isInterested ? 'Du är intresserad' : 'Jag är intresserad'} · ${meetup.interest_count}`}
+              label={meetup.isInterested ? 'Du är intresserad' : 'Jag är intresserad'}
               icon={meetup.isInterested ? 'checkmark-circle' : 'eye-outline'}
               variant={meetup.isInterested ? 'secondary' : 'primary'}
               onPress={() => toggleInterest.mutate(!meetup.isInterested)}
@@ -305,18 +303,10 @@ const styles = StyleSheet.create({
   },
   titleText: { flex: 1 },
   container: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  errorClose: { position: 'absolute', top: Spacing.five, right: Spacing.three },
+  center: { flex: 1, justifyContent: 'center' },
   safeArea: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    paddingTop: Spacing.two,
-  },
   skeletonButton: { marginTop: Spacing.four },
-  content: { paddingHorizontal: Spacing.four, paddingBottom: Spacing.five, gap: Spacing.two },
+  content: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.five, gap: Spacing.two },
   liveBanner: {
     flexDirection: 'row',
     alignItems: 'center',

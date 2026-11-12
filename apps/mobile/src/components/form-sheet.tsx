@@ -1,13 +1,11 @@
 import type { ReactNode } from 'react';
-import { Modal, ScrollView, StyleSheet, View } from 'react-native';
+import { Modal, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button } from '@/components/button';
 import { KeyboardAvoider } from '@/components/keyboard-avoider';
-import { ThemedText } from '@/components/themed-text';
+import { ModalHeader } from '@/components/modal-header';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { Common } from '@/constants/strings';
 
 type FormSheetProps = {
   title: string;
@@ -41,25 +39,7 @@ export function FormSheet({
           edges={['top', 'bottom']}
         >
           <KeyboardAvoider style={styles.sheet}>
-            <View style={styles.header}>
-              <View style={styles.side}>
-                <Button label={Common.cancel} variant="ghost" size="sm" onPress={onClose} />
-              </View>
-              <ThemedText type="headline" accessibilityRole="header" numberOfLines={1}>
-                {title}
-              </ThemedText>
-              <View style={[styles.side, styles.sideEnd]}>
-                {action ? (
-                  <Button
-                    label={action.label}
-                    size="sm"
-                    loading={action.loading}
-                    disabled={action.disabled}
-                    onPress={action.onPress}
-                  />
-                ) : null}
-              </View>
-            </View>
+            <ModalHeader title={title} onClose={onClose} action={action} />
             <ScrollView
               contentContainerStyle={[styles.body, { gap: Spacing[gap] }]}
               keyboardShouldPersistTaps="handled"
@@ -75,15 +55,5 @@ export function FormSheet({
 
 const styles = StyleSheet.create({
   sheet: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: Spacing.two,
-    paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.two,
-  },
-  side: { minWidth: 80, alignItems: 'flex-start' },
-  sideEnd: { alignItems: 'flex-end' },
   body: { padding: Spacing.three },
 });

@@ -441,8 +441,7 @@ export const MAP_HTML = `<!DOCTYPE html>
         return;
       }
       const cls = 'mk person me' + (me.ghost ? ' is-ghost' : '') + (me.approximate ? ' is-approx' : '');
-      const below = me.ghost && step === 'street' ? '<span class="below pill">Spökläge · bara du ser dig</span>' : '';
-      const html = personHtml(me, below, true);
+      const html = personHtml(me, '', true);
       if (!meMarker) {
         const el = makeEl(cls, html);
         el.addEventListener('click', function (e) { e.stopPropagation(); sendToNative({ type: 'ME_TAP' }); });

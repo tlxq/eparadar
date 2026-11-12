@@ -11,7 +11,7 @@ import { Button } from '@/components/button';
 import { DropdownButton, type MenuItem } from '@/components/dropdown-menu';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
-import { ModalHeader } from '@/components/modal-header';
+import { ScreenHeader } from '@/components/screen-header';
 import { ScreenBackground } from '@/components/screen-background';
 import { SectionLabel } from '@/components/section-label';
 import { Skeleton } from '@/components/skeleton';
@@ -33,6 +33,7 @@ import {
   usePersonPosts,
   usePersonProfile,
 } from '@/features/profile/hooks';
+import { useHeaderReveal } from '@/hooks/use-header-reveal';
 import { usePullRefresh } from '@/hooks/use-pull-refresh';
 import { useTheme } from '@/hooks/use-theme';
 import { useUserId } from '@/hooks/use-user-id';
@@ -45,6 +46,7 @@ import { showToast } from '@/store/toast';
 
 const AVATAR_SIZE = 96;
 const BIG_CAR_WIDTH = 240;
+const TITLE_REVEAL_Y = 140;
 
 type Section = 'cars' | 'mutual' | 'posts';
 
@@ -63,6 +65,7 @@ function PersonProfile({ personId }: { personId: string }) {
   const scrollRef = useRef<ScrollView>(null);
   const offsets = useRef<Record<Section, number>>({ cars: 0, mutual: 0, posts: 0 });
   const [busy, setBusy] = useState(false);
+  const reveal = useHeaderReveal(TITLE_REVEAL_Y);
 
   const profileQuery = usePersonProfile(personId);
   const profile = profileQuery.data;
@@ -93,6 +96,8 @@ function PersonProfile({ personId }: { personId: string }) {
   const glow = carColorHex(latestCarColor(cars));
   const requested = !!outgoing?.some((r) => r.addressee_id === personId);
   const location = locations?.find((l) => l.user_id === personId) ?? null;
+
+  const hasPostsSection = postsQuery.isLoading || postsQuery.isError || posts.length > 0;
 
   function scrollTo(section: Section) {
     scrollRef.current?.scrollTo({ y: Math.max(0, offsets.current[section] - Spacing.three) });
@@ -149,9 +154,11 @@ function PersonProfile({ personId }: { personId: string }) {
   }
 
   return (
-    <Shell title={name} menu={menu} glow={glow}>
+    <Shell title={name} menu={menu} glow={glow} titleVisible={reveal.revealed}>
       <ScrollView
         ref={scrollRef}
+        onScroll={reveal.onScroll}
+        scrollEventThrottle={reveal.scrollEventThrottle}
         contentContainerStyle={styles.scroll}
         refreshControl={<RefreshControl refreshing={pull.refreshing} onRefresh={pull.onRefresh} />}
       >
@@ -240,7 +247,7 @@ function PersonProfile({ personId }: { personId: string }) {
                 value={postCountQuery.data}
                 label={Counts.posts}
                 hint="Visar posterna"
-                onPress={() => scrollTo('posts')}
+                onPress={hasPostsSection ? () => scrollTo('posts') : undefined}
               />
             </View>
           ) : null}
@@ -326,35 +333,33 @@ function PersonProfile({ personId }: { personId: string }) {
               )}
             </View>
 
-            <View
-              onLayout={(event) => {
-                offsets.current.posts = event.nativeEvent.layout.y;
-              }}
-              style={styles.section}
-            >
-              <SectionLabel style={styles.label}>Poster</SectionLabel>
-              {postsQuery.isLoading ? (
-                <PostGridSkeleton />
-              ) : postsQuery.isError && posts.length === 0 ? (
-                <ErrorState message={loadError('Posterna')} onRetry={postsQuery.refetch} />
-              ) : posts.length === 0 ? (
-                <ThemedText type="small" themeColor="textSecondary" style={styles.note}>
-                  {`${name} har inte postat något än.`}
-                </ThemedText>
-              ) : (
-                <PostGrid posts={posts} />
-              )}
-              {postsQuery.hasNextPage ? (
-                <View style={styles.padded}>
-                  <Button
-                    label="Visa fler"
-                    variant="secondary"
-                    loading={postsQuery.isFetchingNextPage}
-                    onPress={() => postsQuery.fetchNextPage()}
-                  />
-                </View>
-              ) : null}
-            </View>
+            {hasPostsSection ? (
+              <View
+                onLayout={(event) => {
+                  offsets.current.posts = event.nativeEvent.layout.y;
+                }}
+                style={styles.section}
+              >
+                <SectionLabel style={styles.label}>Poster</SectionLabel>
+                {postsQuery.isLoading ? (
+                  <PostGridSkeleton />
+                ) : postsQuery.isError && posts.length === 0 ? (
+                  <ErrorState message={loadError('Posterna')} onRetry={postsQuery.refetch} />
+                ) : (
+                  <PostGrid posts={posts} />
+                )}
+                {postsQuery.hasNextPage ? (
+                  <View style={styles.padded}>
+                    <Button
+                      label="Visa fler"
+                      variant="secondary"
+                      loading={postsQuery.isFetchingNextPage}
+                      onPress={() => postsQuery.fetchNextPage()}
+                    />
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
           </>
         ) : profile ? (
           <View
@@ -379,10 +384,11 @@ type ShellProps = {
   title: string;
   menu: MenuItem[];
   glow?: string;
+  titleVisible?: boolean;
   children: ReactNode;
 };
 
-function Shell({ title, menu, glow, children }: ShellProps) {
+function Shell({ title, menu, glow, titleVisible, children }: ShellProps) {
   return (
     <ScreenBackground style={styles.container}>
       {glow ? (
@@ -393,9 +399,9 @@ function Shell({ title, menu, glow, children }: ShellProps) {
         />
       ) : null}
       <SafeAreaView style={styles.container} edges={['top']}>
-        <ModalHeader
+        <ScreenHeader
           title={title}
-          variant="back"
+          titleVisible={titleVisible}
           actions={
             menu.length > 0 ? (
               <DropdownButton items={menu} accessibilityLabel={`Fler val för ${title}`} />

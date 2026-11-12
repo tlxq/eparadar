@@ -9,8 +9,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
+import { ModalHeader } from '@/components/modal-header';
 import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
+import { Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import {
   normalizeFriendCode,
@@ -137,6 +139,7 @@ export default function RedeemFriendCodeScreen() {
   return (
     <ScreenBackground style={styles.container}>
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <ModalHeader title={Words.addFriend} leading="close" />
         <View style={styles.body} accessibilityLiveRegion="polite">
           {!copy ? (
             <>
@@ -216,7 +219,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.three,
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: Spacing.three,
   },
   iconTile: {
     width: 96,
