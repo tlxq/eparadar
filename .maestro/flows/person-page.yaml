@@ -7,6 +7,6 @@ name: Kompisens profil visar EPA:n
 - tapOn: Liam Berg
 - tapOn: Visa profil
 - scrollUntilVisible:
-    element: Garage
+    element: EPA:or
 - runFlow: ../subflows/settle.yaml
 - takeScreenshot: kompis-profil

@@ -16,7 +16,7 @@ import { ScreenBackground } from '@/components/screen-background';
 import { SectionLabel } from '@/components/section-label';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
-import { Counts, Words, loadError, plural } from '@/constants/strings';
+import { Counts, loadError, plural, Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { useOutgoingRequests } from '@/features/friends/hooks';
 import { carColorHex } from '@/features/map/car-colors';
@@ -227,7 +227,7 @@ function PersonProfile({ personId }: { personId: string }) {
               <Stat
                 value={cars?.length}
                 label={Counts.vehicles}
-                hint="Visar garaget"
+                hint={`Visar ${Words.vehicles}`}
                 onPress={() => scrollTo('cars')}
               />
               <Stat
@@ -253,7 +253,7 @@ function PersonProfile({ personId }: { personId: string }) {
             }}
             style={styles.section}
           >
-            <SectionLabel style={styles.label}>Garage</SectionLabel>
+            <SectionLabel style={styles.label}>{Words.vehicles}</SectionLabel>
             {cars && cars.length > 0 ? (
               <ScrollView
                 horizontal

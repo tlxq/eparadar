@@ -27,7 +27,7 @@ describe('formatPostAge', () => {
   });
 
   it('uses igår, weekday, then date', () => {
-    expect(formatPostAge(at(1, 9), now)).toBe('igår');
+    expect(formatPostAge(at(1, 9), now)).toBe('i går');
     expect(formatPostAge(at(3, 9), now)).toBe('mån');
     expect(formatPostAge(at(10, 9), now)).toBe('28 sep');
     expect(formatPostAge(new Date(2025, 0, 2).toISOString(), now)).toBe('2 jan 2025');
@@ -37,15 +37,15 @@ describe('formatPostAge', () => {
 describe('formatChatTimestamp', () => {
   it('shows clock time today and weekday this week', () => {
     expect(formatChatTimestamp(at(0, 9, 5), now)).toBe('09:05');
-    expect(formatChatTimestamp(at(1, 9), now)).toBe('igår');
+    expect(formatChatTimestamp(at(1, 9), now)).toBe('i går');
     expect(formatChatTimestamp(at(2, 9), now)).toBe('tis');
   });
 });
 
 describe('formatDayDivider', () => {
   it('labels today and yesterday', () => {
-    expect(formatDayDivider(at(0, 13, 2), now)).toBe('Idag 13:02');
-    expect(formatDayDivider(at(1, 8), now)).toBe('Igår 08:00');
+    expect(formatDayDivider(at(0, 13, 2), now)).toBe('I dag 13:02');
+    expect(formatDayDivider(at(1, 8), now)).toBe('I går 08:00');
   });
 });
 

@@ -27,28 +27,28 @@ describe('formatMeetupTime', () => {
   });
 
   it('shows Slut after the meetup', () => {
-    expect(formatMeetupTime(at(-4), now)).toMatch(/^Slut · idag /);
-    expect(formatMeetupTime(at(-24), now)).toMatch(/^Slut · igår /);
+    expect(formatMeetupTime(at(-4), now)).toMatch(/^Slut · i dag /);
+    expect(formatMeetupTime(at(-24), now)).toMatch(/^Slut · i går /);
   });
 
   it('shows the day for upcoming meetups', () => {
-    expect(formatMeetupTime(at(1), now)).toMatch(/^Ikväll · /);
+    expect(formatMeetupTime(at(1), now)).toMatch(/^I kväll · /);
     expect(formatMeetupTime(at(20), now)).toMatch(/^I morgon · /);
   });
 });
 
 describe('quickTimeToDate', () => {
-  it('uses 19:00 for Ikväll during the day', () => {
+  it('uses 19:00 for I kväll during the day', () => {
     const noon = new Date(2026, 9, 12, 14, 0);
     expect(exactTimeText(quickTimeToDate('tonight', noon)!)).toBe('Mån 12/10 · 19:00');
   });
 
-  it('keeps Ikväll on the same evening after 19', () => {
+  it('keeps I kväll on the same evening after 19', () => {
     const late = new Date(2026, 9, 12, 20, 10);
     expect(exactTimeText(quickTimeToDate('tonight', late)!)).toBe('Mån 12/10 · 21:00');
   });
 
-  it('has no Ikväll after 23', () => {
+  it('has no I kväll after 23', () => {
     expect(quickTimeToDate('tonight', new Date(2026, 9, 12, 23, 5))).toBeNull();
   });
 

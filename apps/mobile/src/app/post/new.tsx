@@ -202,7 +202,7 @@ export default function NewPostScreen() {
           color={place ? theme.accent : theme.textSecondary}
         />
         <View style={styles.dropText}>
-          <ThemedText type="headline">Släpp på kartan</ThemedText>
+          <ThemedText type="headline">{Words.placeOnMap}</ThemedText>
           <ThemedText type="caption" themeColor="textSecondary">
             {place
               ? 'Kompisar ser posten där du är nu, i 24 timmar. Stäng av här om du ångrar dig.'
@@ -213,7 +213,7 @@ export default function NewPostScreen() {
           value={!!place}
           onValueChange={togglePlace}
           disabled={locating}
-          accessibilityLabel="Släpp posten på kartan"
+          accessibilityLabel={Words.placePostOnMap}
         />
       </View>
 

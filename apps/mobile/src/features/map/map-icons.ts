@@ -1,3 +1,4 @@
+import { Words } from '@/constants/strings';
 import { Colors, MapColors } from '@eparadar/theme/colors';
 
 const WHITE = Colors.dark.text;
@@ -54,7 +55,7 @@ export const MEETUP_VIBES = [
   },
   {
     key: 'hang',
-    label: 'Häng',
+    label: Words.talk,
     hint: 'Stå och snacka EPA',
     icon: duo(
       `<circle cx="17" cy="16" r="7.5" fill="${BLUE}" fill-opacity=".5"/><circle cx="32" cy="17" r="6.5" fill="${BLUE}" fill-opacity=".5"/>`,

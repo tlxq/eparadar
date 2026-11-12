@@ -29,7 +29,7 @@ import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { showToast } from '@/store/toast';
 import { useUserId } from '@/hooks/use-user-id';
-import { Common } from '@/constants/strings';
+import { Common, Words } from '@/constants/strings';
 
 export default function MeetupDetailScreen() {
   const theme = useTheme();
@@ -179,7 +179,9 @@ export default function MeetupDetailScreen() {
                 size={24}
               />
               <ThemedText themeColor="textSecondary">
-                {`${meetup.creator.display_name} skapade denna`}
+                {meetup.creator_id === userId
+                  ? Words.creatorOfThis
+                  : `${meetup.creator.display_name} skapade den här`}
               </ThemedText>
             </Pressable>
           ) : null}

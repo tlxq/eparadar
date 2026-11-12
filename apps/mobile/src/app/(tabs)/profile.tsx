@@ -294,7 +294,7 @@ export default function ProfileScreen() {
                 offsets.current.cars = event.nativeEvent.layout.y;
               }}
             >
-              <SectionLabel>{`Mina ${Words.vehicles}`}</SectionLabel>
+              <SectionLabel>{Words.vehicles}</SectionLabel>
               <Button
                 label="Lägg till"
                 icon="add"
@@ -351,7 +351,7 @@ export default function ProfileScreen() {
           >
             <SectionLabel>{Words.myPosts}</SectionLabel>
             <Button
-              label="Skriv"
+              label={Words.publishPost}
               icon="create-outline"
               size="sm"
               variant="ghost"

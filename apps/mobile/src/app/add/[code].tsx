@@ -1,3 +1,4 @@
+import { Common } from '@/constants/strings';
 import { useEffect, useRef } from 'react';
 import type { ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -65,7 +66,7 @@ function copyFor(outcome: RedeemOutcome, name: string): Copy {
     case 'own_code':
       return {
         title: 'Det där är din egen kod',
-        message: 'Låt kompisen skanna den istället.',
+        message: 'Låt kompisen skanna den i stället.',
         icon: 'person-circle-outline',
         tone: 'info',
       };
@@ -192,11 +193,11 @@ export default function RedeemFriendCodeScreen() {
                 loading={busy}
                 onPress={() => result?.user_id && startChat(result.user_id, { replace: true })}
               />
-              <Button label="Klar" variant="secondary" onPress={done} />
+              <Button label={Common.done} variant="secondary" onPress={done} />
             </>
           ) : (
             <Button
-              label="Klar"
+              label={failed ? Common.back : Common.done}
               variant={failed ? 'secondary' : 'primary'}
               disabled={!copy}
               onPress={done}

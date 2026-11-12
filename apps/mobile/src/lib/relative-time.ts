@@ -1,3 +1,4 @@
+import { Days, sentenceStart } from '@/constants/strings';
 import { clockText, daysBetween } from '@/lib/time';
 
 const WEEKDAYS = ['sön', 'mån', 'tis', 'ons', 'tors', 'fre', 'lör'];
@@ -27,7 +28,7 @@ export function formatPostAge(iso: string, now = new Date()): string {
   if (minutes < 60) return `${minutes} min`;
   const days = daysBetween(date, now);
   if (days === 0) return `${Math.floor(minutes / 60)} tim`;
-  if (days === 1) return 'igår';
+  if (days === 1) return Days.yesterday;
   if (days < 7) return WEEKDAYS[date.getDay()];
   return shortDate(date, now);
 }
@@ -36,7 +37,7 @@ export function formatChatTimestamp(iso: string, now = new Date()): string {
   const date = new Date(iso);
   const days = daysBetween(date, now);
   if (days === 0) return clockText(date);
-  if (days === 1) return 'igår';
+  if (days === 1) return Days.yesterday;
   if (days < 7) return WEEKDAYS[date.getDay()];
   return shortDate(date, now);
 }
@@ -45,8 +46,8 @@ export function formatDayDivider(iso: string, now = new Date()): string {
   const date = new Date(iso);
   const days = daysBetween(date, now);
   const time = clockText(date);
-  if (days === 0) return `Idag ${time}`;
-  if (days === 1) return `Igår ${time}`;
+  if (days === 0) return `${sentenceStart(Days.today)} ${time}`;
+  if (days === 1) return `${sentenceStart(Days.yesterday)} ${time}`;
   if (days < 7) return `${WEEKDAYS[date.getDay()]} ${time}`;
   return `${shortDate(date, now)} ${time}`;
 }

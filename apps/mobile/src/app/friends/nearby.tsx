@@ -280,7 +280,7 @@ export default function NearbyRadarScreen() {
 
         <View style={styles.footer}>
           <Button
-            label="Visa min kod istället"
+            label="Visa min kod i stället"
             icon="qr-code-outline"
             variant="secondary"
             onPress={() => router.replace('/friends/code')}

@@ -1,3 +1,4 @@
+import { Common, Days, sentenceStart } from '@/constants/strings';
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
@@ -15,8 +16,8 @@ const MINUTES = [0, 15, 30, 45];
 
 function dayChipLabel(day: Date, today: Date): string {
   const diff = Math.round((startOfDay(day).getTime() - today.getTime()) / DAY_MS);
-  if (diff === 0) return 'Idag';
-  if (diff === 1) return 'I morgon';
+  if (diff === 0) return sentenceStart(Days.today);
+  if (diff === 1) return sentenceStart(Days.tomorrow);
   return shortDayText(day);
 }
 
@@ -52,7 +53,7 @@ export function TimePickerSheet({ value, onClose, onPick }: TimePickerSheetProps
       title="Välj tid"
       onClose={onClose}
       gap="four"
-      action={{ label: 'Klar', disabled: !ok, onPress: () => onPick(picked) }}
+      action={{ label: Common.done, disabled: !ok, onPress: () => onPick(picked) }}
     >
       <View style={styles.section}>
         <SectionLabel>Dag</SectionLabel>

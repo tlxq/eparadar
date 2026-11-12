@@ -1,3 +1,4 @@
+import { Days, sentenceStart } from '@/constants/strings';
 import { clockText } from '@/lib/time';
 export type QuickTimeOption = 'tonight' | 'tomorrow' | 'weekend';
 
@@ -59,10 +60,10 @@ function dayLabel(startsAt: Date, now: Date): string {
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
   if (startsAt.toDateString() === now.toDateString()) {
-    return startsAt.getHours() >= 17 ? 'Ikväll' : 'Idag';
+    return sentenceStart(startsAt.getHours() >= 17 ? Days.tonight : Days.today);
   }
-  if (startsAt.toDateString() === tomorrow.toDateString()) return 'I morgon';
-  if (startsAt.toDateString() === yesterday.toDateString()) return 'Igår';
+  if (startsAt.toDateString() === tomorrow.toDateString()) return sentenceStart(Days.tomorrow);
+  if (startsAt.toDateString() === yesterday.toDateString()) return sentenceStart(Days.yesterday);
   return `${WEEKDAYS[startsAt.getDay()]} ${startsAt.getDate()}/${startsAt.getMonth() + 1}`;
 }
 
@@ -81,7 +82,7 @@ export function formatMeetupTime(startsAtIso: string, now = new Date()): string 
   if (phase === 'over') {
     const day =
       startsAt.toDateString() === now.toDateString()
-        ? 'idag'
+        ? Days.today
         : dayLabel(startsAt, now).toLowerCase();
     return `Slut · ${day} ${time}`;
   }

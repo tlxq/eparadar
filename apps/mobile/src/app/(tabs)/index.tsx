@@ -122,7 +122,7 @@ export default function FeedScreen() {
                 title="Inga poster än"
                 message="Dina kompisar har inte postat något än. Visa upp kärran eller dela en bild från helgens tur!"
                 action={{
-                  label: 'Skriv första posten',
+                  label: Words.postSomething,
                   icon: 'create-outline',
                   onPress: () => router.push('/post/new'),
                 }}

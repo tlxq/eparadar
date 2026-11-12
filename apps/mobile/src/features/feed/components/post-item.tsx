@@ -1,3 +1,4 @@
+import { Words } from '@/constants/strings';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -122,7 +123,7 @@ export function PostItem({ post, onMore }: { post: Post; onMore?: () => void }) 
           ]}
         >
           <Ionicons name="location" size={14} color={theme.accent} />
-          <ThemedText type="caption">Släppt på kartan · visa</ThemedText>
+          <ThemedText type="caption">{`${Words.placedOnMap} · visa`}</ThemedText>
         </Pressable>
       ) : null}
       <ReactionBar post={post} />

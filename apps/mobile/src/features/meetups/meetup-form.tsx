@@ -11,7 +11,7 @@ import { KeyboardAvoider } from '@/components/keyboard-avoider';
 import { ScreenBackground } from '@/components/screen-background';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
-import { Common } from '@/constants/strings';
+import { Common, Days, sentenceStart } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { MEETUP_VIBES, type MeetupVibe } from '@/features/map/map-icons';
 import { TimePickerSheet } from '@/features/meetups/time-picker-sheet';
@@ -24,8 +24,8 @@ import {
 import { useTheme } from '@/hooks/use-theme';
 
 const TIME_OPTIONS: { value: QuickTimeOption; label: string }[] = [
-  { value: 'tonight', label: 'Ikväll' },
-  { value: 'tomorrow', label: 'I morgon' },
+  { value: 'tonight', label: sentenceStart(Days.tonight) },
+  { value: 'tomorrow', label: sentenceStart(Days.tomorrow) },
   { value: 'weekend', label: 'Helgen' },
 ];
 
