@@ -7,7 +7,7 @@ import { ErrorState } from '@/components/error-state';
 import { ScreenBackground } from '@/components/screen-background';
 import { SkeletonList } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
-import { Common } from '@/constants/strings';
+import { Common, loadError } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { REPORT_REASONS } from '@/features/moderation/api';
 import {
@@ -132,10 +132,7 @@ export default function AdminScreen() {
         {isPending ? (
           <SkeletonList rows={4} style={styles.content} />
         ) : isError && !data ? (
-          <ErrorState
-            message="Rapporterna gick inte att ladda. Kolla nätet och testa igen."
-            onRetry={refetch}
-          />
+          <ErrorState message={loadError('Rapporterna')} onRetry={refetch} />
         ) : (
           <FlatList
             data={data}

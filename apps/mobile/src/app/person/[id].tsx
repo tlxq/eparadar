@@ -16,13 +16,13 @@ import { ScreenBackground } from '@/components/screen-background';
 import { SectionLabel } from '@/components/section-label';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
-import { Common, Counts, plural, Words } from '@/constants/strings';
+import { Counts, Words, loadError, plural } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { useOutgoingRequests } from '@/features/friends/hooks';
 import { carColorHex } from '@/features/map/car-colors';
 import { useFriendLocations } from '@/features/map/hooks';
 import { latestCarColor } from '@/features/map/markers';
-import { useBlockPerson } from '@/features/moderation/use-block-person';
+import { useModerationItems } from '@/features/moderation/use-moderation-items';
 import { PostGrid, PostGridSkeleton } from '@/features/profile/components/post-grid';
 import { CarCard, Stat } from '@/features/profile/components/profile-parts';
 import {
@@ -41,7 +41,6 @@ import { getErrorMessage } from '@/lib/errors';
 import { successHaptic } from '@/lib/haptics';
 import { queryKeys } from '@/lib/query-keys';
 import { openCar, openProfile } from '@/store/person-sheet';
-import { openReport } from '@/store/report-sheet';
 import { showToast } from '@/store/toast';
 
 const AVATAR_SIZE = 96;
@@ -60,7 +59,7 @@ function PersonProfile({ personId }: { personId: string }) {
   const theme = useTheme();
   const myUserId = useUserId();
   const queryClient = useQueryClient();
-  const blockPerson = useBlockPerson();
+  const moderationItems = useModerationItems();
   const scrollRef = useRef<ScrollView>(null);
   const offsets = useRef<Record<Section, number>>({ cars: 0, mutual: 0, posts: 0 });
   const [busy, setBusy] = useState(false);
@@ -117,31 +116,16 @@ function PersonProfile({ personId }: { personId: string }) {
     }
   }
 
-  const menu: MenuItem[] = [
-    {
-      label: Common.report,
-      icon: 'flag-outline',
-      disabled: !profile,
-      onPress: () => openReport({ type: 'profile', id: personId, userId: personId, name }),
-    },
-    {
-      label: Common.block,
-      icon: 'ban-outline',
-      destructive: true,
-      disabled: !profile,
-      onPress: async () => {
-        if (await blockPerson(personId, name)) router.back();
-      },
-    },
-  ];
+  const menu: MenuItem[] = moderationItems({
+    report: { type: 'profile', id: personId, userId: personId, name },
+    disabled: !profile,
+    onBlocked: () => router.back(),
+  });
 
   if (profileQuery.isError && !profile) {
     return (
       <Shell title="" menu={[]}>
-        <ErrorState
-          message="Profilen gick inte att ladda. Kolla nätet och testa igen."
-          onRetry={profileQuery.refetch}
-        />
+        <ErrorState message={loadError('Profilen')} onRetry={profileQuery.refetch} />
       </Shell>
     );
   }
@@ -283,10 +267,7 @@ function PersonProfile({ personId }: { personId: string }) {
               {`${name || 'Hen'} har inga ${Words.vehicles} än.`}
             </ThemedText>
           ) : carsQuery.isError ? (
-            <ErrorState
-              message="EPA:orna gick inte att ladda. Kolla nätet och testa igen."
-              onRetry={carsQuery.refetch}
-            />
+            <ErrorState message={loadError('EPA:orna')} onRetry={carsQuery.refetch} />
           ) : (
             <View style={styles.carRow}>
               <Skeleton width={BIG_CAR_WIDTH} height={BIG_CAR_WIDTH + 52} radius={Radius.lg} />
@@ -347,10 +328,7 @@ function PersonProfile({ personId }: { personId: string }) {
               {postsQuery.isLoading ? (
                 <PostGridSkeleton />
               ) : postsQuery.isError && posts.length === 0 ? (
-                <ErrorState
-                  message="Posterna gick inte att ladda. Kolla nätet och testa igen."
-                  onRetry={postsQuery.refetch}
-                />
+                <ErrorState message={loadError('Posterna')} onRetry={postsQuery.refetch} />
               ) : posts.length === 0 ? (
                 <ThemedText type="small" themeColor="textSecondary" style={styles.note}>
                   {`${name} har inte postat något än.`}

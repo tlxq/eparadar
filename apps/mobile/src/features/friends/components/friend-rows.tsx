@@ -8,26 +8,15 @@ import { ListRow } from '@/components/list-row';
 import { Skeleton } from '@/components/skeleton';
 import { Spacing } from '@/constants/theme';
 import { useStartChat } from '@/features/chat/use-start-chat';
-import { useBlockUser } from '@/features/friends/hooks';
+import { useModerationItems } from '@/features/moderation/use-moderation-items';
 import { friendProfile, removeFriend, respondToFriendRequest, type Friendship } from '@/lib/api';
 import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
 import { openPerson } from '@/store/person-sheet';
-import { openReport } from '@/store/report-sheet';
 import { usePendingRemovals } from '@/store/pending-removals';
 import { showToast, showUndoToast } from '@/store/toast';
-import { confirmDestructive } from '@/lib/confirm';
-import { blockedText, Common } from '@/constants/strings';
+import { Common } from '@/constants/strings';
 import { successHaptic } from '@/lib/haptics';
-
-async function confirmBlock(name: string) {
-  return confirmDestructive({
-    title: `Blockera ${name}?`,
-    message: blockedText(name),
-    confirmLabel: Common.block,
-    icon: 'ban-outline',
-  });
-}
 
 function useUndoableRemoval(queryKey: readonly unknown[]) {
   const queryClient = useQueryClient();
@@ -65,7 +54,7 @@ function useUndoableRemoval(queryKey: readonly unknown[]) {
 export function RequestRow({ request, myUserId }: { request: Friendship; myUserId: string }) {
   const queryClient = useQueryClient();
   const requester = request.requester;
-  const block = useBlockUser();
+  const moderationItems = useModerationItems();
   const removeWithUndo = useUndoableRemoval(queryKeys.friendRequests(myUserId));
 
   const accept = useMutation({
@@ -117,26 +106,14 @@ export function RequestRow({ request, myUserId }: { request: Friendship; myUserI
             accessibilityLabel={`Fler val för ${requester.display_name}`}
             disabled={accept.isPending}
             items={[
-              {
-                label: Common.report,
-                icon: 'flag-outline',
-                onPress: () =>
-                  openReport({
-                    type: 'profile',
-                    id: requester.id,
-                    userId: requester.id,
-                    name: requester.display_name,
-                  }),
-              },
-              {
-                label: Common.block,
-                icon: 'ban-outline',
-                destructive: true,
-                onPress: async () => {
-                  const ok = await confirmBlock(requester.display_name);
-                  if (ok) block.mutate(requester.id);
+              ...moderationItems({
+                report: {
+                  type: 'profile',
+                  id: requester.id,
+                  userId: requester.id,
+                  name: requester.display_name,
                 },
-              },
+              }),
             ]}
           />
         </View>
@@ -184,7 +161,7 @@ export function OutgoingRequestRow({
 
 export function FriendRow({ friendship, myUserId }: { friendship: Friendship; myUserId: string }) {
   const friend = friendProfile(friendship, myUserId);
-  const block = useBlockUser();
+  const moderationItems = useModerationItems();
   const { startChat, busy } = useStartChat();
   const removeWithUndo = useUndoableRemoval(queryKeys.friends(myUserId));
 
@@ -214,7 +191,6 @@ export function FriendRow({ friendship, myUserId }: { friendship: Friendship; my
           <DropdownButton
             variant="plain"
             accessibilityLabel={`Fler val för ${friend.display_name}`}
-            disabled={block.isPending}
             items={[
               {
                 label: 'Ta bort kompis',
@@ -222,15 +198,15 @@ export function FriendRow({ friendship, myUserId }: { friendship: Friendship; my
                 destructive: true,
                 onPress: remove,
               },
-              {
-                label: Common.block,
-                icon: 'ban-outline',
-                destructive: true,
-                onPress: async () => {
-                  const ok = await confirmBlock(friend.display_name);
-                  if (ok) block.mutate(friend.id);
+              ...moderationItems({
+                report: {
+                  type: 'profile',
+                  id: friend.id,
+                  userId: friend.id,
+                  name: friend.display_name,
                 },
-              },
+                blockOnly: true,
+              }),
             ]}
           />
         </View>

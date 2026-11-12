@@ -13,7 +13,7 @@ import { ListRow } from '@/components/list-row';
 import { ScreenBackground } from '@/components/screen-background';
 import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
-import { Common, Words } from '@/constants/strings';
+import { Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { RadarHero } from '@/features/friends/components/radar-hero';
 import type { NearbyPerson } from '@/features/friends/nearby';
@@ -23,9 +23,8 @@ import { sendFriendRequest } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
-import { useBlockPerson } from '@/features/moderation/use-block-person';
+import { useModerationItems } from '@/features/moderation/use-moderation-items';
 import { useRadarIgnoreStore } from '@/store/radar-ignore';
-import { openReport } from '@/store/report-sheet';
 import { showToast, showUndoToast } from '@/store/toast';
 import { useUserId } from '@/hooks/use-user-id';
 import { ModalHeader } from '@/components/modal-header';
@@ -68,7 +67,7 @@ function Blips({ people }: { people: NearbyPerson[] }) {
 function PersonRow({ person, myUserId }: { person: NearbyPerson; myUserId: string }) {
   const theme = useTheme();
   const queryClient = useQueryClient();
-  const blockPerson = useBlockPerson();
+  const moderationItems = useModerationItems();
   const ignore = useRadarIgnoreStore((state) => state.ignore);
   const unignore = useRadarIgnoreStore((state) => state.unignore);
 
@@ -149,28 +148,16 @@ function PersonRow({ person, myUserId }: { person: NearbyPerson; myUserId: strin
                 hint: 'Döljs bara på din radar',
                 onPress: handleIgnore,
               },
-              {
-                label: Common.report,
-                icon: 'flag-outline',
-                onPress: () =>
-                  openReport({
-                    type: 'profile',
-                    id: person.user_id,
-                    userId: person.user_id,
-                    name: person.display_name,
-                  }),
-              },
-              {
-                label: Common.block,
-                icon: 'ban-outline',
-                destructive: true,
-                onPress: async () => {
-                  const blocked = await blockPerson(person.user_id, person.display_name);
-                  if (blocked) {
-                    queryClient.invalidateQueries({ queryKey: queryKeys.allNearby(myUserId) });
-                  }
+              ...moderationItems({
+                report: {
+                  type: 'profile',
+                  id: person.user_id,
+                  userId: person.user_id,
+                  name: person.display_name,
                 },
-              },
+                onBlocked: () =>
+                  queryClient.invalidateQueries({ queryKey: queryKeys.allNearby(myUserId) }),
+              }),
             ]}
           />
         </View>

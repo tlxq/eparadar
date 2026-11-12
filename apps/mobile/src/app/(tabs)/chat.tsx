@@ -16,7 +16,7 @@ import { ScreenBackground } from '@/components/screen-background';
 import { ScreenHeader } from '@/components/screen-header';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
-import { Words } from '@/constants/strings';
+import { Words, loadError } from '@/constants/strings';
 import { Fonts, Radius, Spacing, Typography } from '@/constants/theme';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
 import { useTheme } from '@/hooks/use-theme';
@@ -273,10 +273,7 @@ export default function ChatListScreen() {
             isLoading ? (
               <ChatListSkeleton />
             ) : isError ? (
-              <ErrorState
-                message="Chattarna gick inte att ladda. Kolla nätet och testa igen."
-                onRetry={refetch}
-              />
+              <ErrorState message={loadError('Chattarna')} onRetry={refetch} />
             ) : hasAny ? (
               <ThemedText themeColor="textSecondary" style={styles.noMatch}>
                 Ingen chatt matchar &quot;{query.trim()}&quot;.

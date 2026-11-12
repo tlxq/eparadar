@@ -51,9 +51,10 @@ import {
 } from '@/features/chat/components/message-bubble';
 import { ImagePreview } from '@/features/chat/components/image-preview';
 import { ReactorsSheet } from '@/features/chat/components/reactors-sheet';
-import { Common } from '@/constants/strings';
+import { Common, loadError } from '@/constants/strings';
 import { confirmDestructive } from '@/lib/confirm';
 import { openReport } from '@/store/report-sheet';
+import { messageReportTarget, reportItem } from '@/features/moderation/use-moderation-items';
 const LOADING_BUBBLES = [
   { width: '55%', mine: false },
   { width: '40%', mine: true },
@@ -332,16 +333,7 @@ export default function ConversationScreen() {
 
   function reportImage(message: Message) {
     setViewer(null);
-    setTimeout(
-      () =>
-        openReport({
-          type: 'message',
-          id: message.id,
-          userId: message.sender_id,
-          name: message.sender?.display_name ?? 'personen',
-        }),
-      VIEWER_CLOSE_MS,
-    );
+    setTimeout(() => openReport(messageReportTarget(message)), VIEWER_CLOSE_MS);
   }
 
   const selectedIsMine = !!selected && selected.sender_id === userId;
@@ -353,7 +345,7 @@ export default function ConversationScreen() {
   const selectedActions: SheetAction[] = selected?.failed
     ? [
         {
-          label: 'Försök igen',
+          label: Common.retry,
           icon: 'refresh-outline',
           onPress: () => handleRetry(selected),
         },
@@ -386,19 +378,7 @@ export default function ConversationScreen() {
                   onPress: () => handleUnsend(selected),
                 },
               ]
-            : [
-                {
-                  label: Common.report,
-                  icon: 'flag-outline' as const,
-                  onPress: () =>
-                    openReport({
-                      type: 'message',
-                      id: selected.id,
-                      userId: selected.sender_id,
-                      name: selected.sender?.display_name ?? 'personen',
-                    }),
-                },
-              ]),
+            : [reportItem(messageReportTarget(selected))]),
         ]
       : [];
 
@@ -509,10 +489,7 @@ export default function ConversationScreen() {
             onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
             ListEmptyComponent={
               messagesError && !messages ? (
-                <ErrorState
-                  message="Meddelandena gick inte att hämta. Kolla nätet och testa igen."
-                  onRetry={refetchMessages}
-                />
+                <ErrorState message={loadError('Meddelandena')} onRetry={refetchMessages} />
               ) : !messages ? (
                 <View
                   style={styles.loadingThread}

@@ -52,7 +52,7 @@ import {
   EditProfileSheet,
   Stat,
 } from '@/features/profile/components/profile-parts';
-import { Common, Counts, Words } from '@/constants/strings';
+import { Common, Counts, loadError, Words } from '@/constants/strings';
 const AVATAR_SIZE = 96;
 
 export default function ProfileScreen() {
@@ -229,9 +229,7 @@ export default function ProfileScreen() {
               </Pressable>
               {profileError && !profile ? (
                 <View style={styles.heroError}>
-                  <ThemedText style={styles.center}>
-                    Profilen gick inte att hämta. Kolla nätet och försök igen.
-                  </ThemedText>
+                  <ThemedText style={styles.center}>{loadError('Profilen')}</ThemedText>
                   <Button
                     label={Common.retry}
                     icon="refresh"

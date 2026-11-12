@@ -14,6 +14,7 @@ import { PostItem } from '@/features/feed/components/post-item';
 import { fetchPost, type Post } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { SIGNED_URL_REFRESH_MS } from '@/lib/queryClient';
+import { loadError } from '@/constants/strings';
 
 export default function PostScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -40,10 +41,7 @@ export default function PostScreen() {
             <Skeleton width="80%" />
           </View>
         ) : isError && !post ? (
-          <ErrorState
-            message="Posten gick inte att ladda. Kolla nätet och testa igen."
-            onRetry={refetch}
-          />
+          <ErrorState message={loadError('Posten')} onRetry={refetch} />
         ) : !post ? (
           <EmptyState
             icon="eye-off-outline"

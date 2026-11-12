@@ -19,7 +19,7 @@ const CHIPS: {
   icon: ComponentProps<typeof Ionicons>['name'];
   color: ThemeColor;
 }[] = [
-  { layer: 'friends', label: 'Kompisar', icon: 'people', color: 'text' },
+  { layer: 'friends', label: Words.friends, icon: 'people', color: 'text' },
   { layer: 'ragg', label: Words.ragga, icon: 'sparkles', color: 'accent' },
   { layer: 'meets', label: 'Träffar', icon: 'calendar', color: 'brandOnSurface' },
   { layer: 'warnings', label: 'Varningar', icon: 'warning', color: 'warning' },

@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Line, Rect } from 'react-native-svg';
 import { useQuery } from '@tanstack/react-query';
 
+import { countText } from '@/constants/strings';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import {
@@ -29,10 +30,6 @@ const KIND_COLOR = {
   meet: NIGHT.brandOnSurface,
   varning: NIGHT.warning,
 } as const;
-
-function plural(count: number, one: string, many: string) {
-  return `${count} ${count === 1 ? one : many}`;
-}
 
 export function EveningCard({ friendsOut }: { friendsOut: FriendLocation[] }) {
   const userId = useUserId();
@@ -66,9 +63,9 @@ export function EveningCard({ friendsOut }: { friendsOut: FriendLocation[] }) {
 
   const spotCount = live.filter((s) => s.kind !== 'varning').length;
   const parts = [
-    plural(friendsOut.length, 'kompis ute', 'kompisar ute'),
-    spotCount > 0 ? plural(spotCount, 'spot', 'spots') : null,
-    tonight.length > 0 ? plural(tonight.length, 'träff', 'träffar') : null,
+    countText(friendsOut.length, 'kompis ute', 'kompisar ute'),
+    spotCount > 0 ? countText(spotCount, 'spot', 'spots') : null,
+    tonight.length > 0 ? countText(tonight.length, 'träff', 'träffar') : null,
   ].filter(Boolean);
   const calm = friendsOut.length === 0 && points.length === 0;
 

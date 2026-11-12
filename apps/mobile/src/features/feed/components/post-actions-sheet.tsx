@@ -8,14 +8,13 @@ import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { openSharePost } from '@/store/share-post';
 import { showToast } from '@/store/toast';
-import { openReport } from '@/store/report-sheet';
-import { useBlockPerson } from '@/features/moderation/use-block-person';
+import { useModerationItems } from '@/features/moderation/use-moderation-items';
 import { useUserId } from '@/hooks/use-user-id';
 
 export function usePostActions() {
   const queryClient = useQueryClient();
   const userId = useUserId();
-  const blockPerson = useBlockPerson();
+  const moderationItems = useModerationItems();
 
   async function handleDelete(target: Post) {
     const ok = await confirmDestructive({
@@ -53,17 +52,11 @@ export function usePostActions() {
     const name = target.author?.display_name ?? 'personen';
     return [
       share,
-      {
-        label: 'Rapportera post',
-        icon: 'flag-outline',
-        onPress: () => openReport({ type: 'post', id: target.id, userId: target.author_id, name }),
-      },
-      {
-        label: `${Common.block} ${name}`,
-        icon: 'ban-outline',
-        destructive: true,
-        onPress: () => blockPerson(target.author_id, name),
-      },
+      ...moderationItems({
+        report: { type: 'post', id: target.id, userId: target.author_id, name },
+        reportLabel: 'Rapportera post',
+        blockLabel: `${Common.block} ${name}`,
+      }),
     ];
   }
 

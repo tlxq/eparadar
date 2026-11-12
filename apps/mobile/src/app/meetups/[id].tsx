@@ -9,7 +9,7 @@ import { Button } from '@/components/button';
 import { DropdownButton, type MenuItem } from '@/components/dropdown-menu';
 import { ErrorState } from '@/components/error-state';
 import { IconButton } from '@/components/icon-button';
-import { openReport } from '@/store/report-sheet';
+import { reportItem } from '@/features/moderation/use-moderation-items';
 import { ScreenBackground } from '@/components/screen-background';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
@@ -119,17 +119,15 @@ export default function MeetupDetailScreen() {
           },
         ]
       : [
-          {
-            label: 'Rapportera träffen',
-            icon: 'flag-outline',
-            onPress: () =>
-              openReport({
-                type: 'meetup',
-                id: meetup.id,
-                userId: meetup.creator_id,
-                name: meetup.creator?.display_name ?? 'skaparen',
-              }),
-          },
+          reportItem(
+            {
+              type: 'meetup',
+              id: meetup.id,
+              userId: meetup.creator_id,
+              name: meetup.creator?.display_name ?? 'skaparen',
+            },
+            'Rapportera träffen',
+          ),
         ];
 
   return (

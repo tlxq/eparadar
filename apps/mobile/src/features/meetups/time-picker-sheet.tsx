@@ -7,19 +7,14 @@ import { IconButton } from '@/components/icon-button';
 import { SectionLabel } from '@/components/section-label';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing, Typography } from '@/constants/theme';
-import { clockText, exactTimeText, isPickableTime, shortDayText } from '@/features/meetups/time';
+import { exactTimeText, isPickableTime, shortDayText } from '@/features/meetups/time';
+import { clockText, DAY_MS, pad2, startOfDay } from '@/lib/time';
 
 const DAYS_SHOWN = 14;
 const MINUTES = [0, 15, 30, 45];
 
-function startOfDay(date: Date): Date {
-  const result = new Date(date);
-  result.setHours(0, 0, 0, 0);
-  return result;
-}
-
 function dayChipLabel(day: Date, today: Date): string {
-  const diff = Math.round((startOfDay(day).getTime() - today.getTime()) / 86_400_000);
+  const diff = Math.round((startOfDay(day).getTime() - today.getTime()) / DAY_MS);
   if (diff === 0) return 'Idag';
   if (diff === 1) return 'I morgon';
   return shortDayText(day);
@@ -100,7 +95,7 @@ export function TimePickerSheet({ value, onClose, onPick }: TimePickerSheetProps
             <Chip
               key={item}
               role="radio"
-              label={`:${String(item).padStart(2, '0')}`}
+              label={`:${pad2(item)}`}
               selected={item === minute}
               onPress={() => setMinute(item)}
             />

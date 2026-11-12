@@ -13,7 +13,7 @@ import { ListRow } from '@/components/list-row';
 import { SkeletonList } from '@/components/skeleton';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
-import { Words } from '@/constants/strings';
+import { Words, loadError } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { createConversation, friendProfile } from '@/lib/api';
@@ -132,10 +132,7 @@ export default function NewChatScreen() {
       {isLoading ? (
         <SkeletonList style={styles.skeleton} />
       ) : isError ? (
-        <ErrorState
-          message="Kompisarna gick inte att ladda. Kolla nätet och testa igen."
-          onRetry={refetch}
-        />
+        <ErrorState message={loadError('Kompisarna')} onRetry={refetch} />
       ) : friends.length === 0 ? (
         <EmptyState
           icon="people-outline"

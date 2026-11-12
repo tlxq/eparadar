@@ -27,8 +27,8 @@ import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
 import { openCar, openProfile, usePersonSheetStore } from '@/store/person-sheet';
 import { openReport } from '@/store/report-sheet';
-import { useBlockPerson } from '@/features/moderation/use-block-person';
-import { Common, Words } from '@/constants/strings';
+import { useModerationItems } from '@/features/moderation/use-moderation-items';
+import { Words } from '@/constants/strings';
 import { showToast } from '@/store/toast';
 import { successHaptic } from '@/lib/haptics';
 
@@ -44,7 +44,7 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
   const myUserId = useUserId();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
-  const blockPerson = useBlockPerson();
+  const moderationItems = useModerationItems();
 
   const { data: profile } = useQuery({
     queryKey: queryKeys.profile(personId),
@@ -101,19 +101,10 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
           },
         ]
       : []),
-    {
-      label: Common.report,
-      icon: 'flag-outline',
+    ...moderationItems({
+      report: { type: 'profile', id: personId, userId: personId, name },
       disabled: !profile,
-      onPress: () => openReport({ type: 'profile', id: personId, userId: personId, name }),
-    },
-    {
-      label: Common.block,
-      icon: 'ban-outline',
-      destructive: true,
-      disabled: !profile,
-      onPress: () => blockPerson(personId, name),
-    },
+    }),
   ];
 
   const primary: SheetAction[] = isFriend

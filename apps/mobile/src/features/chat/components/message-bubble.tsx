@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { clockText } from '@/lib/time';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Avatar } from '@/components/avatar';
@@ -201,7 +202,7 @@ export function TypingBubble({ label }: { label: string }) {
 }
 
 function clock(iso: string) {
-  return new Date(iso).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+  return clockText(new Date(iso));
 }
 
 export function ReadReceipt({

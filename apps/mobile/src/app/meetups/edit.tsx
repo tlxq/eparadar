@@ -10,7 +10,7 @@ import { IconButton } from '@/components/icon-button';
 import { ScreenBackground } from '@/components/screen-background';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
-import { Common } from '@/constants/strings';
+import { Common, loadError } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { meetupVibe } from '@/features/map/map-icons';
 import { fetchMeetupDetail, updateMeetup } from '@/features/meetups/api';
@@ -39,10 +39,7 @@ export default function EditMeetupScreen() {
   if (isError) {
     return (
       <ScreenBackground style={styles.center}>
-        <ErrorState
-          message="Träffen gick inte att ladda. Kolla nätet och testa igen."
-          onRetry={refetch}
-        />
+        <ErrorState message={loadError('Träffen')} onRetry={refetch} />
       </ScreenBackground>
     );
   }

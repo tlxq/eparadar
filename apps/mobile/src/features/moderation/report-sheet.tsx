@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { FormSheet } from '@/components/form-sheet';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
-import { reportThanks } from '@/constants/strings';
+import { Common, reportThanks } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { REPORT_REASONS, reportContent, type ReportReason } from '@/features/moderation/api';
 import { useBlockPerson } from '@/features/moderation/use-block-person';
@@ -98,7 +98,7 @@ function ReportSheet({
 
   return (
     <FormSheet
-      title="Rapportera"
+      title={Common.report}
       onClose={onClose}
       gap="two"
       action={{ label: 'Skicka', onPress: submit, loading: sending, disabled: !canSend }}

@@ -19,6 +19,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { successHaptic } from '@/lib/haptics';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
+import { loadError } from '@/constants/strings';
 
 function meetupShareText(meetup: Pick<Meetup, 'title' | 'starts_at'>): string {
   return `Häng med på ${meetup.title}! ${formatMeetupTime(meetup.starts_at)}.`;
@@ -68,10 +69,7 @@ export function ShareMeetupSheet({ meetup, onClose }: ShareMeetupSheetProps) {
       {isLoading ? (
         <SkeletonList rows={4} />
       ) : isError ? (
-        <ErrorState
-          message="Chattarna gick inte att ladda. Kolla nätet och testa igen."
-          onRetry={refetch}
-        />
+        <ErrorState message={loadError('Chattarna')} onRetry={refetch} />
       ) : !conversations?.length || !userId ? (
         <EmptyState
           icon="chatbubbles-outline"

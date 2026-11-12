@@ -1,3 +1,4 @@
+import { clockText } from '@/lib/time';
 export type QuickTimeOption = 'tonight' | 'tomorrow' | 'weekend';
 
 const HALF_HOUR_MS = 30 * 60 * 1000;
@@ -32,10 +33,6 @@ export function quickTimeToDate(option: QuickTimeOption, now = new Date()): Date
 }
 
 const LONG_WEEKDAYS = ['Sön', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör'];
-
-export function clockText(date: Date): string {
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-}
 
 export function shortDayText(date: Date): string {
   return `${LONG_WEEKDAYS[date.getDay()]} ${date.getDate()}/${date.getMonth() + 1}`;
@@ -78,7 +75,7 @@ export function meetupPhase(startsAtIso: string, now = new Date()): 'upcoming' |
 
 export function formatMeetupTime(startsAtIso: string, now = new Date()): string {
   const startsAt = new Date(startsAtIso);
-  const time = startsAt.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+  const time = clockText(startsAt);
   const phase = meetupPhase(startsAtIso, now);
   if (phase === 'live') return `Pågår nu · ${time}`;
   if (phase === 'over') {

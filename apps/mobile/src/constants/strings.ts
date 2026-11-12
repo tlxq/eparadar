@@ -36,6 +36,10 @@ export function plural(count: number, one: string, many: string) {
   return count === 1 ? one : many;
 }
 
+export function countText(count: number, one: string, many: string) {
+  return `${count} ${plural(count, one, many)}`;
+}
+
 export const Counts = {
   vehicles: (count: number) => plural(count, 'EPA', 'EPA:or'),
   friends: (count: number) => plural(count, 'kompis', 'kompisar'),
@@ -50,4 +54,8 @@ export function reportThanks(name?: string | null) {
   return name
     ? `Tack, vi kollar på det. ${name} får inte veta att du rapporterade.`
     : 'Tack, vi kollar på det. Ingen får veta att du rapporterade.';
+}
+
+export function loadError(thing: string) {
+  return `${thing} gick inte att ladda. Kolla nätet och testa igen.`;
 }

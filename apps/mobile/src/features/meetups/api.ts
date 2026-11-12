@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { Profile } from '@/lib/api';
+import { PROFILE_CARD_NO_USERNAME, type Profile } from '@/lib/api';
 import type { DbTables } from '@/lib/db-types';
 
 const HERE_NOW_WINDOW_MINUTES = 30;
@@ -43,16 +43,16 @@ export async function fetchMeetupDetail(meetupId: string, myUserId: string): Pro
     supabase.from('meetups_with_stats').select('*').eq('id', meetupId).single(),
     supabase
       .from('meetups')
-      .select('creator:profiles!meetups_creator_id_fkey(id, display_name, avatar_url)')
+      .select(`creator:profiles!meetups_creator_id_fkey(${PROFILE_CARD_NO_USERNAME})`)
       .eq('id', meetupId)
       .single(),
     supabase
       .from('meetup_interests')
-      .select('profile:profiles(id, display_name, avatar_url)')
+      .select(`profile:profiles(${PROFILE_CARD_NO_USERNAME})`)
       .eq('meetup_id', meetupId),
     supabase
       .from('meetup_checkins')
-      .select('profile:profiles(id, display_name, avatar_url)')
+      .select(`profile:profiles(${PROFILE_CARD_NO_USERNAME})`)
       .eq('meetup_id', meetupId)
       .gte('checked_in_at', hereCutoff),
     supabase

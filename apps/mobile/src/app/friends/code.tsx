@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { pad2 } from '@/lib/time';
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -45,7 +46,7 @@ function formatRemaining(ms: number) {
   const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  return `${minutes}:${pad2(seconds)}`;
 }
 
 function CountdownRing({ fraction }: { fraction: number }) {

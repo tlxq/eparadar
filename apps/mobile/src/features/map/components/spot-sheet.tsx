@@ -16,6 +16,7 @@ import { pickImage, type ImageSource } from '@/lib/pick-image';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
 import { openReport } from '@/store/report-sheet';
+import { reportItem } from '@/features/moderation/use-moderation-items';
 import { WarningVoteSection } from '@/features/map/warning-votes';
 
 const REPORT_DELAY_MS = 250;
@@ -90,11 +91,7 @@ export function SpotSheet({ spot, hereNow, onClose }: SpotSheetProps) {
       onPress: () => handleDelete(spot.id),
     });
   } else if (spot) {
-    actions.push({
-      label: Common.report,
-      icon: 'flag-outline',
-      onPress: () => openReport({ type: 'spot', id: spot.id, userId: spot.creator_id, name: null }),
-    });
+    actions.push(reportItem({ type: 'spot', id: spot.id, userId: spot.creator_id, name: null }));
   }
 
   return (

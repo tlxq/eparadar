@@ -6,7 +6,7 @@ import { IconButton } from '@/components/icon-button';
 import { ScreenBackground } from '@/components/screen-background';
 import { ScreenHeader } from '@/components/screen-header';
 import { SectionLabel } from '@/components/section-label';
-import { Words } from '@/constants/strings';
+import { Words, loadError } from '@/constants/strings';
 import { Spacing } from '@/constants/theme';
 import { useFriendRequests, useFriends, useOutgoingRequests } from '@/features/friends/hooks';
 import { useTabBarInset } from '@/hooks/use-tab-bar-inset';
@@ -91,10 +91,7 @@ export default function FriendsScreen() {
             friendsLoading ? (
               <FriendsSkeleton />
             ) : isError ? (
-              <ErrorState
-                message="Kompisarna gick inte att ladda. Kolla nätet och testa igen."
-                onRetry={refetch}
-              />
+              <ErrorState message={loadError('Kompisarna')} onRetry={refetch} />
             ) : (
               <EmptyState
                 icon="people-outline"

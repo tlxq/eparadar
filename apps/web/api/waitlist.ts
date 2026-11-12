@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 import { Colors } from '@eparadar/theme/colors';
+import { CONTACT_EMAIL } from '@eparadar/legal/types';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -14,7 +15,9 @@ const requestTimestampsByIp = new Map<string, number[]>();
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
-  const recent = (requestTimestampsByIp.get(ip) ?? []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  const recent = (requestTimestampsByIp.get(ip) ?? []).filter(
+    (t) => now - t < RATE_LIMIT_WINDOW_MS,
+  );
   recent.push(now);
   requestTimestampsByIp.set(ip, recent);
   return recent.length > RATE_LIMIT_MAX_REQUESTS;
@@ -95,7 +98,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'epaRadar <contact@eparadar.se>',
+          from: `epaRadar <${CONTACT_EMAIL}>`,
           to: email,
           subject: 'Du är med på listan',
           html: CONFIRMATION_HTML,

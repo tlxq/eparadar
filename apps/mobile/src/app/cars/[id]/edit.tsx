@@ -8,6 +8,7 @@ import { Radius, Spacing } from '@/constants/theme';
 import { CarForm } from '@/features/profile/components/car-form';
 import { useCar } from '@/features/profile/hooks';
 import { useUserId } from '@/hooks/use-user-id';
+import { loadError } from '@/constants/strings';
 
 export default function EditCarScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -24,12 +25,7 @@ export default function EditCarScreen() {
     );
   }
   if (isError) {
-    return (
-      <ErrorState
-        message="EPA:n gick inte att ladda. Kolla nätet och testa igen."
-        onRetry={refetch}
-      />
-    );
+    return <ErrorState message={loadError('EPA:n')} onRetry={refetch} />;
   }
   if (!car || car.owner_id !== userId) {
     return (

@@ -1,3 +1,4 @@
+import { clockText } from '@/lib/time';
 import { carColorHex } from '@/features/map/car-colors';
 import { meetupVibe, SPOT_ICONS, spotIconKey } from '@/features/map/map-icons';
 import { countHereNow, spotTitle, type Spot } from '@/features/map/spots';
@@ -80,7 +81,7 @@ const WEEKDAYS = ['sön', 'mån', 'tis', 'ons', 'tor', 'fre', 'lör'];
 export function meetupTimeLabel(startsAt: string, now: Date = new Date()): string {
   const start = new Date(startsAt);
   if (start.getTime() <= now.getTime()) return 'nu';
-  const time = `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
+  const time = clockText(start);
   return start.toDateString() === now.toDateString() ? time : `${WEEKDAYS[start.getDay()]} ${time}`;
 }
 

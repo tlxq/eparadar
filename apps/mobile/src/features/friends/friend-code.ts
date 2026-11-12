@@ -1,3 +1,4 @@
+import { fallbackError } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 
 export const FRIEND_CODE_LENGTH = 6;
@@ -52,6 +53,6 @@ export async function redeemFriendCode(code: string): Promise<RedeemResult> {
   const { data, error } = await supabase.rpc('redeem_friend_code', { friend_code: code });
   if (error) throw error;
   const row = (data as unknown as RedeemResult[] | null)?.[0];
-  if (!row) throw new Error('Något gick fel. Försök igen.');
+  if (!row) throw new Error(fallbackError);
   return row;
 }

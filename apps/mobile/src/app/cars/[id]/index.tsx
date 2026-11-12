@@ -15,12 +15,12 @@ import { ScreenBackground } from '@/components/screen-background';
 import { SectionLabel } from '@/components/section-label';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
-import { Common, Words } from '@/constants/strings';
+import { Common, Words, loadError } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { PostActionsSheet } from '@/features/feed/components/post-actions-sheet';
 import { PostItem } from '@/features/feed/components/post-item';
 import { CAR_COLORS, carColorHex } from '@/features/map/car-colors';
-import { useBlockPerson } from '@/features/moderation/use-block-person';
+import { useModerationItems } from '@/features/moderation/use-moderation-items';
 import { carName } from '@/features/profile/components/profile-parts';
 import { useCar, useCarPosts, useIsFriend, usePersonProfile } from '@/features/profile/hooks';
 import { usePullRefresh } from '@/hooks/use-pull-refresh';
@@ -31,7 +31,6 @@ import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { queryKeys } from '@/lib/query-keys';
 import { openProfile } from '@/store/person-sheet';
-import { openReport } from '@/store/report-sheet';
 import { showToast } from '@/store/toast';
 
 export default function CarScreen() {
@@ -39,7 +38,7 @@ export default function CarScreen() {
   const theme = useTheme();
   const userId = useUserId();
   const queryClient = useQueryClient();
-  const blockPerson = useBlockPerson();
+  const moderationItems = useModerationItems();
   const carQuery = useCar(id);
   const car = carQuery.data;
   const ownerId = car?.owner_id;
@@ -96,27 +95,11 @@ export default function CarScreen() {
           },
         ]
       : [
-          {
-            label: Common.report,
-            icon: 'flag-outline',
+          ...moderationItems({
+            report: { type: 'profile', id: car.owner_id, userId: car.owner_id, name: ownerName },
             disabled: !owner,
-            onPress: () =>
-              openReport({
-                type: 'profile',
-                id: car.owner_id,
-                userId: car.owner_id,
-                name: ownerName,
-              }),
-          },
-          {
-            label: Common.block,
-            icon: 'ban-outline',
-            destructive: true,
-            disabled: !owner,
-            onPress: async () => {
-              if (await blockPerson(car.owner_id, ownerName)) router.back();
-            },
-          },
+            onBlocked: () => router.back(),
+          }),
         ];
 
   return (
@@ -138,10 +121,7 @@ export default function CarScreen() {
             <Skeleton width="100%" height={120} radius={Radius.lg} />
           </View>
         ) : carQuery.isError ? (
-          <ErrorState
-            message="EPA:n gick inte att ladda. Kolla nätet och testa igen."
-            onRetry={carQuery.refetch}
-          />
+          <ErrorState message={loadError('EPA:n')} onRetry={carQuery.refetch} />
         ) : !car ? (
           <EmptyState
             icon="car-sport-outline"
@@ -245,10 +225,7 @@ export default function CarScreen() {
                 <Skeleton width="100%" height={96} radius={Radius.lg} />
               </View>
             ) : postsQuery.isError && posts.length === 0 ? (
-              <ErrorState
-                message="Posterna gick inte att ladda. Kolla nätet och testa igen."
-                onRetry={postsQuery.refetch}
-              />
+              <ErrorState message={loadError('Posterna')} onRetry={postsQuery.refetch} />
             ) : posts.length === 0 ? (
               <ThemedText type="small" themeColor="textSecondary" style={styles.note}>
                 {isOwner

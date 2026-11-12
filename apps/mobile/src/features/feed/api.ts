@@ -1,4 +1,4 @@
-import { signPostImages, type ProfileSummary } from '@/lib/api';
+import { PROFILE_CARD_NO_USERNAME, signPostImages, type ProfileSummary } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
 export const POST_REACTIONS = ['🔥', '😂', '👍'] as const;
@@ -49,7 +49,7 @@ export async function fetchMapPosts(): Promise<MapPost[]> {
   const { data, error } = await supabase
     .from('post_places')
     .select(
-      'post_id, lat, lng, expires_at, post:posts!inner(image_url, author:profiles!posts_author_id_fkey(id, display_name, avatar_url))',
+      `post_id, lat, lng, expires_at, post:posts!inner(image_url, author:profiles!posts_author_id_fkey(${PROFILE_CARD_NO_USERNAME}))`,
     )
     .gt('expires_at', new Date().toISOString());
   if (error) throw error;

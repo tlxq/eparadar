@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { signedUrl, signedUrls } from '@/lib/storage';
 import { lastActivity } from '@/lib/chat-state';
 import { uploadFile } from '@/lib/image-upload';
 import type { DbRow, DbTables } from '@/lib/db-types';
@@ -6,6 +7,8 @@ import type { DbRow, DbTables } from '@/lib/db-types';
 export type Profile = DbRow<'profiles'>;
 export type Car = DbRow<'cars'>;
 export type ProfileSummary = Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
+const PROFILE_CARD = 'id, username, display_name, avatar_url';
+export const PROFILE_CARD_NO_USERNAME = 'id, display_name, avatar_url';
 
 export type PostReaction = {
   user_id: string;
@@ -24,7 +27,7 @@ export type Post = DbRow<'posts'> & {
 };
 
 const POST_SELECT =
-  '*, author:profiles!posts_author_id_fkey(id, username, display_name, avatar_url), car:cars(id, make, model, nickname, photo_url), reactions:post_reactions(user_id, emoji, profile:profiles!post_reactions_user_id_fkey(id, display_name, avatar_url)), place:post_places(lat, lng, expires_at)';
+  `*, author:profiles!posts_author_id_fkey(${PROFILE_CARD}), car:cars(id, make, model, nickname, photo_url), reactions:post_reactions(user_id, emoji, profile:profiles!post_reactions_user_id_fkey(${PROFILE_CARD_NO_USERNAME})), place:post_places(lat, lng, expires_at)` as const;
 
 export async function signIn(email: string, password: string) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -73,18 +76,12 @@ export async function fetchPost(postId: string): Promise<Post | null> {
   return post;
 }
 
-const POST_IMAGE_URL_TTL_S = 60 * 60;
-
 export async function signPostImages<T extends { image_url: string | null }>(
   posts: T[],
 ): Promise<(T & { image_signed_url?: string | null })[]> {
   const paths = posts.map((post) => post.image_url).filter((path): path is string => !!path);
   if (paths.length === 0) return posts;
-  const { data, error } = await supabase.storage
-    .from('post-images')
-    .createSignedUrls(paths, POST_IMAGE_URL_TTL_S);
-  if (error) throw error;
-  const byPath = new Map((data ?? []).map((item) => [item.path, item.signedUrl]));
+  const byPath = await signedUrls('post-images', paths);
   return posts.map((post) => ({
     ...post,
     image_signed_url: post.image_url ? (byPath.get(post.image_url) ?? null) : null,
@@ -337,11 +334,7 @@ export async function setGroupAvatar(conversationId: string, uri: string | null)
 }
 
 export async function groupAvatarUrl(path: string): Promise<string> {
-  const { data, error } = await supabase.storage
-    .from('group-avatars')
-    .createSignedUrl(path, 60 * 60);
-  if (error) throw error;
-  return data.signedUrl;
+  return signedUrl('group-avatars', path);
 }
 
 export async function leaveConversation(conversationId: string): Promise<void> {
@@ -377,7 +370,7 @@ export async function fetchConversations(): Promise<Conversation[]> {
     supabase
       .from('conversations')
       .select(
-        '*, conversation_members(user_id, last_read_at, role, added_at, profiles(id, username, display_name, avatar_url)), messages(body, created_at, sender_id, image_path, post_id)',
+        `*, conversation_members(user_id, last_read_at, role, added_at, profiles(${PROFILE_CARD})), messages(body, created_at, sender_id, image_path, post_id)`,
       )
       .order('created_at', { foreignTable: 'messages', ascending: false })
       .limit(1, { foreignTable: 'messages' }),
@@ -425,7 +418,7 @@ export async function fetchConversation(conversationId: string): Promise<Convers
   const { data, error } = await supabase
     .from('conversations')
     .select(
-      '*, conversation_members(user_id, last_read_at, role, joined_at, added_at, profiles(id, username, display_name, avatar_url))',
+      `*, conversation_members(user_id, last_read_at, role, joined_at, added_at, profiles(${PROFILE_CARD}))`,
     )
     .eq('id', conversationId)
     .single();
@@ -449,7 +442,7 @@ export async function fetchMessages(conversationId: string): Promise<Message[]> 
   const { data, error } = await supabase
     .from('messages')
     .select(
-      '*, sender:profiles!messages_sender_id_fkey(id, username, display_name, avatar_url), reactions:message_reactions(user_id, emoji)',
+      `*, sender:profiles!messages_sender_id_fkey(${PROFILE_CARD}), reactions:message_reactions(user_id, emoji)`,
     )
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: true });
@@ -487,9 +480,7 @@ export async function toggleReaction(messageId: string, emoji: string): Promise<
 }
 
 export async function chatImageUrl(path: string): Promise<string> {
-  const { data, error } = await supabase.storage.from('chat-images').createSignedUrl(path, 60 * 60);
-  if (error) throw error;
-  return data.signedUrl;
+  return signedUrl('chat-images', path);
 }
 
 type FriendshipStatus = 'pending' | 'accepted' | 'blocked';
@@ -508,7 +499,7 @@ export function friendProfile(friendship: Friendship, myUserId: string) {
 }
 
 const FRIENDSHIP_SELECT =
-  '*, requester:profiles!friendships_requester_id_fkey(id, username, display_name, avatar_url), addressee:profiles!friendships_addressee_id_fkey(id, username, display_name, avatar_url)';
+  `*, requester:profiles!friendships_requester_id_fkey(${PROFILE_CARD}), addressee:profiles!friendships_addressee_id_fkey(${PROFILE_CARD})` as const;
 
 export async function fetchBlocked(userId: string): Promise<Friendship[]> {
   const { data, error } = await supabase
@@ -666,7 +657,7 @@ export async function setNotificationSetting(
 export async function fetchFriendLocations(userId: string): Promise<FriendLocation[]> {
   const { data, error } = await supabase
     .from('locations')
-    .select('*, profile:profiles(id, username, display_name, avatar_url, cars(color, created_at))')
+    .select(`*, profile:profiles(${PROFILE_CARD}, cars(color, created_at))`)
     .eq('sharing_enabled', true)
     .not('lat', 'is', null)
     .neq('user_id', userId);

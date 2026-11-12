@@ -1,4 +1,5 @@
 import type { Database } from '@/lib/database.types';
+import { signedUrls } from '@/lib/storage';
 import { uploadFile } from '@/lib/image-upload';
 import { Words } from '@/constants/strings';
 import { supabase } from '@/lib/supabase';
@@ -95,14 +96,11 @@ export async function fetchSpotPhotos(spotId: string): Promise<SpotPhoto[]> {
   if (error) throw error;
   const rows = data ?? [];
   if (!rows.length) return [];
-  const { data: signed, error: signError } = await supabase.storage
-    .from('spot-photos')
-    .createSignedUrls(
-      rows.map((row) => row.path),
-      60 * 60,
-    );
-  if (signError) throw signError;
-  return rows.map((row, index) => ({ ...row, url: signed?.[index]?.signedUrl ?? null }));
+  const urls = await signedUrls(
+    'spot-photos',
+    rows.map((row) => row.path),
+  );
+  return rows.map((row) => ({ ...row, url: urls.get(row.path) ?? null }));
 }
 
 export async function addSpotPhoto(spotId: string, userId: string, uri: string): Promise<void> {
