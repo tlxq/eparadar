@@ -52,17 +52,20 @@
     "@typescript-eslint/parser": "^8.72.2",
     "eslint-config-expo": "^57.0.2",
     "jest": "^30.5.2",
-    "jest-expo": "~57.0.6"
+    "jest-expo": "~57.0.6",
+    "maplibre-gl": "5.24.0"
   },
   "scripts": {
-    "start": "expo start",
+    "maplibre": "node scripts/inline-maplibre.mjs",
+    "postinstall": "node scripts/inline-maplibre.mjs",
+    "start": "npm run maplibre && expo start",
     "android": "expo run:android",
     "phone": "bash scripts/phone.sh",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
-    "test": "jest"
+    "lint": "npm run maplibre && eslint .",
+    "typecheck": "npm run maplibre && tsc --noEmit",
+    "test": "npm run maplibre && jest"
   },
   "jest": {
     "preset": "jest-expo",

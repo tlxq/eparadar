@@ -1,5 +1,8 @@
 import { Colors, MapColors } from '@eparadar/theme/colors';
 
+import { MAP_LABEL_SCRIPT } from '@/features/map/map-labels';
+import { MAPLIBRE_CSS, MAPLIBRE_JS } from '@/features/map/maplibre-inline.generated';
+
 const SWEDEN_CENTER = { lat: 62.0, lng: 15.0, zoom: 4 };
 const LONG_PRESS_MS = 450;
 const MOVING_FRESH_MS = 3 * 60 * 1000;
@@ -8,7 +11,7 @@ const TIMER_LOW_MS = 30 * 60 * 1000;
 const STREET_ZOOM = 13;
 const TOWN_ZOOM = 9.5;
 
-const MAPLIBRE_VERSION = '5.24.0';
+const STATUS_MAX_CHARS = 44;
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/dark';
 
 const NIGHT = Colors.dark;
@@ -23,7 +26,7 @@ export const MAP_HTML = `<!DOCTYPE html>
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@${MAPLIBRE_VERSION}/dist/maplibre-gl.css" />
+  <style>${MAPLIBRE_CSS}</style>
   <style>
     html, body, #map { height: 100%; margin: 0; padding: 0; background: ${MAP_BG}; }
     body { font-family: Inter, -apple-system, Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -32,7 +35,8 @@ export const MAP_HTML = `<!DOCTYPE html>
     .maplibregl-ctrl-attrib-button { filter: invert(1); }
     .maplibregl-ctrl-bottom-left { bottom: var(--inset-bottom, 0px); }
     .mk { display: flex; align-items: center; justify-content: center; pointer-events: auto; }
-    .mk.spot, .mk.meet, .mk.drop { z-index: 1; }
+    .mk.spot, .mk.meet, .mk.drop { z-index: 2; }
+    .mk.pin { z-index: 4; }
     .photo-pin {
       position: relative; width: 46px; height: 46px; border-radius: 12px; border: 2.5px solid ${NIGHT.text};
       background: ${MAP_SURFACE}; box-shadow: 0 0 0 2px ${MAP_BG}, 0 6px 16px rgba(0,0,0,0.55); transform: rotate(-4deg);
@@ -49,15 +53,15 @@ export const MAP_HTML = `<!DOCTYPE html>
     .z-town .photo-pin { width: 34px; height: 34px; border-radius: 9px; border-width: 2px; }
     .z-town .photo-pin .clip { border-radius: 7px; }
     .pdot { width: 12px; height: 12px; border-radius: 3px; background: ${NIGHT.text}; box-shadow: 0 0 0 2px ${MAP_BG}; }
-    .mk.person { z-index: 2; }
-    .mk.me { z-index: 3; }
+    .mk.person { z-index: 3; }
+    .mk.me { z-index: 1; }
     .below {
       position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 5px; white-space: nowrap;
     }
     .status-bubble {
-      position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -8px); max-width: 160px;
+      position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -8px); width: max-content; max-width: 150px;
       background: ${NIGHT.text}; color: ${NIGHT.background}; font-size: 11px; font-weight: 700; padding: 5px 9px; border-radius: 12px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+      text-align: center; line-height: 1.25; overflow-wrap: break-word; word-break: normal; box-shadow: 0 4px 12px rgba(0,0,0,0.45);
     }
     .status-bubble::after {
       content: ''; position: absolute; left: 50%; top: 100%; transform: translateX(-50%);
@@ -167,8 +171,9 @@ export const MAP_HTML = `<!DOCTYPE html>
 </head>
 <body>
   <div id="map"></div>
-  <script src="https://unpkg.com/maplibre-gl@${MAPLIBRE_VERSION}/dist/maplibre-gl.js"></script>
+  <script>${MAPLIBRE_JS}</script>
   <script>
+    ${MAP_LABEL_SCRIPT}
     function sendToNative(msg) {
       window.ReactNativeWebView.postMessage(JSON.stringify(msg));
     }
@@ -367,15 +372,9 @@ export const MAP_HTML = `<!DOCTYPE html>
     function isStale(p) {
       return !!p.updatedAt && Date.now() - p.updatedAt >= ${STALE_MS};
     }
-    function agoText(ms) {
-      const min = Math.floor(ms / 60000);
-      if (min < 60) return min + ' min sedan';
-      const h = Math.floor(min / 60);
-      return h < 24 ? h + ' h sedan' : 'över ett dygn sedan';
-    }
     function statusHtml(p) {
       if (step !== 'street' || !p.status || !p.statusExpiresAt || p.statusExpiresAt <= Date.now()) return '';
-      return '<span class="status-bubble">' + escapeHtml(p.status) + '</span>';
+      return '<span class="status-bubble">' + escapeHtml(shortStatus(p.status, ${STATUS_MAX_CHARS})) + '</span>';
     }
     function personHtml(p, below, isMe) {
       if (step === 'region' && !isMe) return '<div class="dot"></div>';
@@ -399,6 +398,31 @@ export const MAP_HTML = `<!DOCTYPE html>
     const friendMarkers = {};
     const clusterMarkers = [];
     let meMarker = null;
+
+    let declutterFrame = 0;
+    function scheduleDeclutter() {
+      if (declutterFrame) return;
+      declutterFrame = requestAnimationFrame(function () { declutterFrame = 0; declutterLabels(); });
+    }
+    function declutterLabels() {
+      const items = [];
+      const obstacles = [];
+      document.querySelectorAll('.mk').forEach(function (mk, owner) {
+        const prio = labelPriority(mk.className);
+        mk.querySelectorAll('.bubble, .car, .tile, .photo-pin, .dot, .cluster, .kdot, .pdot').forEach(function (body) {
+          obstacles.push({ owner: owner, rect: body.getBoundingClientRect() });
+        });
+        mk.querySelectorAll('.below, .status-bubble').forEach(function (label) {
+          label.style.visibility = '';
+          items.push({ id: items.length, el: label, owner: owner, prio: prio, name: label.getAttribute('data-name'), rect: label.getBoundingClientRect() });
+        });
+      });
+      const hidden = hiddenLabels(items, obstacles, 3, 140);
+      hidden.forEach(function (id) { items[id].el.style.visibility = 'hidden'; });
+    }
+    map.on('moveend', scheduleDeclutter);
+    new MutationObserver(scheduleDeclutter).observe(document.body, { childList: true, subtree: true });
+    map.on('zoomend', scheduleDeclutter);
 
     function setClasses(el, cls) {
       const keep = Array.prototype.filter.call(el.classList, function (c) { return c.indexOf('maplibregl-') === 0; });
@@ -451,10 +475,9 @@ export const MAP_HTML = `<!DOCTYPE html>
 
     function friendLabel(f) {
       if (step !== 'street') return '';
-      const extra = isStale(f)
-        ? ' <span class="ago">· ' + agoText(Date.now() - f.updatedAt) + '</span>'
-        : isDriving(f) ? ' · kör' : '';
-      return '<span class="below label">' + escapeHtml(f.label) + extra + '</span>';
+      const parts = labelParts(f.label, Date.now() - f.updatedAt, isStale(f), isDriving(f));
+      const extra = parts.extra ? ' <span class="ago">· ' + escapeHtml(parts.extra) + '</span>' : '';
+      return '<span class="below label" data-name="' + escapeHtml(parts.name) + '">' + escapeHtml(parts.name) + extra + '</span>';
     }
 
     function renderFriends() {
@@ -593,7 +616,7 @@ export const MAP_HTML = `<!DOCTYPE html>
       const inner = pt.imageUrl
         ? '<img src="' + escapeHtml(pt.imageUrl) + '" alt="" />'
         : '<span class="initials">' + initials(pt.label) + '</span>';
-      const chip = step === 'street' ? '<span class="below pill">' + escapeHtml(pt.label) + '</span>' : '';
+      const chip = step === 'street' ? '<span class="below pill" data-name="' + escapeHtml(pt.label) + '">' + escapeHtml(pt.label) + '</span>' : '';
       return '<div class="photo-pin"><div class="clip">' + inner + '</div></div>' + chip;
     }
     function renderPosts() {

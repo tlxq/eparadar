@@ -19,6 +19,8 @@ export const Words = {
   place: 'Placera',
   placeOnMap: 'Placera på kartan',
   mapLoading: 'Kartan laddar…',
+  mapFailed: 'Kartan laddar inte.',
+  mapFailedHint: 'Kolla nätet och försök igen.',
   ragga: 'Häng',
   meet: 'Träff',
   warning: 'Varning',

@@ -54,6 +54,8 @@ export const MapColors = {
   surface: '#1C2230',
   onSuccess: '#06210F',
   headlight: '#FFF6D6',
+  scrimTop: 'rgba(14, 19, 32, 0.88)',
+  scrimClear: 'rgba(14, 19, 32, 0)',
 } as const;
 
 export const CarPaint = {

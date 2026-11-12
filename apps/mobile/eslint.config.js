@@ -5,7 +5,7 @@ module.exports = [
   ...expoConfig,
   eslintConfigPrettier,
   {
-    ignores: ['dist/*', '.expo/*'],
+    ignores: ['dist/*', '.expo/*', 'src/features/map/maplibre-inline.generated.ts'],
   },
   {
     files: ['src/hooks/use-color-scheme.web.ts'],

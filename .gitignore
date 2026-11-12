@@ -32,3 +32,5 @@ supabase/.branches
 supabase/.temp
 
 .vercel
+
+apps/mobile/src/features/map/maplibre-inline.generated.ts

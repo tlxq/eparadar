@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import { Platform, StyleSheet, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MapColors } from '@eparadar/theme/colors';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { useQueryClient } from '@tanstack/react-query';
@@ -9,6 +11,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { ActionSheet } from '@/components/action-sheet';
 import { EmptyState } from '@/components/empty-state';
+import { ErrorState } from '@/components/error-state';
 import { ScreenBackground } from '@/components/screen-background';
 import { ThemedText } from '@/components/themed-text';
 import { Words } from '@/constants/strings';
@@ -27,6 +30,7 @@ import { type SpotKind } from '@/features/map/spots';
 import { StatusSheet } from '@/features/map/status-sheet';
 import { fixLocationAccess } from '@/features/map/use-device-position';
 import { useHeatHint } from '@/features/map/use-heat-hint';
+import { useMapLoadTimeout } from '@/features/map/use-map-load-timeout';
 import { useMapFilters, visibleLayers } from '@/features/map/use-map-filters';
 import { useMapLayers } from '@/features/map/use-map-layers';
 import { useNearbyWarning } from '@/features/map/use-nearby-warning';
@@ -102,6 +106,8 @@ export default function MapScreen() {
   const [locating, setLocating] = useState(false);
   const [following, setFollowing] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const mapTimedOut = useMapLoadTimeout(mapReady, loadAttempt);
 
   const postToMap = useCallback((message: object) => {
     webviewRef.current?.postMessage(JSON.stringify(message));
@@ -349,6 +355,12 @@ export default function MapScreen() {
     setDraftPin(null);
   };
 
+  const reloadMap = () => {
+    setMapReady(false);
+    setLoadAttempt((n) => n + 1);
+    webviewRef.current?.reload();
+  };
+
   const handleWebViewMessage = (event: WebViewMessageEvent) => {
     try {
       const msg = JSON.parse(event.nativeEvent.data);
@@ -417,14 +429,28 @@ export default function MapScreen() {
           onMessage={handleWebViewMessage}
         />
 
+        <LinearGradient
+          pointerEvents="none"
+          colors={[MapColors.scrimTop, MapColors.scrimClear]}
+          style={[styles.topScrim, { height: belowChips }]}
+        />
+
         {mapReady ? null : (
           <View
-            pointerEvents="none"
+            pointerEvents={mapTimedOut ? 'auto' : 'none'}
             style={[styles.mapLoading, { backgroundColor: theme.background }]}
           >
-            <ThemedText type="small" themeColor="textSecondary">
-              {Words.mapLoading}
-            </ThemedText>
+            {mapTimedOut ? (
+              <ErrorState
+                title={Words.mapFailed}
+                message={Words.mapFailedHint}
+                onRetry={reloadMap}
+              />
+            ) : (
+              <ThemedText type="small" themeColor="textSecondary">
+                {Words.mapLoading}
+              </ThemedText>
+            )}
           </View>
         )}
 
@@ -579,5 +605,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   webview: { flex: 1 },
+  topScrim: { position: 'absolute', top: 0, left: 0, right: 0 },
   mapLoading: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
 });
