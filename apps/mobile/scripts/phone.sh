@@ -74,7 +74,27 @@ fingerprint="$(npx @expo/fingerprint . | node -e 'let s="";process.stdin.on("dat
 installed="$(adb shell pm path "$PACKAGE" 2>/dev/null || true)"
 previous="$(cat "$stamp" 2>/dev/null || true)"
 
-if [ "$force_build" = 1 ] || [ -z "$installed" ] || [ "$fingerprint" != "$previous" ]; then
+native_inputs() {
+  for f in app.json app.config.ts app.config.js google-services.json package.json; do
+    [ -f "$f" ] && sha256sum "$f"
+  done
+  find assets -type f -print0 | sort -z | xargs -0 -r sha256sum
+}
+
+native_hash="$(native_inputs | sha256sum | cut -d' ' -f1)"
+prebuild_stamp="android/.prebuild-stamp"
+prebuild_previous="$(cat "$prebuild_stamp" 2>/dev/null || true)"
+need_prebuild=0
+if [ ! -d android ] || [ "$native_hash" != "$prebuild_previous" ]; then
+  need_prebuild=1
+fi
+
+if [ "$force_build" = 1 ] || [ "$need_prebuild" = 1 ] || [ -z "$installed" ] || [ "$fingerprint" != "$previous" ]; then
+  if [ "$need_prebuild" = 1 ]; then
+    echo "Native-konfigen har ändrats, genererar android-mappen..."
+    npx expo prebuild --platform android --no-install
+    echo "$native_hash" >"$prebuild_stamp"
+  fi
   echo "Native-delar har ändrats, bygger appen..."
   npx expo run:android --no-bundler --device "$model"
   mkdir -p "$(dirname "$stamp")"
