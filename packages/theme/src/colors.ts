@@ -48,3 +48,39 @@ export const Colors = {
     qrPaper: '#FFFFFF',
   },
 } as const;
+
+export const MapColors = {
+  background: '#0E1320',
+  surface: '#1C2230',
+  onSuccess: '#06210F',
+  headlight: '#FFF6D6',
+} as const;
+
+export const CarPaint = {
+  colors: [
+    { key: 'rod', label: 'Röd', hex: '#E5484D' },
+    { key: 'orange', label: 'Orange', hex: '#FF8A3D' },
+    { key: 'gul', label: 'Gul', hex: '#F5C518' },
+    { key: 'gron', label: 'Grön', hex: '#22C55E' },
+    { key: 'bla', label: 'Blå', hex: '#2F6FED' },
+    { key: 'lila', label: 'Lila', hex: '#9B5DE5' },
+    { key: 'rosa', label: 'Rosa', hex: '#F472B6' },
+    { key: 'vit', label: 'Vit', hex: '#F4F6F9' },
+    { key: 'silver', label: 'Silver', hex: '#A2AAB8' },
+    { key: 'svart', label: 'Svart', hex: '#2A2F3A' },
+  ],
+  defaultHex: '#2F6FED',
+  checkOnLight: '#0B0E14',
+  checkOnDark: '#FFFFFF',
+} as const;
+
+export const AvatarPalette = [
+  '#2F6FED',
+  '#7C3AED',
+  '#C2410C',
+  '#0F766E',
+  '#BE185D',
+  '#4338CA',
+  '#B45309',
+  '#15803D',
+] as const;

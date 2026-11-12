@@ -1,23 +1,14 @@
 import { Image, StyleSheet, View } from 'react-native';
 
+import { AvatarPalette } from '@eparadar/theme/colors';
+
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
-
-const FALLBACK_COLORS = [
-  '#2F6FED',
-  '#7C3AED',
-  '#C2410C',
-  '#0F766E',
-  '#BE185D',
-  '#4338CA',
-  '#B45309',
-  '#15803D',
-];
 
 function colorFor(name: string) {
   let hash = 0;
   for (const char of name) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-  return FALLBACK_COLORS[hash % FALLBACK_COLORS.length];
+  return AvatarPalette[hash % AvatarPalette.length];
 }
 
 type AvatarProps = {

@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Button } from '@/components/button';
 import { FormScreen } from '@/components/form-screen';
 import { ThemedText } from '@/components/themed-text';
-import { Fonts, Radius, Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { FRIEND_CODE_LENGTH, normalizeFriendCode } from '@/features/friends/friend-code';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -51,7 +51,7 @@ export default function EnterFriendCodeScreen() {
                   },
                 ]}
               >
-                <ThemedText style={styles.char}>{char}</ThemedText>
+                <ThemedText type="codeDigit">{char}</ThemedText>
               </View>
             </View>
           );
@@ -96,6 +96,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  char: { fontFamily: Fonts.mono, fontSize: 24, lineHeight: 30, fontWeight: '700' },
   hiddenInput: { position: 'absolute', opacity: 0, width: 1, height: 1 },
 });

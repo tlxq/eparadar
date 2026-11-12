@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { Avatar } from '@/components/avatar';
+import { CarPaint } from '@eparadar/theme/colors';
 import { CAR_COLORS, carColorHex } from '@/features/map/car-colors';
 import { useProfile } from '@/features/profile/hooks';
 import { useTheme } from '@/hooks/use-theme';
@@ -68,7 +69,7 @@ export function CarColorPicker({ value, onChange, disabled }: CarColorPickerProp
                 <Ionicons
                   name="checkmark"
                   size={18}
-                  color={DARK_CHECK.has(color.key) ? '#0B0E14' : '#FFFFFF'}
+                  color={DARK_CHECK.has(color.key) ? CarPaint.checkOnLight : CarPaint.checkOnDark}
                 />
               ) : null}
             </Pressable>

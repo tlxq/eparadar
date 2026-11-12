@@ -37,7 +37,12 @@ export function MapBanner({
       accessibilityRole="alert"
       style={[
         styles.banner,
-        { top, backgroundColor: theme.backgroundElement, borderColor: theme.border },
+        {
+          top,
+          backgroundColor: theme.backgroundElement,
+          borderColor: theme.border,
+          shadowColor: theme.scrim,
+        },
       ]}
     >
       <Ionicons name={icon} size={22} color={iconColor ?? theme.brand} style={styles.icon} />
@@ -76,7 +81,6 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     borderRadius: Radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    shadowColor: '#000',
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },

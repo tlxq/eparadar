@@ -1,4 +1,4 @@
-import { Colors } from '@eparadar/theme/colors';
+import { Colors, MapColors } from '@eparadar/theme/colors';
 
 const SWEDEN_CENTER = { lat: 62.0, lng: 15.0, zoom: 4 };
 const LONG_PRESS_MS = 450;
@@ -11,13 +11,13 @@ const TOWN_ZOOM = 9.5;
 const MAPLIBRE_VERSION = '5.24.0';
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/dark';
 
-const ICON_MEETUP =
-  '<svg viewBox="0 0 48 48" fill="none"><rect x="7" y="10" width="34" height="30" rx="7" fill="#2F6FED" fill-opacity=".5"/><rect x="7" y="10" width="34" height="30" rx="7" stroke="#F4F6F9" stroke-width="3"/><path d="M16 6v8M32 6v8M7 19h34" stroke="#F4F6F9" stroke-width="3" stroke-linecap="round"/><circle cx="19" cy="29" r="3" fill="#7EA6FF"/><circle cx="29" cy="29" r="3" fill="#7EA6FF"/></svg>';
-
-const ICON_PIN =
-  '<svg viewBox="0 0 48 48" fill="none"><path d="M24 44s13-11.5 13-22a13 13 0 1 0-26 0c0 10.5 13 22 13 22Z" fill="#2F6FED" fill-opacity=".55"/><path d="M24 44s13-11.5 13-22a13 13 0 1 0-26 0c0 10.5 13 22 13 22Z" stroke="#F4F6F9" stroke-width="3" stroke-linejoin="round"/><circle cx="24" cy="22" r="4.5" fill="#F4F6F9"/></svg>';
-
 const NIGHT = Colors.dark;
+const MAP_BG = MapColors.background;
+const MAP_SURFACE = MapColors.surface;
+
+const ICON_MEETUP = `<svg viewBox="0 0 48 48" fill="none"><rect x="7" y="10" width="34" height="30" rx="7" fill="${NIGHT.brand}" fill-opacity=".5"/><rect x="7" y="10" width="34" height="30" rx="7" stroke="${NIGHT.text}" stroke-width="3"/><path d="M16 6v8M32 6v8M7 19h34" stroke="${NIGHT.text}" stroke-width="3" stroke-linecap="round"/><circle cx="19" cy="29" r="3" fill="${NIGHT.brandOnSurface}"/><circle cx="29" cy="29" r="3" fill="${NIGHT.brandOnSurface}"/></svg>`;
+
+const ICON_PIN = `<svg viewBox="0 0 48 48" fill="none"><path d="M24 44s13-11.5 13-22a13 13 0 1 0-26 0c0 10.5 13 22 13 22Z" fill="${NIGHT.brand}" fill-opacity=".55"/><path d="M24 44s13-11.5 13-22a13 13 0 1 0-26 0c0 10.5 13 22 13 22Z" stroke="${NIGHT.text}" stroke-width="3" stroke-linejoin="round"/><circle cx="24" cy="22" r="4.5" fill="${NIGHT.text}"/></svg>`;
 
 export const MAP_HTML = `<!DOCTYPE html>
 <html>
@@ -25,7 +25,7 @@ export const MAP_HTML = `<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@${MAPLIBRE_VERSION}/dist/maplibre-gl.css" />
   <style>
-    html, body, #map { height: 100%; margin: 0; padding: 0; background: #0E1320; }
+    html, body, #map { height: 100%; margin: 0; padding: 0; background: ${MAP_BG}; }
     body { font-family: Inter, -apple-system, Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     .maplibregl-ctrl-attrib { background: rgba(14,19,32,0.7) !important; }
     .maplibregl-ctrl-attrib a, .maplibregl-ctrl-attrib-inner { color: ${NIGHT.textSecondary} !important; font-size: 9px; }
@@ -35,7 +35,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     .mk.spot, .mk.meet, .mk.drop { z-index: 1; }
     .photo-pin {
       position: relative; width: 46px; height: 46px; border-radius: 12px; border: 2.5px solid ${NIGHT.text};
-      background: #1C2230; box-shadow: 0 0 0 2px #0E1320, 0 6px 16px rgba(0,0,0,0.55); transform: rotate(-4deg);
+      background: ${MAP_SURFACE}; box-shadow: 0 0 0 2px ${MAP_BG}, 0 6px 16px rgba(0,0,0,0.55); transform: rotate(-4deg);
     }
     .photo-pin .clip {
       position: absolute; inset: 0; border-radius: 9px; overflow: hidden;
@@ -48,7 +48,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     }
     .z-town .photo-pin { width: 34px; height: 34px; border-radius: 9px; border-width: 2px; }
     .z-town .photo-pin .clip { border-radius: 7px; }
-    .pdot { width: 12px; height: 12px; border-radius: 3px; background: ${NIGHT.text}; box-shadow: 0 0 0 2px #0E1320; }
+    .pdot { width: 12px; height: 12px; border-radius: 3px; background: ${NIGHT.text}; box-shadow: 0 0 0 2px ${MAP_BG}; }
     .mk.person { z-index: 2; }
     .mk.me { z-index: 3; }
     .below {
@@ -67,8 +67,8 @@ export const MAP_HTML = `<!DOCTYPE html>
     .z-town .bubble { width: 34px; height: 34px; }
     .ring {
       position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--ring);
-      background: #1C2230; overflow: hidden; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 0 2px #0E1320, 0 6px 16px rgba(0,0,0,0.55);
+      background: ${MAP_SURFACE}; overflow: hidden; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 0 2px ${MAP_BG}, 0 6px 16px rgba(0,0,0,0.55);
     }
     .z-town .ring { border-width: 2.5px; }
     .ring img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -76,11 +76,11 @@ export const MAP_HTML = `<!DOCTYPE html>
     .z-town .initials { font-size: 12px; }
     .dot {
       width: 14px; height: 14px; border-radius: 50%; background: var(--ring);
-      box-shadow: 0 0 0 2px #0E1320, 0 0 10px var(--ring);
+      box-shadow: 0 0 0 2px ${MAP_BG}, 0 0 10px var(--ring);
     }
     .dot.many {
       width: 22px; height: 22px; background: ${NIGHT.text}; color: ${NIGHT.background}; font-size: 11px; font-weight: 800;
-      display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px #0E1320, 0 4px 10px rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px ${MAP_BG}, 0 4px 10px rgba(0,0,0,0.5);
     }
     .label {
       font-size: 11px; font-weight: 700; color: ${NIGHT.text};
@@ -100,14 +100,14 @@ export const MAP_HTML = `<!DOCTYPE html>
     .me .bubble { width: 58px; height: 58px; }
     .z-town .me .bubble { width: 42px; height: 42px; }
     .z-region .me .bubble { width: 34px; height: 34px; }
-    .me .ring { box-shadow: 0 0 0 2px #0E1320, 0 0 22px 4px var(--ring), 0 6px 16px rgba(0,0,0,0.55); }
+    .me .ring { box-shadow: 0 0 0 2px ${MAP_BG}, 0 0 22px 4px var(--ring), 0 6px 16px rgba(0,0,0,0.55); }
     .me .bubble::after {
       content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--ring);
       animation: pulse 2.4s ease-out infinite;
     }
     .me .initials { font-size: 18px; }
     .z-town .me .initials, .z-region .me .initials { font-size: 13px; }
-    .me.is-ghost .ring { border-style: dashed; opacity: 0.6; box-shadow: 0 0 0 2px #0E1320; }
+    .me.is-ghost .ring { border-style: dashed; opacity: 0.6; box-shadow: 0 0 0 2px ${MAP_BG}; }
     .me.is-ghost .bubble::after { display: none; }
     .pill {
       font-size: 10.5px; font-weight: 700; color: ${NIGHT.text}; background: rgba(21,26,37,0.88);
@@ -124,7 +124,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     .tile {
       position: relative; width: 44px; height: 44px; border-radius: 14px;
       border: 2px solid var(--kc); display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(180deg, var(--kf), var(--kf2)), #1C2230;
+      background: linear-gradient(180deg, var(--kf), var(--kf2)), ${MAP_SURFACE};
       box-shadow: 0 0 18px var(--kg), 0 6px 14px rgba(0,0,0,0.5);
     }
     .tile svg { width: 28px; height: 28px; }
@@ -133,12 +133,12 @@ export const MAP_HTML = `<!DOCTYPE html>
     .k-ragg { --kc: ${NIGHT.accent}; --kf: rgba(255,138,61,0.55); --kf2: rgba(255,138,61,0.3); --kg: rgba(255,138,61,0.55); }
     .k-meet { --kc: ${NIGHT.brandOnSurface}; --kf: rgba(47,111,237,0.7); --kf2: rgba(47,111,237,0.4); --kg: rgba(47,111,237,0.6); }
     .k-warn { --kc: ${NIGHT.warning}; --kf: rgba(245,197,24,0.42); --kf2: rgba(245,197,24,0.22); --kg: rgba(245,197,24,0.5); }
-    .kdot { width: 12px; height: 12px; border-radius: 4px; background: var(--kc); box-shadow: 0 0 0 2px #0E1320, 0 0 10px var(--kg); }
+    .kdot { width: 12px; height: 12px; border-radius: 4px; background: var(--kc); box-shadow: 0 0 0 2px ${MAP_BG}, 0 0 10px var(--kg); }
     .tile.live { animation: live 1.8s ease-out infinite; }
     @keyframes live { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6), 0 6px 14px rgba(0,0,0,0.5); } 100% { box-shadow: 0 0 0 12px rgba(34,197,94,0), 0 6px 14px rgba(0,0,0,0.5); } }
     .count {
       position: absolute; top: -8px; right: -8px; min-width: 18px; padding: 2px 5px; border-radius: 8px;
-      background: ${NIGHT.success}; color: #06210F; font-size: 10px; font-weight: 800; text-align: center; border: 2px solid #0E1320;
+      background: ${NIGHT.success}; color: ${MapColors.onSuccess}; font-size: 10px; font-weight: 800; text-align: center; border: 2px solid ${MAP_BG};
     }
     .tile .timer { position: absolute; left: -8px; top: -8px; width: calc(100% + 16px); height: calc(100% + 16px); pointer-events: none; }
     .timer rect { fill: none; stroke-width: 3; stroke-linecap: round; }
@@ -153,7 +153,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     }
     .pill .cam { display: inline-flex; align-items: center; gap: 2px; color: ${NIGHT.textSecondary}; }
     .pill .cam svg { width: 13px; height: 13px; }
-    .pill .n { background: ${NIGHT.success}; color: #06210F; padding: 1px 5px; border-radius: 6px; font-weight: 800; }
+    .pill .n { background: ${NIGHT.success}; color: ${MapColors.onSuccess}; padding: 1px 5px; border-radius: 6px; font-weight: 800; }
     .pill .t { max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
     .pill .when { color: ${NIGHT.brandOnSurface}; }
     .press-ring {
@@ -184,7 +184,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left');
 
     const NIGHT_PAINT = {
-      background: { 'background-color': '#0E1320' },
+      background: { 'background-color': '${MAP_BG}' },
       water: { 'fill-color': '#0A1626' },
       waterway: { 'line-color': '#0A1626' },
       landcover_wood: { 'fill-color': '#0F1D1B', 'fill-opacity': 0.8 },
@@ -193,14 +193,14 @@ export const MAP_HTML = `<!DOCTYPE html>
       building: { 'fill-color': '#161C2A' },
       highway_path: { 'line-color': '#18202F' },
       highway_minor: { 'line-color': '#1B2334' },
-      highway_major_casing: { 'line-color': '#0E1320' },
+      highway_major_casing: { 'line-color': '${MAP_BG}' },
       highway_major_inner: { 'line-color': '#2A3550' },
       highway_major_subtle: { 'line-color': '#2A3550' },
-      highway_motorway_casing: { 'line-color': '#0E1320' },
+      highway_motorway_casing: { 'line-color': '${MAP_BG}' },
       highway_motorway_inner: { 'line-color': '#5C3B26' },
       highway_motorway_subtle: { 'line-color': '#5C3B26' },
       railway: { 'line-color': '#1F2636' },
-      railway_dashline: { 'line-color': '#0E1320' },
+      railway_dashline: { 'line-color': '${MAP_BG}' },
       railway_minor: { 'line-color': '#1F2636' },
       railway_transit: { 'line-color': '#1F2636' },
     };
@@ -353,7 +353,7 @@ export const MAP_HTML = `<!DOCTYPE html>
     const STACK_PX = { street: 46, town: 34, region: 16 };
 
     function carTop(color) {
-      return '<svg viewBox="0 0 48 48" fill="none"><rect x="13" y="5" width="22" height="38" rx="8" fill="' + color + '"/><rect x="13" y="5" width="22" height="38" rx="8" stroke="${NIGHT.text}" stroke-width="2.5"/><path d="M16.5 15.5h15l-2 6h-11zM17.5 34h13l-1.5-4.5h-10z" fill="#0E1320" fill-opacity=".85"/><path d="M17 7.5h3M28 7.5h3" stroke="#FFF6D6" stroke-width="2.4" stroke-linecap="round"/></svg>';
+      return '<svg viewBox="0 0 48 48" fill="none"><rect x="13" y="5" width="22" height="38" rx="8" fill="' + color + '"/><rect x="13" y="5" width="22" height="38" rx="8" stroke="${NIGHT.text}" stroke-width="2.5"/><path d="M16.5 15.5h15l-2 6h-11zM17.5 34h13l-1.5-4.5h-10z" fill="${MAP_BG}" fill-opacity=".85"/><path d="M17 7.5h3M28 7.5h3" stroke="${MapColors.headlight}" stroke-width="2.4" stroke-linecap="round"/></svg>';
     }
     function faceHtml(p) {
       return p.avatarUrl

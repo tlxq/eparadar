@@ -15,7 +15,8 @@ type ThemedTextProps = TextProps & {
     | 'link'
     | 'linkPrimary'
     | 'error'
-    | 'code';
+    | 'code'
+    | 'codeDigit';
   themeColor?: ThemeColor;
 };
 
@@ -46,5 +47,10 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mono,
     fontWeight: Platform.select({ android: 700 }) ?? 500,
     fontSize: 12,
+  },
+  codeDigit: {
+    ...Typography.codeDigit,
+    fontFamily: Fonts.mono,
+    fontWeight: '700',
   },
 });

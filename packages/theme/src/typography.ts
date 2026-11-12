@@ -20,5 +20,6 @@ export const Typography = {
   caption: { fontSize: 12, lineHeight: 16, fontFamily: inter.semiBold },
   tabLabel: { fontSize: 11, lineHeight: 14 },
   badge: { fontSize: 10, lineHeight: 12 },
+  codeDigit: { fontSize: 24, lineHeight: 30 },
   emoji: { fontSize: 26, lineHeight: 32 },
 } as const;

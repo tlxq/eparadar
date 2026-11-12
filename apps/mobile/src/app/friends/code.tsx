@@ -11,7 +11,7 @@ import { Button } from '@/components/button';
 import { ScreenBackground } from '@/components/screen-background';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
-import { Fonts, Radius, Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import {
   fetchFriendCode,
   formatFriendCode,
@@ -151,6 +151,7 @@ export default function MyFriendCodeScreen() {
               <>
                 <View style={[styles.codeChip, { backgroundColor: `${theme.brandText}29` }]}>
                   <ThemedText
+                    type="codeDigit"
                     style={[styles.code, { color: theme.brandText }]}
                     accessibilityLabel={`Kod ${friendCode.code.split('').join(' ')}`}
                   >
@@ -221,11 +222,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one,
   },
   code: {
-    fontFamily: Fonts.mono,
-    fontSize: 22,
-    lineHeight: 30,
     letterSpacing: 3,
-    fontWeight: '700',
   },
   timer: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   center: { textAlign: 'center' },

@@ -1,11 +1,11 @@
-import { Colors } from '@eparadar/theme/colors';
+import { Colors, MapColors } from '@eparadar/theme/colors';
 
-const WHITE = '#F4F6F9';
-const ORANGE = '#FF8A3D';
+const WHITE = Colors.dark.text;
+const ORANGE = Colors.dark.accent;
 const YELLOW = Colors.dark.warning;
-const BLUE = '#2F6FED';
-const BLUE_SOFT = '#7EA6FF';
-const MAP_BG = '#0E1320';
+const BLUE = Colors.dark.brand;
+const BLUE_SOFT = Colors.dark.brandOnSurface;
+const MAP_BG = MapColors.background;
 
 function duo(back: string, front: string): string {
   return `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">${back}${front}</svg>`;

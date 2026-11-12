@@ -90,6 +90,7 @@ function Badge({
   icon: ComponentProps<typeof Ionicons>['name'];
   color: string;
 }) {
+  const theme = useTheme();
   return (
     <View
       style={[
@@ -107,7 +108,7 @@ function Badge({
           justifyContent: 'center',
         }}
       >
-        <Ionicons name={icon} size={size * 0.34} color="#FFFFFF" />
+        <Ionicons name={icon} size={size * 0.34} color={theme.brandText} />
       </View>
     </View>
   );
