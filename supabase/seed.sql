@@ -36,15 +36,15 @@ from new_users;
 update profiles set onboarded_at = now()
 where id::text like '00000000-0000-4000-a000-%';
 
-update profiles set bio = v.bio
+insert into profile_bios (user_id, bio)
+select v.id, v.bio
 from (
   values
     ('00000000-0000-4000-a000-000000000001'::uuid, 'Röd 740 och för mycket kaffe.'),
     ('00000000-0000-4000-a000-000000000002'::uuid, 'Kör hellre än går.'),
     ('00000000-0000-4000-a000-000000000004'::uuid, 'Saab-tjej. Fråga inte om rosten.'),
     ('00000000-0000-4000-a000-000000000008'::uuid, 'Skruvar mer än jag kör.')
-) as v (id, bio)
-where profiles.id = v.id;
+) as v (id, bio);
 
 insert into friendships (requester_id, addressee_id, status, responded_at)
 values

@@ -12,6 +12,7 @@ import { Radius, Spacing } from '@/constants/theme';
 import { Words } from '@/constants/strings';
 import { CarColorPicker } from '@/features/map/car-color-picker';
 import { PhotoSourceSheet } from '@/features/profile/components/photo-source-sheet';
+import { useCarPhotoUrl } from '@/hooks/use-car-photo-url';
 import { useTheme } from '@/hooks/use-theme';
 import { useUserId } from '@/hooks/use-user-id';
 import { createCar, removeCarPhoto, updateCar, type Car } from '@/lib/api';
@@ -47,7 +48,8 @@ export function CarForm({ car }: { car?: Car }) {
   const [modelError, setModelError] = useState<string | null>(null);
   const [yearError, setYearError] = useState<string | null>(null);
 
-  const shownPhoto = photoUri ?? photoUrl;
+  const signedPhoto = useCarPhotoUrl(photoUrl);
+  const shownPhoto = photoUri ?? signedPhoto;
 
   async function handlePickPhoto(source: ImageSource) {
     const uri = await pickImage({ aspect: [4, 3], source });

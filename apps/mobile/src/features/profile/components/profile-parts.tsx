@@ -127,7 +127,7 @@ export function EditProfileSheet({ profile, visible, onClose }: EditProfileSheet
     setSaving(true);
     setError(null);
     try {
-      await updateProfile(profile.id, {
+      await updateProfile({
         displayName: displayName.trim(),
         bio: bio.trim() || null,
         avatarUrl: profile.avatar_url ?? undefined,

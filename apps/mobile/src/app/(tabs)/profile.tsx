@@ -104,7 +104,7 @@ export default function ProfileScreen() {
     setUploadingAvatar(true);
     try {
       const publicUrl = await uploadAvatar(userId, uri);
-      await updateProfile(userId, {
+      await updateProfile({
         displayName: profile.display_name,
         bio: profile.bio,
         avatarUrl: publicUrl,

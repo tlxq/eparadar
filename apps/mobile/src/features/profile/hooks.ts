@@ -63,11 +63,11 @@ export function usePersonProfile(userId: string | undefined) {
   });
 }
 
-export function usePersonCars(userId: string | undefined) {
+export function usePersonCars(userId: string | undefined, enabled = true) {
   return useQuery({
     queryKey: queryKeys.cars(userId),
     queryFn: () => fetchMyCars(userId!),
-    enabled: !!userId,
+    enabled: !!userId && enabled,
   });
 }
 

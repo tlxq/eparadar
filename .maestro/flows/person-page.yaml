@@ -1,0 +1,12 @@
+appId: com.tlxq.eparadar
+name: Kompisens profil visar EPA:n
+---
+- runFlow: ../subflows/open-app.yaml
+- tapOn: 'Kompisar.*'
+- runFlow: ../subflows/settle.yaml
+- tapOn: Liam Berg
+- tapOn: Visa profil
+- scrollUntilVisible:
+    element: Garage
+- runFlow: ../subflows/settle.yaml
+- takeScreenshot: kompis-profil

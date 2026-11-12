@@ -23,6 +23,7 @@ import { CAR_COLORS, carColorHex } from '@/features/map/car-colors';
 import { useModerationItems } from '@/features/moderation/use-moderation-items';
 import { carName } from '@/features/profile/components/profile-parts';
 import { useCar, useCarPosts, useIsFriend, usePersonProfile } from '@/features/profile/hooks';
+import { useCarPhotoUrl } from '@/hooks/use-car-photo-url';
 import { usePullRefresh } from '@/hooks/use-pull-refresh';
 import { useTheme } from '@/hooks/use-theme';
 import { useUserId } from '@/hooks/use-user-id';
@@ -41,6 +42,7 @@ export default function CarScreen() {
   const moderationItems = useModerationItems();
   const carQuery = useCar(id);
   const car = carQuery.data;
+  const photoUrl = useCarPhotoUrl(car?.photo_url);
   const ownerId = car?.owner_id;
   const isOwner = !!car && car.owner_id === userId;
   const { isFriend } = useIsFriend(ownerId);
@@ -145,9 +147,9 @@ export default function CarScreen() {
                   },
                 ]}
               >
-                {car.photo_url ? (
+                {photoUrl ? (
                   <Image
-                    source={{ uri: car.photo_url }}
+                    source={{ uri: photoUrl }}
                     style={StyleSheet.absoluteFill}
                     accessibilityLabel={`Bild på ${name}`}
                   />

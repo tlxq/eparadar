@@ -1,19 +1,22 @@
 import { supabase } from '@/lib/supabase';
-import { signedUrl, signedUrls } from '@/lib/storage';
+import { signedUrl, signedUrls, storagePathFromPublicUrl } from '@/lib/storage';
 import { lastActivity } from '@/lib/chat-state';
 import { uploadFile } from '@/lib/image-upload';
 import type { DbRow, DbTables } from '@/lib/db-types';
 
 export type Profile = DbRow<'profiles'>;
 export type Car = DbRow<'cars'>;
-export type ProfileSummary = Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>;
+export type ProfileSummary = Pick<
+  DbRow<'profiles'>,
+  'id' | 'username' | 'display_name' | 'avatar_url'
+>;
 const PROFILE_CARD = 'id, username, display_name, avatar_url';
 export const PROFILE_CARD_NO_USERNAME = 'id, display_name, avatar_url';
 
 export type PostReaction = {
   user_id: string;
   emoji: string;
-  profile: Pick<Profile, 'id' | 'display_name' | 'avatar_url'> | null;
+  profile: Pick<DbRow<'profiles'>, 'id' | 'display_name' | 'avatar_url'> | null;
 };
 
 export type PostPlace = Pick<DbRow<'post_places'>, 'lat' | 'lng' | 'expires_at'>;
@@ -205,19 +208,13 @@ export async function setCarColor(carId: string, color: string | null): Promise<
 export async function fetchProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, username, display_name, avatar_url, created_at, onboarded_at, profile_bios(bio)')
     .eq('id', userId)
     .maybeSingle();
   if (error) throw error;
-  return data;
-}
-
-function storagePathFromPublicUrl(bucket: string, url: string | null): string | null {
-  if (!url) return null;
-  const marker = `/object/public/${bucket}/`;
-  const index = url.indexOf(marker);
-  if (index === -1) return null;
-  return decodeURIComponent(url.slice(index + marker.length).split('?')[0]);
+  if (!data) return null;
+  const { profile_bios: bioRow, ...profile } = data;
+  return { ...profile, bio: bioRow?.bio ?? null };
 }
 
 async function removeStoredFile(bucket: string, url: string | null) {
@@ -255,14 +252,16 @@ export async function completeOnboarding(userId: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function updateProfile(
-  userId: string,
-  input: { displayName: string; bio: string | null; avatarUrl?: string },
-) {
-  const { error } = await supabase
-    .from('profiles')
-    .update({ display_name: input.displayName, bio: input.bio, avatar_url: input.avatarUrl })
-    .eq('id', userId);
+export async function updateProfile(input: {
+  displayName: string;
+  bio: string | null;
+  avatarUrl?: string;
+}) {
+  const { error } = await supabase.rpc('update_my_profile', {
+    p_display_name: input.displayName,
+    p_bio: input.bio ?? '',
+    p_avatar_url: input.avatarUrl,
+  });
   if (error) throw error;
 }
 

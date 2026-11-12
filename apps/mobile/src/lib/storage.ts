@@ -22,3 +22,11 @@ export async function signedUrls(bucket: string, paths: string[]): Promise<Map<s
   }
   return byPath;
 }
+
+export function storagePathFromPublicUrl(bucket: string, url: string | null): string | null {
+  if (!url) return null;
+  const marker = `/object/public/${bucket}/`;
+  const index = url.indexOf(marker);
+  if (index === -1) return null;
+  return decodeURIComponent(url.slice(index + marker.length).split('?')[0]);
+}

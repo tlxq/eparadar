@@ -50,8 +50,8 @@ select is(
 
 select is(
   (select count(*) from public.cars where owner_id = '69000002-0000-0000-0000-000000000001'),
-  1::bigint,
-  'a stranger can see the EPAs on a profile'
+  0::bigint,
+  'a stranger cannot see the EPAs on a profile'
 );
 
 select is(

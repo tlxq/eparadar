@@ -77,7 +77,7 @@ export const privacyPolicy: LegalDocument = {
     {
       heading: 'Vem som ser vad',
       blocks: [
-        'Poster, spots, träffar och din position syns bara för dina kompisar. Nya chattar kan bara startas mellan kompisar. Din profil (namn, användarnamn, profilbild och EPA:or) syns för andra inloggade användare så att ni kan hitta varandra. Rapporterat innehåll syns också för epaRadars admin, men admin ser inte din plats eller dina spots på kartan om ni inte är kompisar. Ingenting syns för den som inte är inloggad. Vi säljer inte personuppgifter och använder dem inte för reklam.',
+        'Poster, spots, träffar och din position syns bara för dina kompisar. Nya chattar kan bara startas mellan kompisar. Ditt profilkort (visningsnamn, användarnamn och profilbild) syns för andra inloggade användare så att ni kan hitta varandra. Din profiltext och dina EPA:or syns bara för dig och dina kompisar. Rapporterat innehåll syns också för epaRadars admin, men admin ser inte din plats eller dina spots på kartan om ni inte är kompisar. Ingenting syns för den som inte är inloggad. Vi säljer inte personuppgifter och använder dem inte för reklam.',
       ],
     },
     {

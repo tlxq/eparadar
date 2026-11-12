@@ -50,15 +50,16 @@ function PersonSheet({ personId, onClose }: { personId: string; onClose: () => v
     queryKey: queryKeys.profile(personId),
     queryFn: () => fetchProfile(personId),
   });
-  const { data: cars } = useQuery({
-    queryKey: queryKeys.cars(personId),
-    queryFn: () => fetchMyCars(personId),
-  });
   const { data: friends } = useFriends();
   const { data: outgoing } = useOutgoingRequests();
   const { data: locations } = useFriendLocations();
 
   const isFriend = !!myUserId && !!friends?.some((f) => friendProfile(f, myUserId).id === personId);
+  const { data: cars } = useQuery({
+    queryKey: queryKeys.cars(personId),
+    queryFn: () => fetchMyCars(personId),
+    enabled: isFriend,
+  });
   const requested = !!outgoing?.some((r) => r.addressee_id === personId);
   const location = locations?.find((l) => l.user_id === personId) ?? null;
   const name = profile?.display_name ?? '';

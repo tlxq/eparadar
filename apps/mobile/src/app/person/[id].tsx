@@ -66,9 +66,9 @@ function PersonProfile({ personId }: { personId: string }) {
 
   const profileQuery = usePersonProfile(personId);
   const profile = profileQuery.data;
-  const carsQuery = usePersonCars(personId);
-  const cars = carsQuery.data;
   const { isFriend } = useIsFriend(personId);
+  const carsQuery = usePersonCars(personId, isFriend);
+  const cars = carsQuery.data;
   const mutualQuery = useMutualFriends(personId, isFriend);
   const postCountQuery = usePersonPostCount(personId, isFriend);
   const postsQuery = usePersonPosts(personId, isFriend);
@@ -78,8 +78,14 @@ function PersonProfile({ personId }: { personId: string }) {
   const pull = usePullRefresh(() =>
     Promise.all([
       profileQuery.refetch(),
-      carsQuery.refetch(),
-      ...(isFriend ? [mutualQuery.refetch(), postCountQuery.refetch(), postsQuery.refetch()] : []),
+      ...(isFriend
+        ? [
+            carsQuery.refetch(),
+            mutualQuery.refetch(),
+            postCountQuery.refetch(),
+            postsQuery.refetch(),
+          ]
+        : []),
     ]),
   );
 
@@ -240,40 +246,42 @@ function PersonProfile({ personId }: { personId: string }) {
           ) : null}
         </View>
 
-        <View
-          onLayout={(event) => {
-            offsets.current.cars = event.nativeEvent.layout.y;
-          }}
-          style={styles.section}
-        >
-          <SectionLabel style={styles.label}>Garage</SectionLabel>
-          {cars && cars.length > 0 ? (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.carRow}
-            >
-              {cars.map((car) => (
-                <CarCard
-                  key={car.id}
-                  car={car}
-                  width={BIG_CAR_WIDTH}
-                  onPress={() => openCar(car.id)}
-                />
-              ))}
-            </ScrollView>
-          ) : cars ? (
-            <ThemedText type="small" themeColor="textSecondary" style={styles.note}>
-              {`${name || 'Hen'} har inga ${Words.vehicles} än.`}
-            </ThemedText>
-          ) : carsQuery.isError ? (
-            <ErrorState message={loadError('EPA:orna')} onRetry={carsQuery.refetch} />
-          ) : (
-            <View style={styles.carRow}>
-              <Skeleton width={BIG_CAR_WIDTH} height={BIG_CAR_WIDTH + 52} radius={Radius.lg} />
-            </View>
-          )}
-        </View>
+        {isFriend ? (
+          <View
+            onLayout={(event) => {
+              offsets.current.cars = event.nativeEvent.layout.y;
+            }}
+            style={styles.section}
+          >
+            <SectionLabel style={styles.label}>Garage</SectionLabel>
+            {cars && cars.length > 0 ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.carRow}
+              >
+                {cars.map((car) => (
+                  <CarCard
+                    key={car.id}
+                    car={car}
+                    width={BIG_CAR_WIDTH}
+                    onPress={() => openCar(car.id)}
+                  />
+                ))}
+              </ScrollView>
+            ) : cars ? (
+              <ThemedText type="small" themeColor="textSecondary" style={styles.note}>
+                {`${name || 'Hen'} har inga ${Words.vehicles} än.`}
+              </ThemedText>
+            ) : carsQuery.isError ? (
+              <ErrorState message={loadError('EPA:orna')} onRetry={carsQuery.refetch} />
+            ) : (
+              <View style={styles.carRow}>
+                <Skeleton width={BIG_CAR_WIDTH} height={BIG_CAR_WIDTH + 52} radius={Radius.lg} />
+              </View>
+            )}
+          </View>
+        ) : null}
 
         {isFriend ? (
           <>
@@ -357,7 +365,7 @@ function PersonProfile({ personId }: { personId: string }) {
             <View style={styles.flex}>
               <ThemedText type="smallBold">Ni är inte kompisar än</ThemedText>
               <ThemedText type="caption" themeColor="textSecondary">
-                {`Poster, bio och kompisar syns när du och ${name} är kompisar.`}
+                {`EPA:or, poster, bio och kompisar syns när du och ${name} är kompisar.`}
               </ThemedText>
             </View>
           </View>

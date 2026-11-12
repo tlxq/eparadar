@@ -29,6 +29,7 @@ export const queryKeys = {
   allSpotPhotos: () => ['spotPhotos'] as const,
   spotPhotos: (spotId: string | undefined) => ['spotPhotos', spotId] as const,
   chatImage: (path: string) => ['chatImage', path] as const,
+  carPhoto: (path: string | null | undefined) => ['carPhoto', path] as const,
   groupAvatar: (path: string | null | undefined) => ['groupAvatar', path] as const,
   allNearby: (userId: string | undefined) => ['nearby', userId] as const,
   nearby: (userId: string | undefined, lat: string | undefined, lng: string | undefined) =>

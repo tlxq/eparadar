@@ -786,6 +786,32 @@ export type Database = {
           },
         ];
       };
+      profile_bios: {
+        Row: {
+          bio: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          bio: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          bio?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'profile_bios_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: true;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;
@@ -1256,6 +1282,10 @@ export type Database = {
       };
       meetup_here_now_count: { Args: { p_meetup_id: string }; Returns: number };
       meetup_interest_count: { Args: { p_meetup_id: string }; Returns: number };
+      update_my_profile: {
+        Args: { p_avatar_url?: string; p_bio: string; p_display_name: string };
+        Returns: undefined;
+      };
       mutual_friends: {
         Args: { p_user_id: string };
         Returns: {

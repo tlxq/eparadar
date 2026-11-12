@@ -130,7 +130,7 @@ allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]
 objects_path = "./seed/assets/avatars"
 
 [storage.buckets.car-photos]
-public = true
+public = false
 file_size_limit = "10MiB"
 allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]
 objects_path = "./seed/assets/car-photos"
