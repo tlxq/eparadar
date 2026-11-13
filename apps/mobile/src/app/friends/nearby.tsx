@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
@@ -17,15 +17,13 @@ import { Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
 import { RadarHero } from '@/features/friends/components/radar-hero';
 import type { NearbyPerson } from '@/features/friends/nearby';
+import { useSendFriendRequest } from '@/features/friends/hooks';
 import { useNearbyRadar } from '@/features/friends/use-nearby-radar';
 import { useTheme } from '@/hooks/use-theme';
-import { sendFriendRequest } from '@/lib/api';
-import { getErrorMessage } from '@/lib/errors';
-import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
 import { queryKeys } from '@/lib/query-keys';
 import { useModerationItems } from '@/features/moderation/use-moderation-items';
 import { useRadarIgnoreStore } from '@/store/radar-ignore';
-import { showToast, showUndoToast } from '@/store/toast';
+import { showUndoToast } from '@/store/toast';
 import { useUserId } from '@/hooks/use-user-id';
 import { ModalHeader } from '@/components/modal-header';
 
@@ -79,27 +77,7 @@ function PersonRow({ person, myUserId }: { person: NearbyPerson; myUserId: strin
     });
   }
 
-  const add = useMutation({
-    mutationFn: () => sendFriendRequest(person.user_id),
-    onSuccess: (row) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.allNearby(myUserId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(myUserId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.friends(myUserId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.friendRequests(myUserId) });
-      showToast({
-        tone: 'success',
-        message:
-          row.status === 'accepted'
-            ? `Du och ${person.display_name} är kompisar nu!`
-            : `Förfrågan skickad till ${person.display_name}!`,
-      });
-      maybeRequestNotificationPermission(
-        myUserId,
-        row.status === 'accepted' ? 'friend_accepted' : 'friend_request',
-      );
-    },
-    onError: (error) => showToast({ tone: 'error', message: getErrorMessage(error) }),
-  });
+  const add = useSendFriendRequest();
 
   const accepted = add.data?.status === 'accepted';
   const sent = !accepted && (person.request_state === 'sent' || add.isSuccess);
@@ -134,7 +112,7 @@ function PersonRow({ person, myUserId }: { person: NearbyPerson; myUserId: strin
               label={person.request_state === 'received' ? 'Acceptera' : 'Lägg till'}
               size="sm"
               loading={add.isPending}
-              onPress={() => add.mutate()}
+              onPress={() => add.mutate({ userId: person.user_id, name: person.display_name })}
             />
           )}
           <DropdownButton

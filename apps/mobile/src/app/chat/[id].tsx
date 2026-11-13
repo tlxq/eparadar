@@ -48,6 +48,7 @@ import {
   ReadReceipt,
   TypingBubble,
 } from '@/features/chat/components/message-bubble';
+import { buildImageDraft, deliverDraft } from '@/features/chat/image-draft';
 import { ImagePreview } from '@/features/chat/components/image-preview';
 import { ReactorsSheet } from '@/features/chat/components/reactors-sheet';
 import { Common, loadError } from '@/constants/strings';
@@ -70,7 +71,6 @@ export default function ConversationScreen() {
   const queryClient = useQueryClient();
   const listRef = useRef<FlatList<Message>>(null);
   const [body, setBody] = useState('');
-  const [sending, setSending] = useState(false);
   const [selected, setSelected] = useState<Message | null>(null);
   const [viewer, setViewer] = useState<{ url: string; message: Message } | null>(null);
   const [reactorsOf, setReactorsOf] = useState<Message | null>(null);
@@ -247,21 +247,26 @@ export default function ConversationScreen() {
     if (uri) setPreviewUri(uri);
   }
 
-  async function handleSendImage(caption: string) {
+  function handleSendImage(caption: string) {
     if (!id || !userId || !previewUri) return;
-    setSending(true);
-    try {
-      const imagePath = await uploadChatImage(id, previewUri);
-      await sendMessage({ conversationId: id, senderId: userId, body: caption, imagePath });
-      setPreviewUri(null);
-      tapHaptic();
-      queryClient.invalidateQueries({ queryKey: queryKeys.messages(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.conversations(userId) });
-    } catch (error) {
-      showToast({ tone: 'error', message: `Bilden skickades inte. ${getErrorMessage(error)}` });
-    } finally {
-      setSending(false);
-    }
+    const draft = buildImageDraft({
+      id: randomId(),
+      conversationId: id,
+      senderId: userId,
+      caption,
+      uri: previewUri,
+      sender: myProfile
+        ? {
+            id: userId,
+            username: myProfile.username,
+            display_name: myProfile.display_name,
+            avatar_url: myProfile.avatar_url,
+          }
+        : null,
+    });
+    setPreviewUri(null);
+    tapHaptic();
+    deliver(draft);
   }
 
   async function deliver(draft: Message) {
@@ -270,11 +275,9 @@ export default function ConversationScreen() {
     await queryClient.cancelQueries({ queryKey: key });
     queryClient.setQueryData<Message[]>(key, (current) => [...(current ?? []), draft]);
     try {
-      await sendMessage({
-        id: draft.id,
-        conversationId: id,
-        senderId: userId,
-        body: draft.body,
+      await deliverDraft(draft, {
+        upload: (uri) => uploadChatImage(id, uri),
+        send: (input) => sendMessage(input),
       });
       queryClient.setQueryData<Message[]>(key, (current) =>
         current?.map((message) =>
@@ -391,7 +394,7 @@ export default function ConversationScreen() {
     ...(messages ?? []),
     ...failed.filter((draft) => !messages?.some((message) => message.id === draft.id)),
   ];
-  const canSend = !!body.trim() && !sending;
+  const canSend = !!body.trim();
   const typing = typingLabel(activeTypists(typists, userId, now), isGroup);
   const myReaction = selected?.reactions?.find((reaction) => reaction.user_id === userId)?.emoji;
 
@@ -501,14 +504,12 @@ export default function ConversationScreen() {
               size={44}
               accessibilityLabel="Ta en bild"
               onPress={() => handlePickImage('camera')}
-              disabled={sending}
             />
             <IconButton
               icon="image-outline"
               size={44}
               accessibilityLabel="Skicka en bild"
               onPress={() => handlePickImage('library')}
-              disabled={sending}
             />
             <TextInput
               value={body}
@@ -569,7 +570,6 @@ export default function ConversationScreen() {
         <ImagePreview
           key={previewUri ?? 'none'}
           uri={previewUri}
-          sending={sending}
           onCancel={() => setPreviewUri(null)}
           onSend={handleSendImage}
         />

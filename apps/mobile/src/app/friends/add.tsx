@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { ModalHeader } from '@/components/modal-header';
 import { ScreenBackground } from '@/components/screen-background';
@@ -10,42 +9,28 @@ import { CandidateRow } from '@/features/friends/components/candidate-row';
 import { AddTiles } from '@/features/friends/components/add-tiles';
 import { SuggestionSection } from '@/features/friends/components/suggestion-section';
 import { formatRelativeSwedish } from '@/features/friends/api';
-import { useMeetupSuggestions, useMutualSuggestions } from '@/features/friends/hooks';
+import {
+  useMeetupSuggestions,
+  useMutualSuggestions,
+  useSendFriendRequest,
+} from '@/features/friends/hooks';
 import { Words } from '@/constants/strings';
 import { Spacing } from '@/constants/theme';
-import { getErrorMessage } from '@/lib/errors';
-import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
-import { queryKeys } from '@/lib/query-keys';
-import { sendFriendRequest } from '@/lib/api';
-import { useUserId } from '@/hooks/use-user-id';
-import { successHaptic } from '@/lib/haptics';
 
 export default function AddFriendScreen() {
-  const userId = useUserId();
-  const queryClient = useQueryClient();
-
   const meetupSuggestions = useMeetupSuggestions();
   const mutualSuggestions = useMutualSuggestions();
 
   const [sentIds, setSentIds] = useState<Set<string>>(new Set());
-  const [sendingId, setSendingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const send = useSendFriendRequest();
+  const sendingId = send.isPending ? send.variables.userId : null;
 
-  const mutation = useMutation({
-    mutationFn: (targetUserId: string) => sendFriendRequest(targetUserId),
-    onMutate: (targetUserId) => setSendingId(targetUserId),
-    onSuccess: (_data, targetUserId) => {
-      successHaptic();
-      setSentIds((current) => new Set(current).add(targetUserId));
-      setError(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.meetupSuggestions(userId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.mutualSuggestions(userId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(userId) });
-      if (userId) maybeRequestNotificationPermission(userId, 'friend_request');
-    },
-    onError: (err) => setError(getErrorMessage(err)),
-    onSettled: () => setSendingId(null),
-  });
+  function add(candidate: { user_id: string; display_name: string }) {
+    send.mutate(
+      { userId: candidate.user_id, name: candidate.display_name },
+      { onSuccess: () => setSentIds((current) => new Set(current).add(candidate.user_id)) },
+    );
+  }
 
   return (
     <ScreenBackground style={styles.container}>
@@ -73,7 +58,7 @@ export default function AddFriendScreen() {
                 buttonVariant="primary"
                 topLine={`Ni sågs på ${candidate.last_meetup_title}`}
                 subLine={formatRelativeSwedish(candidate.last_checked_in_at)}
-                onAdd={() => mutation.mutate(candidate.user_id)}
+                onAdd={() => add(candidate)}
                 sending={sendingId === candidate.user_id}
                 sent={sentIds.has(candidate.user_id)}
               />
@@ -92,18 +77,12 @@ export default function AddFriendScreen() {
                 displayName={candidate.display_name}
                 avatarUrl={candidate.avatar_url}
                 subLine={`${candidate.mutual_friend_count} ${candidate.mutual_friend_count === 1 ? 'gemensam kompis' : 'gemensamma kompisar'}`}
-                onAdd={() => mutation.mutate(candidate.user_id)}
+                onAdd={() => add(candidate)}
                 sending={sendingId === candidate.user_id}
                 sent={sentIds.has(candidate.user_id)}
               />
             ))}
           </SuggestionSection>
-
-          {error ? (
-            <ThemedText type="error" style={styles.error}>
-              {error}
-            </ThemedText>
-          ) : null}
         </ScrollView>
       </SafeAreaView>
     </ScreenBackground>
@@ -120,5 +99,4 @@ const styles = StyleSheet.create({
   },
   intro: { gap: Spacing.three },
   introCopy: { textAlign: 'center' },
-  error: { textAlign: 'center' },
 });

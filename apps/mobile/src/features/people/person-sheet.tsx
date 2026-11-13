@@ -8,7 +8,14 @@ import { Avatar } from '@/components/avatar';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
-import { useFriends, useOutgoingRequests } from '@/features/friends/hooks';
+import {
+  useAcceptFriendRequest,
+  useDeclineFriendRequest,
+  useFriendRequests,
+  useFriends,
+  useOutgoingRequests,
+  useSendFriendRequest,
+} from '@/features/friends/hooks';
 import { carColorHex } from '@/features/map/car-colors';
 import { useFriendLocations } from '@/features/map/hooks';
 import { useTheme } from '@/hooks/use-theme';
@@ -18,7 +25,6 @@ import {
   fetchMyCars,
   fetchProfile,
   friendProfile,
-  sendFriendRequest,
   type Car,
   type FriendLocation,
 } from '@/lib/api';
@@ -30,7 +36,6 @@ import { openReport } from '@/store/report-sheet';
 import { useModerationItems } from '@/features/moderation/use-moderation-items';
 import { Words } from '@/constants/strings';
 import { showToast } from '@/store/toast';
-import { successHaptic } from '@/lib/haptics';
 
 export function PersonSheetHost() {
   const userId = usePersonSheetStore((state) => state.userId);
@@ -54,6 +59,7 @@ function PersonSheet({
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
   const moderationItems = useModerationItems();
+  const sendRequest = useSendFriendRequest();
 
   const { data: profile } = useQuery({
     queryKey: queryKeys.profile(personId),
@@ -61,6 +67,9 @@ function PersonSheet({
   });
   const { data: friends } = useFriends();
   const { data: outgoing } = useOutgoingRequests();
+  const { data: incoming } = useFriendRequests();
+  const accept = useAcceptFriendRequest();
+  const decline = useDeclineFriendRequest();
   const { data: locations } = useFriendLocations();
 
   const isFriend = !!myUserId && !!friends?.some((f) => friendProfile(f, myUserId).id === personId);
@@ -69,6 +78,7 @@ function PersonSheet({
     queryFn: () => fetchMyCars(personId),
     enabled: isFriend,
   });
+  const incomingRequest = incoming?.find((r) => r.requester_id === personId);
   const requested = !!outgoing?.some((r) => r.addressee_id === personId);
   const location = locations?.find((l) => l.user_id === personId) ?? null;
   const name = profile?.display_name ?? '';
@@ -87,16 +97,8 @@ function PersonSheet({
     }
   }
 
-  async function requestFriend() {
-    try {
-      await sendFriendRequest(personId);
-      successHaptic();
-      queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(myUserId) });
-      showToast({ tone: 'success', message: `Förfrågan skickad till ${name}!` });
-      if (myUserId) maybeRequestNotificationPermission(myUserId, 'friend_request');
-    } catch (error) {
-      showToast({ tone: 'error', message: getErrorMessage(error) });
-    }
+  function requestFriend() {
+    sendRequest.mutate({ userId: personId, name });
   }
 
   const status = location ? activeStatus(location) : null;
@@ -117,6 +119,11 @@ function PersonSheet({
     }),
   ];
 
+  const respond = (action: (input: { requestId: string; name: string }) => void) => {
+    if (!incomingRequest) return;
+    action({ requestId: incomingRequest.id, name });
+    onClose();
+  };
   const primary: SheetAction[] = isFriend
     ? [
         {
@@ -137,14 +144,29 @@ function PersonSheet({
               },
             ]),
       ]
-    : [
-        {
-          label: requested ? 'Förfrågan skickad' : Words.addFriend,
-          icon: 'person-add-outline',
-          disabled: requested || !profile,
-          onPress: requestFriend,
-        },
-      ];
+    : incomingRequest
+      ? [
+          {
+            label: 'Acceptera',
+            icon: 'checkmark-outline' as const,
+            disabled: !profile || accept.isPending,
+            onPress: () => respond((input) => accept.mutate(input)),
+          },
+          {
+            label: 'Neka',
+            icon: 'close-outline' as const,
+            disabled: !profile,
+            onPress: () => respond(decline),
+          },
+        ]
+      : [
+          {
+            label: requested ? 'Förfrågan skickad' : Words.addFriend,
+            icon: 'person-add-outline',
+            disabled: requested || !profile,
+            onPress: requestFriend,
+          },
+        ];
   const actions: SheetAction[] = [
     {
       label: 'Visa profil',
@@ -174,11 +196,9 @@ function PersonSheet({
                   <ThemedText type="subtitle" numberOfLines={1}>
                     {name}
                   </ThemedText>
-                  {isFriend ? (
-                    <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
-                      @{profile.username}
-                    </ThemedText>
-                  ) : null}
+                  <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+                    @{profile.username}
+                  </ThemedText>
                 </>
               ) : (
                 <>

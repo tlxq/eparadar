@@ -91,7 +91,7 @@ export function MapActionBar({
     {
       label: `${Words.ragga} där jag är`,
       icon: 'sparkles-outline',
-      hint: 'Eller håll in var som helst på kartan',
+      hint: 'Eller håll in på kartan där den ska ligga.',
       onPress: onAddRagga,
     },
     { label: `${Words.warning} där jag är`, icon: 'warning-outline', onPress: onAddWarning },

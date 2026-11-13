@@ -18,7 +18,7 @@ import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
 import { Counts, loadError, plural, Words } from '@/constants/strings';
 import { Radius, Spacing } from '@/constants/theme';
-import { useOutgoingRequests } from '@/features/friends/hooks';
+import { useOutgoingRequests, useSendFriendRequest } from '@/features/friends/hooks';
 import { carColorHex } from '@/features/map/car-colors';
 import { useFriendLocations } from '@/features/map/hooks';
 import { latestCarColor } from '@/features/map/markers';
@@ -37,9 +37,8 @@ import { useHeaderReveal } from '@/hooks/use-header-reveal';
 import { usePullRefresh } from '@/hooks/use-pull-refresh';
 import { useTheme } from '@/hooks/use-theme';
 import { useUserId } from '@/hooks/use-user-id';
-import { createConversation, sendFriendRequest } from '@/lib/api';
+import { createConversation } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
-import { successHaptic } from '@/lib/haptics';
 import { queryKeys } from '@/lib/query-keys';
 import { openCar, openProfile } from '@/store/person-sheet';
 import { showToast } from '@/store/toast';
@@ -62,6 +61,7 @@ function PersonProfile({ personId }: { personId: string }) {
   const myUserId = useUserId();
   const queryClient = useQueryClient();
   const moderationItems = useModerationItems();
+  const sendRequest = useSendFriendRequest();
   const scrollRef = useRef<ScrollView>(null);
   const offsets = useRef<Record<Section, number>>({ cars: 0, mutual: 0, posts: 0 });
   const [busy, setBusy] = useState(false);
@@ -116,15 +116,8 @@ function PersonProfile({ personId }: { personId: string }) {
     }
   }
 
-  async function requestFriend() {
-    try {
-      await sendFriendRequest(personId);
-      successHaptic();
-      queryClient.invalidateQueries({ queryKey: queryKeys.outgoingRequests(myUserId) });
-      showToast({ tone: 'success', message: `Förfrågan skickad till ${name}!` });
-    } catch (error) {
-      showToast({ tone: 'error', message: getErrorMessage(error) });
-    }
+  function requestFriend() {
+    sendRequest.mutate({ userId: personId, name });
   }
 
   const menu: MenuItem[] = moderationItems({

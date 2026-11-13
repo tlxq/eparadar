@@ -10,32 +10,20 @@ import { useTheme } from '@/hooks/use-theme';
 
 type ImagePreviewProps = {
   uri: string | null;
-  sending: boolean;
   onCancel: () => void;
   onSend: (caption: string) => void;
 };
 
-export function ImagePreview({ uri, sending, onCancel, onSend }: ImagePreviewProps) {
+export function ImagePreview({ uri, onCancel, onSend }: ImagePreviewProps) {
   const theme = useTheme();
   const [caption, setCaption] = useState('');
 
   return (
-    <Modal
-      visible={!!uri}
-      animationType="slide"
-      onRequestClose={() => {
-        if (!sending) onCancel();
-      }}
-    >
+    <Modal visible={!!uri} animationType="slide" onRequestClose={onCancel}>
       <View style={[styles.container, { backgroundColor: theme.scrim }]}>
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
           <View style={styles.top}>
-            <IconButton
-              icon="close"
-              accessibilityLabel={Common.cancel}
-              onPress={onCancel}
-              disabled={sending}
-            />
+            <IconButton icon="close" accessibilityLabel={Common.cancel} onPress={onCancel} />
           </View>
           <KeyboardAvoider style={styles.container}>
             <View style={styles.imageWrap}>
@@ -67,8 +55,10 @@ export function ImagePreview({ uri, sending, onCancel, onSend }: ImagePreviewPro
                 variant="brand"
                 size={44}
                 accessibilityLabel="Skicka"
-                onPress={() => onSend(caption.trim())}
-                disabled={sending}
+                onPress={() => {
+                  onSend(caption.trim());
+                  setCaption('');
+                }}
               />
             </View>
           </KeyboardAvoider>

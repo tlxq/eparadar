@@ -6,6 +6,7 @@ name: Blockera finns på varje kompis
 - runFlow: ../subflows/settle.yaml
 - takeScreenshot: kompisar
 - tapOn: Fler val för Liam Berg
+- assertVisible: Rapportera
 - assertVisible: Blockera
 - assertVisible: Ta bort kompis
 - takeScreenshot: kompis-meny

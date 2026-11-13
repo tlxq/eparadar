@@ -291,6 +291,7 @@ export type Message = DbRow<'messages'> & {
   reactions: { user_id: string; emoji: string }[];
   pending?: boolean;
   failed?: boolean;
+  localImageUri?: string;
 };
 
 export function conversationTitle(conversation: Conversation, myUserId: string): string {

@@ -327,6 +327,20 @@ export function MessageBubble({
           {message.post_id ? (
             <SharedPostCard postId={message.post_id} onLongPress={() => onLongPress(message)} />
           ) : null}
+          {message.localImageUri && !message.image_path ? (
+            <View>
+              <Image
+                source={{ uri: message.localImageUri }}
+                style={[styles.image, corners]}
+                accessibilityLabel={message.failed ? 'Bild som inte skickades' : 'Bild som skickas'}
+              />
+              {message.pending ? (
+                <ThemedText type="caption" themeColor="textSecondary" style={styles.time}>
+                  Skickas…
+                </ThemedText>
+              ) : null}
+            </View>
+          ) : null}
           {message.image_path ? (
             <ChatImage
               path={message.image_path}

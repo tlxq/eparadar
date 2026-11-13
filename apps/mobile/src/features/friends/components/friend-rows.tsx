@@ -1,5 +1,4 @@
 import { StyleSheet, View } from 'react-native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar } from '@/components/avatar';
 import { Button } from '@/components/button';
 import { DropdownButton } from '@/components/dropdown-menu';
@@ -8,81 +7,29 @@ import { ListRow } from '@/components/list-row';
 import { Skeleton } from '@/components/skeleton';
 import { Spacing } from '@/constants/theme';
 import { useStartChat } from '@/features/chat/use-start-chat';
+import { useUndoableRemoval } from '@/features/friends/use-undoable-removal';
+import { useAcceptFriendRequest, useDeclineFriendRequest } from '@/features/friends/hooks';
 import { useModerationItems } from '@/features/moderation/use-moderation-items';
-import { friendProfile, removeFriend, respondToFriendRequest, type Friendship } from '@/lib/api';
-import { maybeRequestNotificationPermission } from '@/lib/push-notifications';
+import { friendProfile, removeFriend, type Friendship } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { openPerson } from '@/store/person-sheet';
-import { usePendingRemovals } from '@/store/pending-removals';
-import { showToast, showUndoToast } from '@/store/toast';
 import { Common } from '@/constants/strings';
-import { successHaptic } from '@/lib/haptics';
-
-function useUndoableRemoval(queryKey: readonly unknown[]) {
-  const queryClient = useQueryClient();
-
-  return function removeWithUndo({
-    id,
-    message,
-    commit,
-    errorMessage,
-  }: {
-    id: string;
-    message: string;
-    commit: () => Promise<void>;
-    errorMessage: string;
-  }) {
-    const { hide, show } = usePendingRemovals.getState();
-    hide(id);
-    showUndoToast({
-      message,
-      onUndo: () => show(id),
-      onCommit: async () => {
-        try {
-          await commit();
-          await queryClient.invalidateQueries({ queryKey });
-        } catch {
-          showToast({ tone: 'error', message: errorMessage });
-        } finally {
-          show(id);
-        }
-      },
-    });
-  };
-}
 
 export function RequestRow({ request, myUserId }: { request: Friendship; myUserId: string }) {
-  const queryClient = useQueryClient();
   const requester = request.requester;
   const moderationItems = useModerationItems();
-  const removeWithUndo = useUndoableRemoval(queryKeys.friendRequests(myUserId));
-
-  const accept = useMutation({
-    mutationFn: () => respondToFriendRequest(request.id, true),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.friends(myUserId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.friendRequests(myUserId) });
-      successHaptic();
-      showToast({ tone: 'success', message: `Du och ${requester.display_name} är kompisar nu!` });
-      maybeRequestNotificationPermission(myUserId, 'friend_accepted');
-    },
-    onError: () =>
-      showToast({ tone: 'error', message: 'Det gick inte att svara på förfrågan. Testa igen!' }),
-  });
+  const accept = useAcceptFriendRequest();
+  const declineRequest = useDeclineFriendRequest();
 
   function decline() {
-    removeWithUndo({
-      id: request.id,
-      message: `Du nekade ${requester.display_name}.`,
-      commit: () => respondToFriendRequest(request.id, false),
-      errorMessage: 'Det gick inte att neka förfrågan. Testa igen!',
-    });
+    declineRequest({ requestId: request.id, name: requester.display_name });
   }
 
   return (
     <ListRow
       title={requester.display_name}
       subtitle={`@${requester.username}`}
+      onPress={() => openPerson(requester.id)}
       leading={<Avatar name={requester.display_name} imageUrl={requester.avatar_url} size={52} />}
       trailing={
         <View style={styles.actions}>
@@ -90,7 +37,7 @@ export function RequestRow({ request, myUserId }: { request: Friendship; myUserI
             label="Acceptera"
             size="sm"
             loading={accept.isPending}
-            onPress={() => accept.mutate()}
+            onPress={() => accept.mutate({ requestId: request.id, name: requester.display_name })}
           />
           <Button
             label="Neka"
@@ -205,7 +152,6 @@ export function FriendRow({ friendship, myUserId }: { friendship: Friendship; my
                   userId: friend.id,
                   name: friend.display_name,
                 },
-                blockOnly: true,
               }),
             ]}
           />

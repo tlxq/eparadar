@@ -15,6 +15,7 @@ import { showToast } from '@/store/toast';
 import { FormSheet } from '@/components/form-sheet';
 import { Common } from '@/constants/strings';
 import { carColorHex } from '@/features/map/car-colors';
+import { hasProfileChanges } from '@/features/profile/profile-changes';
 
 export const CAR_CARD_WIDTH = 160;
 
@@ -119,7 +120,10 @@ export function EditProfileSheet({ profile, visible, onClose }: EditProfileSheet
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const changed = hasProfileChanges(profile, { displayName, bio });
+
   async function handleSave() {
+    if (!changed) return;
     if (!displayName.trim()) {
       setError('Skriv ett visningsnamn.');
       return;
@@ -147,7 +151,7 @@ export function EditProfileSheet({ profile, visible, onClose }: EditProfileSheet
       title="Redigera profil"
       visible={visible}
       onClose={onClose}
-      action={{ label: Common.save, onPress: handleSave, loading: saving }}
+      action={{ label: Common.save, onPress: handleSave, loading: saving, disabled: !changed }}
     >
       <TextField
         label="Användarnamn"
