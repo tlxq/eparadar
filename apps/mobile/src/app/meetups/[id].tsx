@@ -1,10 +1,13 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SvgXml } from 'react-native-svg';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import { Avatar } from '@/components/avatar';
+import { DetailSummary, type DetailRow } from '@/components/detail-summary';
+import { ListRow } from '@/components/list-row';
+import { SectionLabel } from '@/components/section-label';
 import { Button } from '@/components/button';
 import { DropdownButton, type MenuItem } from '@/components/dropdown-menu';
 import { ErrorState } from '@/components/error-state';
@@ -14,7 +17,9 @@ import { reportItem } from '@/features/moderation/use-moderation-items';
 import { ScreenBackground } from '@/components/screen-background';
 import { Skeleton } from '@/components/skeleton';
 import { ThemedText } from '@/components/themed-text';
-import { Radius, Spacing, Typography } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
+import { distanceMeters, formatDistance } from '@/features/map/spots';
+import { useLastKnownPosition } from '@/features/map/use-last-known-position';
 import { meetupVibe } from '@/features/map/map-icons';
 import {
   useAutoCheckIn,
@@ -30,9 +35,45 @@ import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
 import { showToast } from '@/store/toast';
 import { useUserId } from '@/hooks/use-user-id';
-import { Common, Words } from '@/constants/strings';
+import { Common } from '@/constants/strings';
 
 const TITLE_REVEAL_Y = 80;
+
+type Person = { id: string; display_name: string; avatar_url: string | null };
+
+function PeopleSection({
+  label,
+  people,
+  subtitle,
+  emptyText,
+}: {
+  label: string;
+  people: Person[];
+  subtitle?: string;
+  emptyText?: string;
+}) {
+  return (
+    <View style={styles.section}>
+      <SectionLabel>{label}</SectionLabel>
+      {people.length === 0 ? (
+        <ThemedText themeColor="textSecondary">{emptyText}</ThemedText>
+      ) : (
+        <View style={styles.rowsBleed}>
+          {people.map((person) => (
+            <ListRow
+              key={person.id}
+              title={person.display_name}
+              subtitle={subtitle}
+              leading={<Avatar name={person.display_name} imageUrl={person.avatar_url} size={40} />}
+              accessibilityLabel={`Visa ${person.display_name}`}
+              onPress={() => openPerson(person.id)}
+            />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
 
 export default function MeetupDetailScreen() {
   const theme = useTheme();
@@ -45,6 +86,7 @@ export default function MeetupDetailScreen() {
   const deleteMeetup = useDeleteMeetup();
   const [shareOpen, setShareOpen] = useState(false);
   useAutoCheckIn(id);
+  const myPosition = useLastKnownPosition();
 
   async function handleDelete() {
     if (!id) return;
@@ -98,33 +140,42 @@ export default function MeetupDetailScreen() {
   }
 
   const iAmHereNow = meetup.hereNow.some((p) => p.id === userId);
-  const menuItems: MenuItem[] =
-    meetup.creator_id === userId
-      ? [
+  const isMine = meetup.creator_id === userId;
+  const rows: DetailRow[] = [
+    { icon: 'calendar-outline', text: formatMeetupTime(meetup.starts_at) },
+  ];
+  if (myPosition) {
+    rows.push({
+      icon: 'navigate-outline',
+      text: `${formatDistance(distanceMeters(meetup, myPosition))} från dig`,
+    });
+  }
+  const menuItems: MenuItem[] = isMine
+    ? [
+        {
+          label: 'Redigera',
+          icon: 'create-outline',
+          onPress: () => router.push({ pathname: '/meetups/edit', params: { id: meetup.id } }),
+        },
+        {
+          label: 'Ta bort träffen',
+          icon: 'trash-outline',
+          destructive: true,
+          disabled: deleteMeetup.isPending,
+          onPress: handleDelete,
+        },
+      ]
+    : [
+        reportItem(
           {
-            label: 'Redigera',
-            icon: 'create-outline',
-            onPress: () => router.push({ pathname: '/meetups/edit', params: { id: meetup.id } }),
+            type: 'meetup',
+            id: meetup.id,
+            userId: meetup.creator_id,
+            name: meetup.creator?.display_name ?? 'skaparen',
           },
-          {
-            label: 'Ta bort träffen',
-            icon: 'trash-outline',
-            destructive: true,
-            disabled: deleteMeetup.isPending,
-            onPress: handleDelete,
-          },
-        ]
-      : [
-          reportItem(
-            {
-              type: 'meetup',
-              id: meetup.id,
-              userId: meetup.creator_id,
-              name: meetup.creator?.display_name ?? 'skaparen',
-            },
-            'Rapportera träffen',
-          ),
-        ];
+          'Rapportera träffen',
+        ),
+      ];
 
   return (
     <ScreenBackground style={styles.container}>
@@ -150,124 +201,71 @@ export default function MeetupDetailScreen() {
             </View>
           )}
 
-          <View style={styles.titleRow}>
-            <View style={[styles.vibeTile, { backgroundColor: theme.backgroundElement }]}>
-              <SvgXml xml={meetupVibe(meetup.vibe).icon} width={34} height={34} />
-            </View>
-            <View style={styles.titleText}>
-              <ThemedText type="caption" themeColor="textSecondary">
-                {meetupVibe(meetup.vibe).label}
-              </ThemedText>
-              <ThemedText type="title" style={styles.title}>
-                {meetup.title}
-              </ThemedText>
-            </View>
-          </View>
-
-          {meetup.creator ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Visa ${meetup.creator.display_name}`}
-              onPress={() => openPerson(meetup.creator!.id)}
-              style={styles.creator}
-            >
-              <Avatar
-                name={meetup.creator.display_name}
-                imageUrl={meetup.creator.avatar_url}
-                size={24}
-              />
-              <ThemedText themeColor="textSecondary">
-                {meetup.creator_id === userId
-                  ? Words.creatorOfThis
-                  : `${meetup.creator.display_name} skapade den här`}
-              </ThemedText>
-            </Pressable>
-          ) : null}
-
-          <ThemedText type="smallBold" style={styles.meta}>
-            {formatMeetupTime(meetup.starts_at)}
-          </ThemedText>
-
-          {meetup.description ? (
-            <ThemedText style={styles.description}>{meetup.description}</ThemedText>
-          ) : null}
+          <DetailSummary
+            title={meetup.title}
+            kindLabel={meetupVibe(meetup.vibe).label}
+            kindIcon={<SvgXml xml={meetupVibe(meetup.vibe).icon} width={20} height={20} />}
+            creator={
+              meetup.creator
+                ? {
+                    id: meetup.creator.id,
+                    name: meetup.creator.display_name,
+                    avatarUrl: meetup.creator.avatar_url,
+                  }
+                : null
+            }
+            isMine={isMine}
+            rows={rows}
+            description={meetup.description}
+          />
 
           <View style={styles.actions}>
-            <View style={styles.action}>
+            {!isMine ? (
               <Button
-                label="Visa på kartan"
-                icon="map-outline"
-                variant="secondary"
-                size="sm"
-                onPress={() =>
-                  router.navigate({ pathname: '/karta', params: { meetup: meetup.id } })
-                }
+                label={meetup.isInterested ? 'Du är intresserad' : 'Jag är intresserad'}
+                icon={meetup.isInterested ? 'checkmark-circle' : 'eye-outline'}
+                variant={meetup.isInterested ? 'secondary' : 'primary'}
+                onPress={() => toggleInterest.mutate(!meetup.isInterested)}
+                disabled={toggleInterest.isPending}
               />
-            </View>
-            <View style={styles.action}>
-              <Button
-                label="Dela"
-                icon="paper-plane-outline"
-                variant="secondary"
-                size="sm"
-                onPress={() => setShareOpen(true)}
-              />
+            ) : null}
+            <View style={styles.actionRow}>
+              <View style={styles.action}>
+                <Button
+                  label="Visa på kartan"
+                  icon="map-outline"
+                  variant="secondary"
+                  size="sm"
+                  onPress={() =>
+                    router.navigate({ pathname: '/karta', params: { meetup: meetup.id } })
+                  }
+                />
+              </View>
+              <View style={styles.action}>
+                <Button
+                  label="Dela"
+                  icon="paper-plane-outline"
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => setShareOpen(true)}
+                />
+              </View>
             </View>
           </View>
 
-          {meetup.interested.length > 0 && (
-            <View style={styles.avatarStrip}>
-              <View style={styles.avatars}>
-                {meetup.interested.slice(0, 6).map((person) => (
-                  <Pressable
-                    key={person.id}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Visa ${person.display_name}`}
-                    hitSlop={4}
-                    onPress={() => openPerson(person.id)}
-                    style={styles.avatarWrap}
-                  >
-                    <Avatar name={person.display_name} imageUrl={person.avatar_url} size={30} />
-                  </Pressable>
-                ))}
-              </View>
-              <ThemedText type="small" themeColor="textSecondary">
-                {meetup.interest_count} intresserade
-              </ThemedText>
-            </View>
-          )}
+          {meetup.hereNow.length > 0 ? (
+            <PeopleSection label="Här nu" people={meetup.hereNow} subtitle="GPS · automatiskt" />
+          ) : null}
 
-          {meetup.hereNow.length > 0 && (
-            <View style={styles.avatarStrip}>
-              <View style={styles.avatars}>
-                {meetup.hereNow.slice(0, 6).map((person) => (
-                  <Pressable
-                    key={person.id}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Visa ${person.display_name}`}
-                    hitSlop={4}
-                    onPress={() => openPerson(person.id)}
-                    style={styles.avatarWrap}
-                  >
-                    <Avatar name={person.display_name} imageUrl={person.avatar_url} size={30} />
-                  </Pressable>
-                ))}
-              </View>
-              <ThemedText type="small" themeColor="success">
-                {meetup.hereNow.length} är här
-              </ThemedText>
-            </View>
-          )}
-
-          <View style={styles.interestedButton}>
-            <Button
-              label={meetup.isInterested ? 'Du är intresserad' : 'Jag är intresserad'}
-              icon={meetup.isInterested ? 'checkmark-circle' : 'eye-outline'}
-              variant={meetup.isInterested ? 'secondary' : 'primary'}
-              onPress={() => toggleInterest.mutate(!meetup.isInterested)}
-              disabled={toggleInterest.isPending}
-            />
-          </View>
+          <PeopleSection
+            label={`Intresserade · ${meetup.interest_count}`}
+            people={meetup.interested}
+            emptyText={
+              isMine
+                ? 'Ingen har anmält sig ännu. Dela träffen så blir ni fler.'
+                : 'Ingen har anmält sig ännu. Bli först!'
+            }
+          />
 
           {iAmHereNow && (
             <View
@@ -293,20 +291,11 @@ export default function MeetupDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
-  vibeTile: {
-    width: 52,
-    height: 52,
-    borderRadius: Radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  titleText: { flex: 1 },
   container: { flex: 1 },
   center: { flex: 1, justifyContent: 'center' },
   safeArea: { flex: 1 },
   skeletonButton: { marginTop: Spacing.four },
-  content: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.five, gap: Spacing.two },
+  content: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.five, gap: Spacing.three },
   liveBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -315,29 +304,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderRadius: Radius.pill,
-    marginBottom: Spacing.two,
   },
   liveDot: { width: 7, height: 7, borderRadius: 4 },
-  title: Typography.display,
-  meta: { marginTop: Spacing.one },
-  creator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    alignSelf: 'flex-start',
-  },
-  description: { marginTop: Spacing.two },
-  actions: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.three },
+  actions: { gap: Spacing.two },
+  actionRow: { flexDirection: 'row', gap: Spacing.two },
   action: { flex: 1 },
-  avatarStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    marginTop: Spacing.three,
-  },
-  avatars: { flexDirection: 'row' },
-  avatarWrap: { marginLeft: -Spacing.two },
-  interestedButton: { marginTop: Spacing.four },
+  section: { gap: Spacing.one },
+  rowsBleed: { marginHorizontal: -Spacing.three },
   autoStatus: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -346,7 +319,6 @@ const styles = StyleSheet.create({
     borderRadius: Radius.pill,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
-    marginTop: Spacing.two,
   },
   autoTag: { marginLeft: 'auto' },
 });

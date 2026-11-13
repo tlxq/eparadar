@@ -540,6 +540,7 @@ export default function MapScreen() {
         <SpotSheet
           spot={selectedSpot}
           hereNow={selectedSpotHereNow}
+          myPosition={devicePosition}
           onClose={() => setSelectedSpotId(null)}
         />
         {statusOpen && userId ? (

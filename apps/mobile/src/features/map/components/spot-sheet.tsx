@@ -3,15 +3,27 @@ import { StyleSheet, View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { ActionSheet, type SheetAction } from '@/components/action-sheet';
-import { ThemedText } from '@/components/themed-text';
+import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
+
+import { DetailSummary, type DetailRow } from '@/components/detail-summary';
 import { Common, Words } from '@/constants/strings';
 import { Spacing } from '@/constants/theme';
 import { SpotPhotoStrip } from '@/features/map/spot-photo-strip';
-import { addSpotPhoto, deleteSpot, spotTitle, type Spot } from '@/features/map/spots';
+import { fetchProfile } from '@/lib/api';
+import { useTheme } from '@/hooks/use-theme';
+import {
+  addSpotPhoto,
+  deleteSpot,
+  distanceMeters,
+  formatDistance,
+  spotTitle,
+  type Spot,
+} from '@/features/map/spots';
 import { useUserId } from '@/hooks/use-user-id';
 import { confirmDestructive } from '@/lib/confirm';
 import { getErrorMessage } from '@/lib/errors';
-import { formatTimeLeft } from '@/lib/relative-time';
+import { formatDisappearsAt } from '@/lib/relative-time';
 import { pickImage, type ImageSource } from '@/lib/pick-image';
 import { queryKeys } from '@/lib/query-keys';
 import { showToast } from '@/store/toast';
@@ -24,11 +36,18 @@ const REPORT_DELAY_MS = 250;
 type SpotSheetProps = {
   spot: Spot | null;
   hereNow: number;
+  myPosition: { lat: number; lng: number } | null;
   onClose: () => void;
 };
 
-export function SpotSheet({ spot, hereNow, onClose }: SpotSheetProps) {
+export function SpotSheet({ spot, hereNow, myPosition, onClose }: SpotSheetProps) {
   const userId = useUserId();
+  const theme = useTheme();
+  const { data: creator } = useQuery({
+    queryKey: queryKeys.profile(spot?.creator_id),
+    queryFn: () => fetchProfile(spot!.creator_id),
+    enabled: !!spot,
+  });
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
 
@@ -93,28 +112,49 @@ export function SpotSheet({ spot, hereNow, onClose }: SpotSheetProps) {
     actions.push(reportItem({ type: 'spot', id: spot.id, userId: spot.creator_id, name: null }));
   }
 
+  const rows: DetailRow[] = [];
+  if (spot) {
+    rows.push({ icon: 'time-outline', text: formatDisappearsAt(spot.expires_at) });
+    if (spot.kind === 'ragg') {
+      rows.push({
+        icon: 'people-outline',
+        text: hereNow > 0 ? `${hereNow} här nu` : 'Ingen här just nu',
+        tone: hereNow > 0 ? 'success' : 'default',
+      });
+    }
+    if (myPosition) {
+      rows.push({
+        icon: 'navigate-outline',
+        text: `${formatDistance(distanceMeters(spot, myPosition))} från dig`,
+      });
+    }
+    rows.push({ icon: 'eye-outline', text: 'Syns bara för kompisar' });
+  }
+
   return (
     <ActionSheet
       visible={!!spot}
-      title={spot ? spotTitle(spot) : undefined}
       header={
         spot ? (
           <View style={styles.header}>
-            <ThemedText type="small" themeColor="textSecondary">
-              {[
-                spot.kind === 'ragg'
-                  ? hereNow > 0
-                    ? `${hereNow} här nu`
-                    : 'Ingen här just nu'
-                  : Words.warning,
-                'syns för kompisar',
-              ].join(' · ')}
-            </ThemedText>
-            {spot.creator_id === userId ? (
-              <ThemedText type="smallBold" themeColor="textSecondary">
-                {formatTimeLeft(spot.expires_at)}
-              </ThemedText>
-            ) : null}
+            <DetailSummary
+              title={spotTitle(spot)}
+              kindLabel={spot.kind === 'ragg' ? Words.ragga : Words.warning}
+              kindIcon={
+                <Ionicons
+                  name={spot.kind === 'ragg' ? 'sparkles-outline' : 'warning-outline'}
+                  size={16}
+                  color={theme.text}
+                />
+              }
+              creator={
+                creator
+                  ? { id: creator.id, name: creator.display_name, avatarUrl: creator.avatar_url }
+                  : null
+              }
+              isMine={spot.creator_id === userId}
+              rows={rows}
+            />
             {spot.kind === 'ragg' && userId ? (
               <SpotPhotoStrip
                 spotId={spot.id}

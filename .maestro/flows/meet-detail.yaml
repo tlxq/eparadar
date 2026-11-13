@@ -1,0 +1,11 @@
+appId: com.tlxq.eparadar
+name: En träff visar vem, när och vilka som kommer
+---
+- runFlow: ../subflows/open-app.yaml
+- openLink: eparadar://meetups/00000000-0000-4000-b000-000000000002
+- extendedWaitUntil:
+    visible: Fika vid Tanto
+    timeout: 20000
+- runFlow: ../subflows/settle.yaml
+- assertVisible: Jag är intresserad
+- takeScreenshot: traff

@@ -2,7 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 
-import { countHereNow, distanceMeters, spotTitle } from '@/features/map/spots';
+import { countHereNow, distanceMeters, formatDistance, spotTitle } from '@/features/map/spots';
 
 const max = { lat: 59.3326, lng: 18.0649 };
 
@@ -31,5 +31,13 @@ describe('spotTitle', () => {
     );
     expect(spotTitle({ kind: 'ragg', name: null, warning_type: null })).toBe('Häng');
     expect(spotTitle({ kind: 'varning', name: null, warning_type: 'halka' })).toBe('Halka');
+  });
+});
+
+describe('formatDistance', () => {
+  it('uses meters under a kilometer and km above', () => {
+    expect(formatDistance(4)).toBe('10 m');
+    expect(formatDistance(347)).toBe('350 m');
+    expect(formatDistance(1460)).toBe('1,5 km');
   });
 });

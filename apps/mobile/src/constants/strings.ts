@@ -34,6 +34,7 @@ export const Words = {
   newPost: 'Ny post',
   postSomething: 'Posta något',
   creatorOfThis: 'Du skapade den här',
+  you: 'Du',
   publishPost: 'Posta',
   myPosts: 'Dina poster',
   photo: '📷 Bild',

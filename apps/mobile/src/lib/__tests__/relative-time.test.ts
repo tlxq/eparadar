@@ -3,6 +3,7 @@ import { describe, expect, it } from '@jest/globals';
 import {
   formatChatTimestamp,
   formatDayDivider,
+  formatDisappearsAt,
   formatPostAge,
   formatTimeLeft,
 } from '@/lib/relative-time';
@@ -62,5 +63,13 @@ describe('formatTimeLeft', () => {
     expect(formatTimeLeft(new Date(now.getTime() + 120 * 60000).toISOString(), now)).toBe(
       'Försvinner om 2 h',
     );
+  });
+});
+
+describe('formatDisappearsAt', () => {
+  it('shows the clock today, i morgon tomorrow, then the weekday', () => {
+    expect(formatDisappearsAt(at(0, 23, 5), now)).toBe('Försvinner kl. 23:05');
+    expect(formatDisappearsAt(at(-1, 8, 30), now)).toBe('Försvinner i morgon 08:30');
+    expect(formatDisappearsAt(at(-3, 8, 30), now)).toBe('Försvinner sön 08:30');
   });
 });

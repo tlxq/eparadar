@@ -60,3 +60,12 @@ export function formatTimeLeft(iso: string, now = new Date()): string {
   const rest = minutes % 60;
   return rest > 0 ? `Försvinner om ${hours} h ${rest} min` : `Försvinner om ${hours} h`;
 }
+
+export function formatDisappearsAt(iso: string, now = new Date()): string {
+  const date = new Date(iso);
+  const time = clockText(date);
+  const days = daysBetween(now, date);
+  if (days <= 0) return `Försvinner kl. ${time}`;
+  if (days === 1) return `Försvinner ${Days.tomorrow} ${time}`;
+  return `Försvinner ${WEEKDAYS[date.getDay()]} ${time}`;
+}
