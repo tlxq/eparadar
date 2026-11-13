@@ -6,6 +6,7 @@ import { Avatar } from '@/components/avatar';
 import { Skeleton } from '@/components/skeleton';
 import { MeetupCard } from '@/features/chat/components/meetup-card';
 import { ThemedText } from '@/components/themed-text';
+import { QUICK_REACTION } from '@/constants/reactions';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { chatImageUrl, type Conversation, type Message } from '@/lib/api';
@@ -35,15 +36,11 @@ function continues(a: Message | undefined, b: Message | undefined) {
 
 const MAX_READER_AVATARS = 5;
 
-export const REACTIONS = ['❤️', '😂', '😮', '😢', '🔥', '👍'];
-
 const IMAGE_WIDTH = 220;
 
 const IMAGE_HEIGHT = 165;
 
 const DOUBLE_TAP_MS = 260;
-
-export const QUICK_REACTION = '🔥';
 
 function useTaps(onSingle: () => void, onDouble: () => void) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);

@@ -1,8 +1,6 @@
 import { PROFILE_CARD_NO_USERNAME, signPostImages, type ProfileSummary } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 
-export const POST_REACTIONS = ['🔥', '😂', '👍'] as const;
-
 export async function addPostReaction(postId: string, userId: string, emoji: string) {
   const { error } = await supabase
     .from('post_reactions')

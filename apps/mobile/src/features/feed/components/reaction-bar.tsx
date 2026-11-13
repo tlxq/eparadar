@@ -1,11 +1,12 @@
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ActionSheet } from '@/components/action-sheet';
 import { Avatar } from '@/components/avatar';
 import { ThemedText } from '@/components/themed-text';
-import { Radius, Spacing } from '@/constants/theme';
-import { POST_REACTIONS } from '@/features/feed/api';
+import { Radius, Spacing, Typography } from '@/constants/theme';
+import { REACTIONS } from '@/constants/reactions';
 import { usePostReaction } from '@/features/feed/hooks';
 import { useTheme } from '@/hooks/use-theme';
 import { useUserId } from '@/hooks/use-user-id';
@@ -30,12 +31,15 @@ export function ReactionBar({ post }: { post: Post }) {
   const userId = useUserId();
   const react = usePostReaction();
   const [listOpen, setListOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const myEmojis = post.reactions.filter((r) => r.user_id === userId).map((r) => r.emoji);
   const people = whoReacted(post);
 
   return (
     <View style={styles.row}>
-      {POST_REACTIONS.map((emoji) => {
+      {REACTIONS.map((emoji) => {
         const count = post.reactions.filter((r) => r.emoji === emoji).length;
+        if (count === 0) return null;
         const mine = post.reactions.some((r) => r.emoji === emoji && r.user_id === userId);
         return (
           <Pressable
@@ -54,14 +58,24 @@ export function ReactionBar({ post }: { post: Post }) {
             ]}
           >
             <ThemedText type="small">{emoji}</ThemedText>
-            {count > 0 ? (
-              <ThemedText type="smallBold" themeColor={mine ? 'text' : 'textSecondary'}>
-                {count}
-              </ThemedText>
-            ) : null}
+            <ThemedText type="smallBold" themeColor={mine ? 'text' : 'textSecondary'}>
+              {count}
+            </ThemedText>
           </Pressable>
         );
       })}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Reagera"
+        onPress={() => setPickerOpen(true)}
+        style={({ pressed }) => [
+          styles.chip,
+          { backgroundColor: theme.backgroundElement, borderColor: 'transparent' },
+          pressed && styles.pressed,
+        ]}
+      >
+        <Ionicons name="happy-outline" size={18} color={theme.textSecondary} />
+      </Pressable>
       {people.length > 0 ? (
         <Pressable
           accessibilityRole="button"
@@ -82,6 +96,34 @@ export function ReactionBar({ post }: { post: Post }) {
           </ThemedText>
         </Pressable>
       ) : null}
+      <ActionSheet
+        visible={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        actions={[]}
+        header={
+          <View style={styles.picker} accessibilityRole="toolbar">
+            {REACTIONS.map((emoji) => (
+              <Pressable
+                key={emoji}
+                accessibilityRole="button"
+                accessibilityLabel={`Reagera med ${emoji}`}
+                accessibilityState={{ selected: myEmojis.includes(emoji) }}
+                onPress={() => {
+                  setPickerOpen(false);
+                  react(post, emoji);
+                }}
+                style={({ pressed }) => [
+                  styles.pick,
+                  myEmojis.includes(emoji) && { backgroundColor: theme.backgroundSelected },
+                  pressed && styles.pressed,
+                ]}
+              >
+                <ThemedText style={Typography.emoji}>{emoji}</ThemedText>
+              </Pressable>
+            ))}
+          </View>
+        }
+      />
       <ActionSheet
         visible={listOpen}
         title="Reaktioner"
@@ -119,6 +161,7 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.7 },
   who: {
     flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
@@ -126,6 +169,19 @@ const styles = StyleSheet.create({
   },
   faces: { flexDirection: 'row' },
   overlap: { marginLeft: -6 },
+  picker: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.two,
+    paddingBottom: Spacing.two,
+  },
+  pick: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   list: { maxHeight: 360 },
   listContent: { gap: Spacing.two, paddingBottom: Spacing.two },
   person: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, minHeight: 44 },

@@ -42,10 +42,9 @@ import { useProfile } from '@/features/profile/hooks';
 import { useConversation } from '@/features/chat/hooks';
 import { useUserId } from '@/hooks/use-user-id';
 import { pickImage, type ImageSource } from '@/lib/pick-image';
+import { QUICK_REACTION, REACTIONS } from '@/constants/reactions';
 import {
   MessageBubble,
-  QUICK_REACTION,
-  REACTIONS,
   ReadReceipt,
   TypingBubble,
 } from '@/features/chat/components/message-bubble';

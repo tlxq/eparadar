@@ -26,7 +26,15 @@ function showOnMap(place: NonNullable<Post['place']>) {
   });
 }
 
-export function PostItem({ post, onMore }: { post: Post; onMore?: () => void }) {
+export function PostItem({
+  post,
+  onMore,
+  openable,
+}: {
+  post: Post;
+  onMore?: () => void;
+  openable?: boolean;
+}) {
   const theme = useTheme();
   const [viewerOpen, setViewerOpen] = useState(false);
   const authorName = post.author?.display_name ?? 'Okänd användare';
@@ -34,7 +42,13 @@ export function PostItem({ post, onMore }: { post: Post; onMore?: () => void }) 
   const age = formatPostAge(post.created_at);
 
   return (
-    <View style={[styles.post, { borderBottomColor: theme.separator }]}>
+    <Pressable
+      accessibilityRole={openable ? 'button' : undefined}
+      accessibilityLabel={openable ? `Öppna posten från ${authorName}` : undefined}
+      disabled={!openable}
+      onPress={() => router.push(`/post/${post.id}`)}
+      style={[styles.post, { borderBottomColor: theme.separator }]}
+    >
       <View style={styles.header}>
         <Pressable
           accessibilityRole="button"
@@ -132,7 +146,7 @@ export function PostItem({ post, onMore }: { post: Post; onMore?: () => void }) 
         label={`Bild från ${authorName}`}
         onClose={() => setViewerOpen(false)}
       />
-    </View>
+    </Pressable>
   );
 }
 

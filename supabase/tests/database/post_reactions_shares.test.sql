@@ -1,6 +1,6 @@
 begin;
 
-select plan(15);
+select plan(18);
 
 select tests.create_user('68f00001-0000-0000-0000-000000000001', 'test-feed-alice', 'FeedAlice');
 select tests.create_user('68f00002-0000-0000-0000-000000000001', 'test-feed-bob', 'FeedBob');
@@ -48,8 +48,17 @@ select throws_ok(
     values ('68f000a1-0000-0000-0000-000000000001', '68f00002-0000-0000-0000-000000000001', '💩')$$,
   '23514',
   null,
-  'Only the three offered emojis are allowed'
+  'Only the offered emojis are allowed'
 );
+
+select lives_ok(
+  $$insert into public.post_reactions (post_id, user_id, emoji)
+    values ('68f000a1-0000-0000-0000-000000000001', '68f00002-0000-0000-0000-000000000001', '❤️')$$,
+  'A friend can use the heart, one of the six shared with chat'
+);
+
+delete from public.post_reactions
+where user_id = '68f00002-0000-0000-0000-000000000001' and emoji = '❤️';
 
 select throws_ok(
   $$insert into public.post_reactions (post_id, user_id, emoji)
@@ -112,6 +121,14 @@ select throws_ok(
 );
 
 select throws_ok(
+  $$insert into public.post_reactions (post_id, user_id, emoji)
+    values ('68f000a1-0000-0000-0000-000000000001', '68f00003-0000-0000-0000-000000000001', '😮')$$,
+  '42501',
+  null,
+  'A stranger cannot react with the new emojis either'
+);
+
+select throws_ok(
   $$insert into public.messages (conversation_id, sender_id, body, post_id)
     values ('68f000c1-0000-0000-0000-000000000001', '68f00003-0000-0000-0000-000000000001', '',
             '68f000a1-0000-0000-0000-000000000001')$$,
@@ -141,6 +158,14 @@ select is(
 
 select tests.logout();
 select tests.login_anon();
+
+select throws_ok(
+  $$insert into public.post_reactions (post_id, user_id, emoji)
+    values ('68f000a1-0000-0000-0000-000000000001', '68f00002-0000-0000-0000-000000000001', '😢')$$,
+  '42501',
+  null,
+  'Logged-out users cannot react'
+);
 
 select throws_ok(
   $$select count(*) from public.post_reactions$$,

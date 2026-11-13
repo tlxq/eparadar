@@ -11,6 +11,7 @@ import { ScreenHeader } from '@/components/screen-header';
 import { Skeleton } from '@/components/skeleton';
 import { Radius, Spacing } from '@/constants/theme';
 import { PostActionsSheet } from '@/features/feed/components/post-actions-sheet';
+import { PostReactors } from '@/features/feed/components/post-reactors';
 import { PostItem } from '@/features/feed/components/post-item';
 import { fetchPost, type Post } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
@@ -54,6 +55,7 @@ export default function PostScreen() {
         ) : (
           <ScrollView>
             <PostItem post={post} onMore={() => setSelected(post)} />
+            <PostReactors post={post} />
           </ScrollView>
         )}
       </SafeAreaView>
