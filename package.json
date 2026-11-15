@@ -16,6 +16,12 @@
     "prettier": "~3.9.10",
     "typescript": "~6.0.3"
   },
+  "allowScripts": {
+    "esbuild": true,
+    "@parcel/watcher": false,
+    "fsevents": false,
+    "unrs-resolver": false
+  },
   "scripts": {
     "mobile": "npm run start --workspace apps/mobile",
     "phone": "npm run phone --workspace apps/mobile --",
