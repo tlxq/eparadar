@@ -1,0 +1,193 @@
+---
+import { Image } from 'astro:assets';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Phone from './Phone.astro';
+import Words from './Words.astro';
+import './landing.css';
+import { SITE } from '../../config/site';
+import { LANDING, type Lang } from '../../content/landing';
+
+import heroPhoto from '../../assets/park-bokeh.webp';
+import mapScreen from '../../../../../docs/assets/screenshots/karta.png';
+import feedScreen from '../../../../../docs/assets/screenshots/flode.png';
+import chatScreen from '../../../../../docs/assets/screenshots/chatt.png';
+import friendsScreen from '../../../../../docs/assets/screenshots/kompisar.png';
+import tile1 from '../../../../../supabase/seed/assets/car-photos/00000000-0000-4000-a000-000000000002/car.jpg';
+import tile2 from '../../../../../supabase/seed/assets/post-images/00000000-0000-4000-a000-000000000002/kvallsrunda.jpg';
+import tile3 from '../../../../../supabase/seed/assets/car-photos/00000000-0000-4000-a000-000000000005/car.jpg';
+import tile4 from '../../../../../supabase/seed/assets/car-photos/00000000-0000-4000-a000-000000000007/car.jpg';
+import endPhoto from '../../../../../supabase/seed/assets/car-photos/00000000-0000-4000-a000-000000000004/car.jpg';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = LANDING[lang];
+const path = lang === 'en' ? SITE.routes.homeEn : SITE.routes.home;
+
+const screens = [
+  { key: 'k', src: mapScreen, ...t.screens.map },
+  { key: 'f', src: feedScreen, ...t.screens.feed },
+  { key: 'c', src: chatScreen, ...t.screens.chat },
+  { key: 'p', src: friendsScreen, ...t.screens.friends },
+];
+const tiles = [
+  { src: tile1, d: 70 },
+  { src: tile2, d: 180 },
+  { src: tile3, d: 40 },
+  { src: tile4, d: 130 },
+];
+const legal = [SITE.routes.privacy, SITE.routes.terms, SITE.routes.community];
+const heroWidths = [640, 960, 1280, 1600, 1920, 2400];
+---
+
+<BaseLayout
+  title={t.title}
+  description={t.description}
+  canonicalPath={path}
+  lang={lang}
+  alternates={[
+    { lang: 'sv', path: SITE.routes.home },
+    { lang: 'en', path: SITE.routes.homeEn },
+    { lang: 'x-default', path: SITE.routes.home },
+  ]}
+  og={{
+    title: t.title,
+    description: t.description,
+    imageAlt: t.ogImageAlt,
+    image: lang === 'en' ? SITE.ogImageEn : SITE.ogImage,
+  }}
+  fontsHref="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@500&display=swap"
+  bodyClass="lp"
+>
+  <script is:inline slot="head">
+    (() => {
+      const root = document.documentElement;
+      root.classList.add('js');
+      setTimeout(() => root.classList.contains('js-ready') || root.classList.remove('js'), 3000);
+    })();
+  </script>
+
+  <header class="nav pad">
+    <a class="logo" href="#s0"><img src={SITE.favicon} alt="" width="46" height="46" />epaRadar</a>
+    <div class="pills">
+      <a class="pill line" href={t.other.href} hreflang={t.other.label.toLowerCase()} aria-label={t.other.aria}
+        >{t.other.label}</a
+      >
+      <a class="pill fill" href="#s7">{t.cta}</a>
+    </div>
+  </header>
+
+  <div class="stage" id="stage" aria-hidden="true">
+    <Phone id="phone" screens={screens}>
+      <div class="shot" id="shot">
+        <Image src={heroPhoto} alt="" widths={heroWidths} sizes="100vw" loading="eager" />
+        <div class="shade" id="shade"></div>
+      </div>
+    </Phone>
+  </div>
+
+  <main>
+    <section class="sec three hero pad" id="s0" data-screen="0">
+      <div class="bg">
+        <Image src={heroPhoto} alt="" widths={heroWidths} sizes="100vw" loading="eager" fetchpriority="high" />
+      </div>
+      <div class="l">
+        <span class="label in-txt">{t.soon}</span>
+        <h1 class="h split"><Words text={t.h0} /></h1>
+      </div>
+      <div class="r">
+        <p class="txt in-txt">{t.p0}</p>
+        <div class="stores in-txt"><span class="store">{t.play}</span><span class="store">{t.ios}</span></div>
+      </div>
+    </section>
+
+    {
+      screens.map((screen, i) => (
+        <section class="sec three pad" id={`s${i + 1}`} data-screen={i}>
+          <div class="l">
+            <h2 class="h split">
+              <Words text={screen.h} />
+            </h2>
+          </div>
+          <div class="mphone">
+            <Phone screens={[screen]} />
+          </div>
+          <div class="r">
+            {'p' in screen ? (
+              <p class="txt in-txt">{screen.p}</p>
+            ) : (
+              <ul class="list in-txt">
+                {t.place.map((line) => (
+                  <li>{line}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
+      ))
+    }
+
+    <section class="sec grid pad" id="s5" data-screen="-1">
+      <div class="tiles">
+        {
+          tiles.map((tile, i) => (
+            <figure class="tile" data-d={tile.d}>
+              <div class="ti">
+                <Image
+                  src={tile.src}
+                  alt={t.tiles[i]}
+                  widths={[400, 700, 1000]}
+                  sizes="(max-width: 560px) 100vw, (max-width: 1099px) 50vw, 25vw"
+                />
+              </div>
+            </figure>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="sec end pad" id="s7" data-screen="-1">
+      <div class="bg">
+        <Image src={endPhoto} alt="" id="endImg" widths={[800, 1200]} sizes="100vw" />
+      </div>
+      <div class="l">
+        <h2 class="h split"><Words text={t.hE} /></h2>
+      </div>
+      <form
+        class="form in-txt"
+        id="form"
+        novalidate
+        data-endpoint={SITE.api.waitlist}
+        data-msg={JSON.stringify(t.form)}
+      >
+        <input
+          id="email"
+          name="email"
+          type="email"
+          placeholder={t.emailPlaceholder}
+          aria-label={t.emailLabel}
+          autocomplete="email"
+        />
+        <button class="pill fill" type="submit">{t.send}</button>
+        <div class="hp" aria-hidden="true">
+          <label for="company">Företag</label>
+          <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
+        </div>
+      </form>
+      <p class="small"><a href={SITE.routes.privacy}>{t.consent}</a></p>
+      <p id="done" aria-live="polite" tabindex="-1"></p>
+      <nav class="foot" aria-label={t.legalNav}>
+        {legal.map((href, i) => <a href={href}>{t.legal[i]}</a>)}
+      </nav>
+    </section>
+    <a class="mbar" id="mbar" href="#s7"><span>{t.bar}</span><span aria-hidden="true">→</span></a>
+  </main>
+</BaseLayout>
+
+<script>
+  import { startLanding } from './landing';
+  startLanding();
+</script>

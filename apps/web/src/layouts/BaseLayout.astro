@@ -6,6 +6,12 @@ interface OgProps {
   title: string;
   description: string;
   imageAlt: string;
+  image?: string;
+}
+
+interface Alternate {
+  lang: string;
+  path: string;
 }
 
 interface Props {
@@ -14,10 +20,28 @@ interface Props {
   canonicalPath: string;
   robotsNoindex?: boolean;
   og?: OgProps;
+  lang?: string;
+  alternates?: Alternate[];
+  fontsHref?: string;
+  bodyClass?: string;
 }
 
-const { title, description, canonicalPath, robotsNoindex = false, og } = Astro.props;
-const canonicalUrl = `${SITE.url}${canonicalPath === SITE.routes.home ? '' : canonicalPath}`;
+const DEFAULT_FONTS =
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Archivo:wght@400;900&display=swap';
+
+const {
+  title,
+  description,
+  canonicalPath,
+  robotsNoindex = false,
+  og,
+  lang = 'sv',
+  alternates = [],
+  fontsHref = DEFAULT_FONTS,
+  bodyClass,
+} = Astro.props;
+const urlFor = (path: string) => `${SITE.url}${path === SITE.routes.home ? '' : path}`;
+const canonicalUrl = urlFor(canonicalPath);
 
 const theme = Colors.dark;
 
@@ -29,13 +53,14 @@ const cssVars = Object.fromEntries(
 );
 ---
 
-<html lang="sv">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="canonical" href={canonicalUrl} />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {alternates.map((alt) => <link rel="alternate" hreflang={alt.lang} href={urlFor(alt.path)} />)}
     {robotsNoindex && <meta name="robots" content="noindex" />}
 
     {
@@ -43,23 +68,22 @@ const cssVars = Object.fromEntries(
         <>
           <meta property="og:title" content={og.title} />
           <meta property="og:description" content={og.description} />
-          <meta property="og:image" content={`${SITE.url}${SITE.ogImage}`} />
+          <meta property="og:image" content={`${SITE.url}${og.image ?? SITE.ogImage}`} />
           <meta property="og:image:width" content="1200" />
           <meta property="og:image:height" content="630" />
           <meta property="og:image:alt" content={og.imageAlt} />
           <meta property="og:url" content={canonicalUrl} />
           <meta property="og:type" content="website" />
-          <meta property="og:locale" content="sv_SE" />
+          <meta property="og:locale" content={lang === 'en' ? 'en_GB' : 'sv_SE'} />
           <meta name="twitter:card" content="summary_large_image" />
         </>
       )
     }
 
     <link rel="icon" type="image/svg+xml" href={SITE.favicon} />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Archivo:wght@400;900&display=swap"
-    />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href={fontsHref} />
+    <slot name="head" />
 
     <style is:global define:vars={cssVars}>
       :root {
@@ -97,7 +121,7 @@ const cssVars = Object.fromEntries(
     </style>
   </head>
 
-  <body>
+  <body class={bodyClass}>
     <slot />
   </body>
 </html>

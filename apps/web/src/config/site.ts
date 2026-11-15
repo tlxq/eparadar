@@ -5,6 +5,7 @@ export const SITE = {
   contactEmail: CONTACT_EMAIL,
   routes: {
     home: '/',
+    homeEn: '/en',
     privacy: '/integritetspolicy',
     terms: '/anvandarvillkor',
     community: '/communityregler',
@@ -15,4 +16,5 @@ export const SITE = {
   },
   favicon: '/favicon.svg',
   ogImage: '/og-image.jpg',
+  ogImageEn: '/og-image-en.jpg',
 } as const;
