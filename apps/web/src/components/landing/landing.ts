@@ -30,6 +30,22 @@ function watchSections() {
   requestAnimationFrame(() => sections[0].classList.add('on'));
 }
 
+function hideNavOnScrollDown() {
+  const nav = document.querySelector<HTMLElement>('.nav');
+  if (!nav) return;
+  let lastY = window.scrollY;
+  window.addEventListener(
+    'scroll',
+    () => {
+      const y = window.scrollY;
+      if (Math.abs(y - lastY) < 6) return;
+      nav.classList.toggle('away', y > lastY && y > 80);
+      lastY = y;
+    },
+    { passive: true },
+  );
+}
+
 function startMotion() {
   gsap.registerPlugin(ScrollTrigger);
   const root = document.documentElement;
@@ -323,6 +339,7 @@ function startForm() {
 export function startLanding() {
   document.documentElement.classList.add('js-ready');
   watchSections();
+  hideNavOnScrollDown();
   startForm();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) startMotion();
 }
