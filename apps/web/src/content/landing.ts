@@ -39,7 +39,7 @@ export const LANDING = {
     emailLabel: 'E-postadress',
     emailPlaceholder: 'din@epost.se',
     consent: 'Så hanterar vi din e-post',
-    legal: ['Integritetspolicy', 'Användarvillkor', 'Communityregler', 'Radera konto'],
+    legal: ['Integritetspolicy', 'Användarvillkor', 'Communityregler'],
     bar: 'Få ett mejl när appen finns',
     form: {
       sending: 'Skickar…',
@@ -91,7 +91,6 @@ export const LANDING = {
       'Privacy policy (in Swedish)',
       'Terms of use (in Swedish)',
       'Community rules (in Swedish)',
-      'Delete account (in Swedish)',
     ],
     bar: 'Get an email when the app is out',
     form: {
