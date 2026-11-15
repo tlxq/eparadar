@@ -1,4 +1,7 @@
-<p align="center"><img src="docs/assets/banner.png" alt="epaRadar" width="100%"></p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
+  <img alt="epaRadar: Map app for the EPA community." src="docs/assets/banner-light.svg" width="100%">
+</picture>
 
 Friends on a live map. Only friends see where you are. A Swedish app for young drivers of EPA and
 A-traktor cars: add friends, share where you are with them only, and plan meetups.
