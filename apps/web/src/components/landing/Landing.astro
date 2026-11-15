@@ -53,7 +53,12 @@ const heroWidths = [640, 960, 1280, 1600, 1920, 2400];
     { lang: 'en', path: SITE.routes.homeEn },
     { lang: 'x-default', path: SITE.routes.home },
   ]}
-  og={{ title: t.title, description: t.description, imageAlt: t.ogImageAlt }}
+  og={{
+    title: t.title,
+    description: t.description,
+    imageAlt: t.ogImageAlt,
+    image: lang === 'en' ? SITE.ogImageEn : SITE.ogImage,
+  }}
   fontsHref="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@500&display=swap"
   bodyClass="lp"
 >

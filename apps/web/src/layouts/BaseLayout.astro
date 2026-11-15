@@ -6,6 +6,7 @@ interface OgProps {
   title: string;
   description: string;
   imageAlt: string;
+  image?: string;
 }
 
 interface Alternate {
@@ -67,7 +68,7 @@ const cssVars = Object.fromEntries(
         <>
           <meta property="og:title" content={og.title} />
           <meta property="og:description" content={og.description} />
-          <meta property="og:image" content={`${SITE.url}${SITE.ogImage}`} />
+          <meta property="og:image" content={`${SITE.url}${og.image ?? SITE.ogImage}`} />
           <meta property="og:image:width" content="1200" />
           <meta property="og:image:height" content="630" />
           <meta property="og:image:alt" content={og.imageAlt} />
