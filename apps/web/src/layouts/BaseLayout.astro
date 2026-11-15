@@ -1,6 +1,6 @@
 ---
 import { Colors } from '@eparadar/theme/colors';
-import { SITE } from '../config/site';
+import { SITE, urlFor } from '../config/site';
 
 interface OgProps {
   title: string;
@@ -40,7 +40,6 @@ const {
   fontsHref = DEFAULT_FONTS,
   bodyClass,
 } = Astro.props;
-const urlFor = (path: string) => `${SITE.url}${path === SITE.routes.home ? '' : path}`;
 const canonicalUrl = urlFor(canonicalPath);
 
 const theme = Colors.dark;

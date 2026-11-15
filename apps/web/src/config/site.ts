@@ -18,3 +18,5 @@ export const SITE = {
   ogImage: '/og-image.jpg',
   ogImageEn: '/og-image-en.jpg',
 } as const;
+
+export const urlFor = (path: string) => `${SITE.url}${path === SITE.routes.home ? '' : path}`;
