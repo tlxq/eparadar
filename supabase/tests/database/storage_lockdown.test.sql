@@ -1,6 +1,6 @@
 begin;
 
-select plan(13);
+select plan(15);
 
 select tests.create_user('5b000001-0000-0000-0000-000000000001', 'test-store-alice', 'Alice');
 select tests.create_user('5b000002-0000-0000-0000-000000000002', 'test-store-bob', 'Bob');
@@ -53,8 +53,14 @@ select is(
 
 select is(
   (select count(*)::int from storage.objects where bucket_id = 'avatars' and name = '5b000001-0000-0000-0000-000000000001/avatar.jpg'),
-  1,
-  'a logged-in user can read avatars'
+  0,
+  'a stranger cannot read someone else''s avatar file'
+);
+
+select is(
+  (select count(*)::int from storage.objects where bucket_id = 'avatars'),
+  0,
+  'a stranger listing the avatars bucket sees no other users'' files'
 );
 
 select throws_ok(
@@ -101,6 +107,12 @@ select is(
   (select count(*)::int from storage.objects where bucket_id = 'post-images'),
   1,
   'the owner can read their own post image'
+);
+
+select is(
+  (select count(*)::int from storage.objects where bucket_id = 'avatars' and name = '5b000001-0000-0000-0000-000000000001/avatar.jpg'),
+  1,
+  'the owner can read their own avatar file'
 );
 
 select lives_ok(
