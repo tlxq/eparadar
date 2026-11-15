@@ -5,6 +5,7 @@ export const SITE = {
   contactEmail: CONTACT_EMAIL,
   routes: {
     home: '/',
+    homeEn: '/en',
     privacy: '/integritetspolicy',
     terms: '/anvandarvillkor',
     community: '/communityregler',

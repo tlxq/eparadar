@@ -1,0 +1,37 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Screen {
+  src: ImageMetadata;
+  key: string;
+}
+
+interface Props {
+  screens: Screen[];
+  id?: string;
+}
+
+const { screens, id } = Astro.props;
+---
+
+<div class="phone" id={id}>
+  <div class="scr">
+    <span class="cam"></span>
+    {
+      screens.map((screen, i) => (
+        <Image
+          src={screen.src}
+          alt=""
+          class:list={[screen.key, { on: i === 0 }]}
+          data-screen-img={screen.key}
+          widths={[270, 540]}
+          sizes="(max-width: 1099px) 290px, 370px"
+          loading={id ? 'eager' : 'lazy'}
+        />
+      ))
+    }
+    <slot />
+  </div>
+  <div class="glare"></div>
+</div>
