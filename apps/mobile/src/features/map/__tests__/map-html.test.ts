@@ -9,6 +9,11 @@ describe('MAP_HTML', () => {
     expect(MAP_HTML).toContain('maplibregl');
   });
 
+  it('runs MapLibre as a classic script with its worker inlined', () => {
+    expect(MAP_HTML).not.toContain('import.meta');
+    expect(MAP_HTML).toContain('maplibregl.setWorkerUrl(URL.createObjectURL(new Blob([');
+  });
+
   it('keeps the tile source on openfreemap', () => {
     expect(MAP_HTML).toContain('https://tiles.openfreemap.org/styles/dark');
   });
